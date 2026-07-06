@@ -1,0 +1,400 @@
+import Head from "next/head";
+import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/router";
+import { motion, AnimatePresence } from "framer-motion";
+import { MainLayout } from "../src/layout/MainLayout";
+import {
+  ShieldCheck, CreditCard, Smartphone, Building2, ChevronRight,
+  ArrowLeft, Lock, Check, Info, BookOpen
+} from "lucide-react";
+import { useStore } from "../src/store/useStore";
+
+const UPI_APPS = [
+  { id: "gpay", name: "Google Pay", icon: "https://logo.clearbit.com/pay.google.com", color: "#4285F4" },
+  { id: "phonepe", name: "PhonePe", icon: "https://logo.clearbit.com/phonepe.com", color: "#5F259F" },
+  { id: "paytm", name: "Paytm", icon: "https://logo.clearbit.com/paytm.com", color: "#002970" },
+  { id: "bhim", name: "BHIM UPI", icon: "https://logo.clearbit.com/bhimupi.org.in", color: "#138808" },
+];
+
+const PAYMENT_METHODS = [
+  { id: "upi", label: "UPI", icon: Smartphone },
+  { id: "card", label: "Card", icon: CreditCard },
+  { id: "netbanking", label: "Net Banking", icon: Building2 },
+];
+
+const CartItemImage = ({ thumbnail, title }: { thumbnail: string; title: string }) => {
+  const [error, setError] = useState(false);
+  if (!thumbnail || error) {
+    return (
+      <div className="w-full h-full bg-gradient-to-br from-[#1B2A6B]/10 to-[#C9A227]/10 flex items-center justify-center">
+        <BookOpen size={16} className="text-[#1B2A6B]" />
+      </div>
+    );
+  }
+  return (
+    <img 
+      src={thumbnail} 
+      alt={title} 
+      onError={() => setError(true)}
+      className="w-full h-full object-cover"
+    />
+  );
+};
+
+export default function CheckoutPage() {
+  const router = useRouter();
+  const { cart: cartItems, clearCart } = useStore();
+  const [paymentMethod, setPaymentMethod] = useState("upi");
+  const [selectedUpi, setSelectedUpi] = useState("gpay");
+  const [upiId, setUpiId] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStep, setProcessingStep] = useState(0);
+
+  const subtotal = cartItems.reduce((acc, item) => acc + item.price, 0);
+  const tax = Math.round(subtotal * 0.18);
+  const discount = subtotal > 0 ? Math.min(5000, Math.round(subtotal * 0.1)) : 0;
+  const total = subtotal + tax - discount;
+
+  const handlePay = () => {
+    if (cartItems.length === 0) return;
+    setIsProcessing(true);
+    setProcessingStep(0);
+    
+    // Simulate premium payment processing steps
+    setTimeout(() => {
+      setProcessingStep(1); // Bank authorization
+      setTimeout(() => {
+        setProcessingStep(2); // Finalizing enrollment
+        setTimeout(() => {
+          clearCart(); // Clear state
+          router.push('/payment-success');
+        }, 1200);
+      }, 1200);
+    }, 1200);
+  };
+
+  return (
+    <MainLayout>
+      <div className="min-h-screen pt-28 pb-20 relative overflow-hidden bg-[#0d1635] text-white">
+        
+        {/* Premium Grid Background */}
+        <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)", backgroundSize: "32px 32px" }}></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0d1635] to-transparent pointer-events-none"></div>
+
+        {/* Animated Floating Gradient Orbs */}
+        <motion.div 
+          animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }} 
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-0 right-0 w-[550px] h-[550px] bg-[#1B2A6B]/50 rounded-full blur-[130px] pointer-events-none -translate-y-1/3 translate-x-1/3" 
+        />
+        <motion.div 
+          animate={{ scale: [1, 1.25, 1], opacity: [0.15, 0.3, 0.15] }} 
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute bottom-0 left-0 w-[450px] h-[450px] bg-[#C9A227]/20 rounded-full blur-[120px] pointer-events-none translate-y-1/3 -translate-x-1/3" 
+        />
+
+        <div className="max-w-5xl mx-auto px-4 md:px-6 relative z-10">
+
+          {/* Breadcrumb */}
+          <motion.div 
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 text-sm text-slate-400 mb-8"
+          >
+            <Link href="/cart" className="flex items-center gap-1 hover:text-white transition-colors font-medium">
+              <ArrowLeft size={14} /> Cart
+            </Link>
+            <ChevronRight size={14} />
+            <span className="text-white font-semibold">Checkout</span>
+          </motion.div>
+
+          <div className="flex flex-col lg:flex-row gap-8">
+
+            {/* LEFT: Payment */}
+            <div className="flex-1 space-y-5">
+
+              {/* Contact Info */}
+              <motion.div 
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl"
+              >
+                <h2 className="font-extrabold text-white text-base mb-4">Contact Information</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">First Name</label>
+                    <input type="text" placeholder="Rahul" className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/40 focus:border-[#C9A227]/50 transition-all font-medium text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">Last Name</label>
+                    <input type="text" placeholder="Sharma" className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/40 focus:border-[#C9A227]/50 transition-all font-medium text-white" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">Email Address</label>
+                    <input type="email" placeholder="rahul@example.com" className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/40 focus:border-[#C9A227]/50 transition-all font-medium text-white" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">Mobile Number</label>
+                    <div className="flex">
+                      <span className="flex items-center px-3 border border-r-0 border-white/10 rounded-l-xl text-sm text-slate-400 bg-white/5 font-semibold">+91</span>
+                      <input type="tel" placeholder="98765 43210" className="flex-1 bg-white/5 border border-white/10 rounded-r-xl px-3.5 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/40 focus:border-[#C9A227]/50 transition-all font-medium text-white" />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Payment Method */}
+              <motion.div 
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl"
+              >
+                <h2 className="font-extrabold text-white text-base mb-4">Payment Method</h2>
+
+                {/* Method Tabs */}
+                <div className="flex gap-2 mb-5">
+                  {PAYMENT_METHODS.map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => setPaymentMethod(m.id)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${
+                        paymentMethod === m.id
+                          ? "bg-[#C9A227] text-[#0d1635] border-[#C9A227] shadow-lg shadow-[#C9A227]/20"
+                          : "bg-white/5 text-slate-300 border-white/10 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <m.icon size={15} />
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* UPI */}
+                {paymentMethod === "upi" && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {UPI_APPS.map((app) => (
+                        <button
+                          key={app.id}
+                          onClick={() => setSelectedUpi(app.id)}
+                          className={`flex flex-col items-center gap-2 p-3 rounded-xl border text-xs font-semibold transition-all relative overflow-hidden ${
+                            selectedUpi === app.id
+                              ? "border-[#C9A227] bg-[#C9A227]/10 text-[#C9A227]"
+                              : "border-white/10 text-slate-400 hover:border-white/20 hover:bg-white/5"
+                          }`}
+                        >
+                          <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/10 flex items-center justify-center p-1">
+                            <img src={app.icon} alt={app.name} className="w-full h-full object-contain"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                            />
+                          </div>
+                          {app.name}
+                          {selectedUpi === app.id && (
+                            <div className="absolute top-1 right-1 bg-[#C9A227] text-[#0d1635] rounded-full p-0.5">
+                              <Check size={8} />
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Or enter UPI ID</label>
+                      <input
+                        type="text"
+                        value={upiId}
+                        onChange={(e) => setUpiId(e.target.value)}
+                        placeholder="yourname@upi"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/40 focus:border-[#C9A227]/50 transition-all font-medium text-white"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Card */}
+                {paymentMethod === "card" && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Card Number</label>
+                      <input type="text" placeholder="1234 5678 9012 3456" maxLength={19} className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/40 focus:border-[#C9A227]/50 transition-all font-mono text-white tracking-widest" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Cardholder Name</label>
+                      <input type="text" placeholder="As on card" className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/40 focus:border-[#C9A227]/50 transition-all font-medium text-white" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">Expiry</label>
+                        <input type="text" placeholder="MM / YY" maxLength={7} className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/40 focus:border-[#C9A227]/50 transition-all font-mono text-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
+                          CVV <Info size={11} className="text-slate-500" />
+                        </label>
+                        <input type="password" placeholder="•••" maxLength={4} className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/40 focus:border-[#C9A227]/50 transition-all font-mono text-white" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Net Banking */}
+                {paymentMethod === "netbanking" && (
+                  <div className="space-y-3">
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">Select Bank</label>
+                    <select className="w-full bg-[#0d1635] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#C9A227]/40 focus:border-[#C9A227]/50 transition-all font-medium">
+                      <option value="">Select your bank</option>
+                      <option>State Bank of India</option>
+                      <option>HDFC Bank</option>
+                      <option>ICICI Bank</option>
+                      <option>Axis Bank</option>
+                      <option>Kotak Mahindra Bank</option>
+                      <option>Punjab National Bank</option>
+                      <option>Bank of Baroda</option>
+                    </select>
+                    <p className="text-xs text-slate-400 flex items-center gap-1.5 font-medium">
+                      <Info size={12} /> You will be redirected to your bank's secure page.
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            </div>
+
+            {/* RIGHT: Order Summary */}
+            <div className="w-full lg:w-80 shrink-0">
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: 0.15 }}
+                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl sticky top-28"
+              >
+                <h3 className="font-extrabold text-white text-sm mb-4 uppercase tracking-wider">Order Summary</h3>
+
+                {/* Items */}
+                <div className="space-y-3 mb-4">
+                  {cartItems.length === 0 ? (
+                    <p className="text-xs text-slate-400 font-medium">No items in cart.</p>
+                  ) : cartItems.map((item) => (
+                    <div key={item.id} className="flex gap-2.5 items-start">
+                      <div className="w-12 h-9 rounded-lg overflow-hidden bg-white/10 border border-white/10 shrink-0 relative">
+                        <CartItemImage thumbnail={item.thumbnail} title={item.title} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-white leading-tight line-clamp-2">{item.title}</p>
+                      </div>
+                      <div className="text-xs font-bold text-white shrink-0">₹{item.price.toLocaleString()}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-white/10 pt-4 space-y-2.5 text-xs mb-4">
+                  <div className="flex justify-between text-slate-300 font-medium">
+                    <span>Subtotal</span><span className="font-semibold text-white">₹{subtotal.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-300 font-medium">
+                    <span>GST (18%)</span><span className="font-semibold text-white">₹{tax.toLocaleString()}</span>
+                  </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-emerald-400 font-semibold">
+                      <span>Discount</span><span>−₹{discount.toLocaleString()}</span>
+                    </div>
+                  )}
+                  <div className="border-t border-white/10 pt-3 mt-1 flex justify-between items-baseline">
+                    <span className="font-extrabold text-white">Total</span>
+                    <span className="font-black text-xl text-[#C9A227]">₹{total.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                {/* Pay Button */}
+                <motion.button 
+                  onClick={handlePay}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-[#C9A227] hover:bg-[#b08d20] text-[#0d1635] font-black py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#C9A227]/20 mb-4 uppercase tracking-wider"
+                >
+                  <Lock size={14} /> Pay ₹{total.toLocaleString()}
+                </motion.button>
+
+                {/* Trust badges */}
+                <div className="flex flex-col gap-2 font-medium">
+                  <p className="text-[10px] text-slate-400 text-center flex items-center justify-center gap-1.5">
+                    <ShieldCheck size={13} className="text-emerald-400" /> 256-bit SSL Encrypted · Secured
+                  </p>
+                  <p className="text-[10px] text-slate-400 text-center">
+                    30-Day Money-Back Guarantee
+                  </p>
+                </div>
+
+                {/* Payment logos */}
+                <div className="flex items-center justify-center gap-2 mt-5 pt-4 border-t border-white/10">
+                  {["visa", "mastercard", "rupay", "upi"].map((brand) => (
+                    <div key={brand} className="bg-white/5 border border-white/10 rounded-md px-2 py-1 text-[9px] font-bold text-slate-300 uppercase tracking-widest">
+                      {brand}
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Premium Loader Modal Overlay */}
+      <AnimatePresence>
+        {isProcessing && (
+          <div className="fixed inset-0 bg-[#0d1635]/80 backdrop-blur-md flex items-center justify-center z-[999]">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-[#131d42] rounded-3xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl border border-white/10"
+            >
+              <div className="w-16 h-16 rounded-full bg-[#C9A227]/10 border border-[#C9A227]/20 flex items-center justify-center mx-auto mb-6 relative">
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                  className="w-12 h-12 rounded-full border-4 border-white/10 border-t-[#C9A227] relative z-10"
+                />
+                <Lock className="absolute text-[#C9A227]" size={16} />
+              </div>
+
+              <h3 className="font-extrabold text-white text-lg mb-2">Processing Payment</h3>
+              <p className="text-slate-400 text-sm mb-6 font-medium">Please do not close this window or click back.</p>
+
+              <div className="space-y-3.5 max-w-xs mx-auto text-left">
+                {[
+                  "Initializing secure connection...",
+                  "Authorizing transaction with your bank...",
+                  "Completing enrollment..."
+                ].map((step, idx) => (
+                  <div key={idx} className="flex items-center gap-3 text-xs font-semibold">
+                    <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-colors ${
+                      processingStep > idx 
+                        ? "bg-emerald-500 text-white" 
+                        : processingStep === idx 
+                          ? "bg-[#C9A227] text-[#0d1635] animate-pulse" 
+                          : "bg-white/10 text-slate-500"
+                    }`}>
+                      {processingStep > idx ? <Check size={10} /> : <span className="text-[9px]">{idx + 1}</span>}
+                    </div>
+                    <span className={`transition-colors duration-350 ${
+                      processingStep > idx 
+                        ? "text-slate-400 font-medium" 
+                        : processingStep === idx 
+                          ? "text-white font-bold" 
+                          : "text-slate-500 font-medium"
+                    }`}>
+                      {step}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </MainLayout>
+  );
+}

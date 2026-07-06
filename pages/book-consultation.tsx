@@ -1,0 +1,183 @@
+import { MainLayout } from "../src/layout/MainLayout";
+import { motion } from "framer-motion";
+import { Calendar, Clock, Video, User, CheckCircle2, ChevronRight, ChevronLeft } from "lucide-react";
+import { Card, CardContent } from "../src/components/ui/Card";
+import { Button } from "../src/components/ui/Button";
+import { Input } from "../src/components/ui/Input";
+
+export default function BookConsultationPage() {
+  return (
+    <MainLayout>
+      <div className="bg-[#0d1635] min-h-screen pt-24 pb-20 relative overflow-hidden text-white">
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-0 left-0 w-[50%] h-[100%] rounded-full bg-[#1B2A6B]/50 blur-[120px] pointer-events-none" 
+        />
+        <div className="container mx-auto px-4 max-w-6xl">
+          
+          <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
+            
+            {/* Left Side: Benefits */}
+            <div className="w-full lg:w-5/12 lg:pt-8">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                <div className="inline-block bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-6">
+                  Free 1:1 Session
+                </div>
+                <h1 className="text-4xl lg:text-5xl font-extrabold text-white mb-6 leading-tight">
+                  Let's map out your <span className="text-[#C9A227]">Dream Career.</span>
+                </h1>
+                <p className="text-slate-300 text-lg leading-relaxed mb-10">
+                  Not sure which course is right for you? Book a free 30-minute consultation with our career experts to discuss your goals and get a personalized roadmap.
+                </p>
+
+                <div className="space-y-6">
+                  {[
+                    { title: "Personalized Roadmap", desc: "Get a step-by-step guide tailored to your background and career goals." },
+                    { title: "Course Recommendations", desc: "Find exactly which skills you need to learn to crack product companies." },
+                    { title: "Placement Clarity", desc: "Understand our placement process, partner companies, and guarantee terms." }
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                        <CheckCircle2 size={24} className="text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-white mb-1">{item.title}</h3>
+                        <p className="text-slate-300 text-sm leading-relaxed">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-12 p-6 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-sm flex items-center gap-4">
+                  <div className="flex -space-x-4">
+                    <img src="https://i.pravatar.cc/100?img=1" className="w-12 h-12 rounded-full border-2 border-white" alt="Expert 1" />
+                    <img src="https://i.pravatar.cc/100?img=2" className="w-12 h-12 rounded-full border-2 border-white" alt="Expert 2" />
+                    <img src="https://i.pravatar.cc/100?img=3" className="w-12 h-12 rounded-full border-2 border-white" alt="Expert 3" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-white text-sm">Talk to experts from</div>
+                    <div className="font-bold text-blue-300 text-xs mt-0.5">Google • Amazon • Microsoft</div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Right Side: Calendar & Form */}
+            <div className="w-full lg:w-7/12">
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
+                <Card className="shadow-2xl shadow-black/50 border-white/10 overflow-hidden text-slate-900 bg-white">
+                  
+                  {/* Calendar Header */}
+                  <div className="bg-slate-50 border-b border-slate-100 p-6 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-bold text-slate-900 mb-1">Select Date & Time</h2>
+                      <div className="flex items-center gap-4 text-xs font-semibold text-slate-500">
+                        <span className="flex items-center gap-1.5"><Video size={14}/> Zoom Call</span>
+                        <span className="flex items-center gap-1.5"><Clock size={14}/> 30 Mins</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="icon" className="w-8 h-8 rounded-lg"><ChevronLeft size={16}/></Button>
+                      <Button variant="outline" size="icon" className="w-8 h-8 rounded-lg"><ChevronRight size={16}/></Button>
+                    </div>
+                  </div>
+
+                  <CardContent className="p-0">
+                    <div className="flex flex-col md:flex-row border-b border-slate-100">
+                      
+                      {/* Calendar UI Mockup */}
+                      <div className="w-full md:w-1/2 p-6 border-b md:border-b-0 md:border-r border-slate-100">
+                        <h3 className="font-bold text-slate-800 text-center mb-4">October 2026</h3>
+                        <div className="grid grid-cols-7 gap-1 text-center mb-2">
+                          {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => (
+                            <div key={d} className="text-xs font-bold text-slate-400">{d}</div>
+                          ))}
+                        </div>
+                        <div className="grid grid-cols-7 gap-1 text-center">
+                          {[...Array(31)].map((_, i) => {
+                            const isToday = i === 23;
+                            const isSelected = i === 25;
+                            const isPast = i < 23;
+                            return (
+                              <button 
+                                key={i} 
+                                disabled={isPast}
+                                className={`w-8 h-8 mx-auto rounded-full text-sm font-semibold flex items-center justify-center transition-all ${
+                                  isSelected ? "bg-[#1B2A6B] text-white shadow-md shadow-[#1B2A6B]/20" : 
+                                  isToday ? "border border-[#1B2A6B] text-[#1B2A6B]" : 
+                                  isPast ? "text-slate-300 cursor-not-allowed" : 
+                                  "text-slate-700 hover:bg-slate-100"
+                                }`}
+                              >
+                                {i + 1}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Time Slots Mockup */}
+                      <div className="w-full md:w-1/2 p-6 bg-slate-50/50">
+                        <h3 className="font-bold text-slate-800 text-center mb-4">Monday, Oct 26</h3>
+                        <div className="space-y-2 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
+                          {["10:00 AM", "11:30 AM", "2:00 PM", "3:30 PM", "5:00 PM"].map((time, i) => (
+                            <button 
+                              key={i} 
+                              className={`w-full p-3 rounded-xl border text-sm font-semibold transition-all text-center ${
+                                i === 2 
+                                  ? "bg-[#1B2A6B] border-[#1B2A6B] text-white shadow-md shadow-[#1B2A6B]/20" 
+                                  : "bg-white border-slate-200 text-slate-700 hover:border-[#1B2A6B]/50 hover:bg-blue-50"
+                              }`}
+                            >
+                              {time}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* Booking Form */}
+                    <div className="p-8">
+                      <h3 className="font-bold text-slate-900 mb-6">Your Details</h3>
+                      <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Full Name</label>
+                            <Input placeholder="John Doe" icon={<User size={16}/>} />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</label>
+                            <Input type="email" placeholder="john@example.com" />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Preferred Course Interest</label>
+                          <select className="flex w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2A6B]/20 focus-visible:border-[#1B2A6B] transition-all shadow-sm">
+                            <option>Full Stack Web Development</option>
+                            <option>Data Science Masterclass</option>
+                            <option>UI/UX Design Pro</option>
+                            <option>Not Sure Yet</option>
+                          </select>
+                        </div>
+
+                        <Button variant="primary" size="lg" className="w-full mt-4 text-base">
+                          Confirm Booking for Oct 26, 2:00 PM
+                        </Button>
+                      </form>
+                    </div>
+
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+            
+          </div>
+
+        </div>
+      </div>
+    </MainLayout>
+  );
+}

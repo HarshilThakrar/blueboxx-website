@@ -1,0 +1,128 @@
+import React, { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { useAuth } from "../context/AuthContext";
+import { LayoutDashboard, Target, FileText, Settings, LogOut, Menu, X, Bell, Search } from "lucide-react";
+import { MOCK_USER } from "../data/mockData";
+import { motion, AnimatePresence } from "framer-motion";
+
+const SIDEBAR_LINKS = [
+  { name: "Dashboard", href: "/jobseeker/dashboard", icon: LayoutDashboard },
+  { name: "Jobs Applied", href: "/jobseeker/applications", icon: Target },
+  { name: "My Profile", href: "/jobseeker/profile", icon: FileText },
+  { name: "Settings", href: "/jobseeker/settings", icon: Settings },
+];
+
+export const JobseekerDashboardLayout = ({ children }: { children: React.ReactNode }) => {
+  const router = useRouter();
+  const { logout } = useAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex">
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <motion.aside
+        className={`fixed inset-y-0 left-0 w-64 bg-[#0d1635] text-white border-r border-white/10 z-50 flex flex-col transform transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        <div className="h-20 flex items-center px-6 border-b border-white/10 justify-between lg:justify-start">
+          <Link href="/">
+            <img src="/logowhite.png" alt="BlueBoxx" className="h-8 object-contain" />
+          </Link>
+          <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-400 hover:text-white">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="p-6">
+          <nav className="space-y-2">
+            {SIDEBAR_LINKS.map((link) => {
+              const isActive = router.pathname === link.href || router.pathname.startsWith(`${link.href}/`);
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold ${
+                    isActive 
+                      ? "bg-[#C9A227] text-[#0d1635]" 
+                      : "text-slate-300 hover:bg-white/5 hover:text-white"
+                  }`}
+                >
+                  <link.icon size={18} />
+                  {link.name}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        <div className="mt-auto p-6 space-y-6">
+          <div className="flex items-center gap-3 px-2">
+            <img src={MOCK_USER.avatar} alt="Jobseeker" className="w-10 h-10 rounded-full border-2 border-white/20 object-cover" />
+            <div>
+              <p className="text-sm font-bold text-white">{MOCK_USER.name}</p>
+              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Job Seeker</p>
+            </div>
+          </div>
+          <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-red-500/20 hover:text-red-400 transition-colors w-full text-sm font-bold">
+            <LogOut size={18} />
+            Sign Out
+          </button>
+        </div>
+      </motion.aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-64">
+        <header className="h-16 bg-white border-b border-slate-200 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-slate-500 hover:text-slate-900">
+              <Menu size={24} />
+            </button>
+            <div className="hidden md:flex relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64 transition-shadow"
+              />
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4 sm:gap-6">
+            <button className="relative text-slate-500 hover:text-slate-900 transition-colors">
+              <Bell size={20} />
+            </button>
+            <div className="flex items-center gap-3 border-l border-slate-200 pl-4 sm:pl-6">
+              <div className="hidden sm:block text-right">
+                <p className="text-sm font-bold text-slate-900 leading-none mb-1">{MOCK_USER.name}</p>
+                <p className="text-xs text-slate-500 leading-none capitalize">Job Seeker</p>
+              </div>
+              <img src={MOCK_USER.avatar} alt={MOCK_USER.name} className="w-9 h-9 rounded-full object-cover border border-slate-200" />
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+};

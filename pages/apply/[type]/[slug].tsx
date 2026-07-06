@@ -1,0 +1,244 @@
+import { useState } from "react";
+import { useRouter } from "next/router";
+import { MainLayout } from "../../../src/layout/MainLayout";
+import { motion } from "framer-motion";
+import { ArrowRight, CheckCircle2, Upload, FileText, Briefcase, MapPin } from "lucide-react";
+import Link from "next/link";
+import { Button } from "../../../src/components/ui/Button";
+import { useApplicantStore } from "../../../src/store/useApplicantStore";
+import { useJobStore } from "../../../src/store/useJobStore";
+
+export default function ApplicationFlowPage() {
+  const router = useRouter();
+  const { type, slug } = router.query;
+  const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const addApplication = useApplicantStore((s) => s.addApplication);
+  const jobs = useJobStore((s) => s.jobs);
+
+  // Form data captured across steps
+  const [formData, setFormData] = useState({
+    firstName: '', lastName: '', email: '', phone: '', portfolio: ''
+  });
+
+  // Find the matching job posting for company name and role
+  const matchedJob = jobs.find(
+    (j) => j.id === slug || j.title.toLowerCase().replace(/\s+/g, '-') === String(slug)
+  );
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (step < 3) {
+      setStep(step + 1);
+    } else {
+      setIsSubmitting(true);
+      setTimeout(() => {
+        // Push real application to global store
+        addApplication({
+          name: `${formData.firstName} ${formData.lastName}`.trim() || 'Applicant',
+          email: formData.email || 'student@example.com',
+          phone: formData.phone || 'N/A',
+          role: matchedJob?.title || String(slug || '').replace(/-/g, ' '),
+          company: matchedJob?.company || matchedJob?.postedBy || 'Acme Corp',
+          jobId: String(slug || `job-${Date.now()}`),
+          exp: 'Fresher',
+          portfolio: formData.portfolio,
+        });
+        setIsSubmitting(false);
+        setStep(4);
+      }, 2000);
+    }
+  };
+
+  const jobTitle = String(slug || "Loading...").replace(/-/g, " ");
+
+  return (
+    <MainLayout>
+      <div className="min-h-screen bg-transparent py-12 pt-28">
+        <div className="container mx-auto px-4 max-w-3xl">
+          {/* Header Info */}
+          {step < 4 && (
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 mb-8 flex items-center justify-between">
+              <div>
+                <h1 className="text-xl font-bold text-slate-900 capitalize">Apply for {jobTitle}</h1>
+                <p className="text-sm text-slate-500 font-medium flex items-center gap-2 mt-1">
+                  <Briefcase size={14} /> {type === "internship" ? "Internship" : "Full-time"} 
+                  <span className="w-1 h-1 rounded-full bg-slate-300 mx-1" /> 
+                  <MapPin size={14} /> Remote
+                </p>
+              </div>
+              <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xl">
+                {String(slug || "C").charAt(0).toUpperCase()}
+              </div>
+            </div>
+          )}
+
+          {/* Stepper */}
+          {step < 4 && (
+            <div className="flex items-center justify-between mb-8 relative">
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-200 rounded-full z-0" />
+              <div 
+                className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#1B2A6B] rounded-full z-0 transition-all duration-500" 
+                style={{ width: `${((step - 1) / 2) * 100}%` }}
+              />
+              {[
+                { num: 1, label: "Personal Info" },
+                { num: 2, label: "Resume" },
+                { num: 3, label: "Review" }
+              ].map((s) => (
+                <div key={s.num} className="relative z-10 flex flex-col items-center gap-2">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-colors duration-300 ${step >= s.num ? 'bg-[#1B2A6B] text-white shadow-md shadow-[#1B2A6B]/20' : 'bg-white text-slate-400 border-2 border-slate-200'}`}>
+                    {step > s.num ? <CheckCircle2 size={18} /> : s.num}
+                  </div>
+                  <span className={`text-xs font-bold ${step >= s.num ? 'text-slate-800' : 'text-slate-400'}`}>{s.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Form Content */}
+          <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-slate-200">
+            {step === 1 && (
+              <motion.form initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} onSubmit={handleSubmit} className="space-y-6">
+                <h2 className="text-2xl font-bold text-slate-900 mb-6">Personal Information</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase">First Name</label>
+                    <input type="text" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1B2A6B] outline-none" placeholder="John" required />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase">Last Name</label>
+                    <input type="text" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1B2A6B] outline-none" placeholder="Doe" required />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Email Address</label>
+                  <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1B2A6B] outline-none" placeholder="john@example.com" required />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Phone Number</label>
+                  <input type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1B2A6B] outline-none" placeholder="+91 9876543210" required />
+                </div>
+                <div className="pt-6">
+                  <Button type="submit" variant="primary" className="w-full py-4 text-base shadow-md">Continue to Resume</Button>
+                </div>
+              </motion.form>
+            )}
+
+            {step === 2 && (
+              <motion.form initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} onSubmit={handleSubmit} className="space-y-6">
+                <h2 className="text-2xl font-bold text-slate-900 mb-6">Resume & Portfolio</h2>
+                
+                <div className="border-2 border-dashed border-slate-200 bg-slate-50 rounded-2xl p-10 text-center hover:bg-slate-100 hover:border-slate-300 transition-colors cursor-pointer">
+                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mx-auto mb-4 text-[#1B2A6B]">
+                    <Upload size={24} />
+                  </div>
+                  <h3 className="font-bold text-slate-800 mb-1">Upload your resume</h3>
+                  <p className="text-sm text-slate-500 mb-4">PDF, DOC, DOCX up to 5MB</p>
+                  <Button variant="outline" type="button" className="mx-auto">Browse Files</Button>
+                </div>
+
+                <div className="flex items-center gap-4 my-6">
+                  <div className="flex-1 h-px bg-slate-200"></div>
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">OR</div>
+                  <div className="flex-1 h-px bg-slate-200"></div>
+                </div>
+
+                <div className="border border-slate-200 rounded-2xl p-6 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                      <FileText size={20} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-800">Use BlueBoxx Resume</h4>
+                      <p className="text-xs text-slate-500">Auto-generated from your profile</p>
+                    </div>
+                  </div>
+                  <Button variant="outline" type="button" size="sm" className="font-bold">Select</Button>
+                </div>
+
+                <div className="space-y-2 pt-4">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Portfolio / LinkedIn URL</label>
+                  <input type="url" value={formData.portfolio} onChange={e => setFormData({...formData, portfolio: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1B2A6B] outline-none" placeholder="https://" />
+                </div>
+
+                <div className="pt-6 flex gap-4">
+                  <Button type="button" variant="outline" className="flex-1 py-4 text-base" onClick={() => setStep(1)}>
+                    Back
+                  </Button>
+                  <Button type="submit" variant="primary" className="flex-1 py-4 text-base shadow-md">
+                    Review Application
+                  </Button>
+                </div>
+              </motion.form>
+            )}
+
+            {step === 3 && (
+              <motion.form initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} onSubmit={handleSubmit} className="space-y-6">
+                <h2 className="text-2xl font-bold text-slate-900 mb-6">Review Application</h2>
+                
+                <div className="space-y-4">
+                  <div className="p-5 bg-slate-50 rounded-xl border border-slate-200">
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Personal Details</h4>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-slate-500">Name</span>
+                        <div className="font-semibold text-slate-800">{`${formData.firstName} ${formData.lastName}`.trim() || 'John Doe'}</div>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">Email</span>
+                        <div className="font-semibold text-slate-800">{formData.email || 'john@example.com'}</div>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">Phone</span>
+                        <div className="font-semibold text-slate-800">{formData.phone || 'N/A'}</div>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">Role Applied</span>
+                        <div className="font-semibold text-slate-800 capitalize">{matchedJob?.title || String(slug || '').replace(/-/g, ' ')}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-5 bg-slate-50 rounded-xl border border-slate-200">
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Resume</h4>
+                    <div className="flex items-center gap-3">
+                      <FileText size={18} className="text-[#1B2A6B]" />
+                      <span className="font-semibold text-slate-800 text-sm">John_Doe_Resume.pdf</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-6 flex gap-4">
+                  <Button type="button" variant="outline" className="flex-1 py-4 text-base" onClick={() => setStep(2)}>
+                    Back
+                  </Button>
+                  <Button type="submit" variant="primary" disabled={isSubmitting} className="flex-1 py-4 text-base shadow-md">
+                    {isSubmitting ? "Submitting..." : "Submit Application"}
+                  </Button>
+                </div>
+              </motion.form>
+            )}
+
+            {step === 4 && (
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-10">
+                <div className="w-24 h-24 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle2 size={48} />
+                </div>
+                <h2 className="text-3xl font-bold text-slate-900 mb-3">Application Submitted!</h2>
+                <p className="text-slate-500 mb-8 max-w-sm mx-auto">
+                  Your application for {jobTitle} has been successfully submitted. We will notify you of any updates.
+                </p>
+                <Link href="/student/placements">
+                  <Button variant="primary" className="py-4 px-8 text-base shadow-md">
+                    Track Application Status
+                  </Button>
+                </Link>
+              </motion.div>
+            )}
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+}
