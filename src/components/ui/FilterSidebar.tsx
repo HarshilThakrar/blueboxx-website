@@ -1,6 +1,5 @@
 import React from "react";
-import { Check, ChevronDown } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+
 import { cn } from "../../lib/utils";
 
 export interface FilterSection {

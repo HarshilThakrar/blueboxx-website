@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { MainLayout } from "../src/layout/MainLayout";
+import { Filter } from "lucide-react";
 import { dummyJobs } from "../src/data/jobs";
 import { TopSearchBar } from "../src/components/ui/TopSearchBar";
 import { SidebarFilter } from "../src/components/ui/SidebarFilter";
@@ -13,10 +14,13 @@ import Link from "next/link";
 import { TestimonialSection } from "../src/sections/TestimonialSection";
 import { PartnersSection } from "../src/sections/PartnersSection";
 import { useJobStore } from "../src/store/useJobStore";
+import { SEO } from "../src/components/seo/SEO";
 
 export default function JobsPage() {
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("most-recent");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const storeJobs = useJobStore((s) => s.getPublicJobs());
 
   // Convert store jobs to dummyJobs shape and merge
@@ -35,7 +39,12 @@ export default function JobsPage() {
 
   const allJobs = [...storeJobsMapped, ...dummyJobs];
 
-  const sortedJobs = [...allJobs].sort((a, b) => {
+  const filteredJobs = allJobs.filter(job => 
+    job.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    job.company.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const sortedJobs = [...filteredJobs].sort((a, b) => {
     if (sortOption === "highest-salary") {
       const aVal = parseInt(a.salary.replace(/[^0-9]/g, '')) || 0;
       const bVal = parseInt(b.salary.replace(/[^0-9]/g, '')) || 0;
@@ -45,8 +54,14 @@ export default function JobsPage() {
   });
 
   return (
-    <MainLayout>
-      {/* Hero Section */}
+    <>
+      <SEO 
+        title="Find Top IT Jobs & Placements | Blueboxx DA"
+        description="Browse hundreds of curated job openings from top product companies and fast-growing startups. 100% placement assistance available."
+        keywords="Blueboxx Placement, Blueboxx Jobs, IT Jobs Vadodara, Software Developer Jobs, Placement Assistance, Campus Placement, Job Portal, Hiring Platform, Career Opportunities, Job Ready Program"
+      />
+      <MainLayout>
+        {/* Hero Section */}
       <div className="pt-24 pb-16 bg-[#0d1635] text-white relative overflow-hidden">
         {/* Premium Grid Background */}
         <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)", backgroundSize: "32px 32px" }}></div>
@@ -81,10 +96,20 @@ export default function JobsPage() {
 
         <div className="container mx-auto px-4 max-w-7xl relative z-10">
 
-          <TopSearchBar />
+          <TopSearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search jobs by role or company..." />
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-1 hidden lg:block">
+            <div className="lg:hidden">
+              <Button 
+                onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)} 
+                variant="outline" 
+                className="w-full border-slate-200 text-slate-700 bg-white hover:bg-slate-50 shadow-sm h-12 rounded-xl gap-2 font-extrabold text-sm uppercase tracking-wider"
+              >
+                <Filter size={16} /> Filters
+              </Button>
+            </div>
+
+            <div className={`lg:col-span-1 ${isMobileFilterOpen ? 'block' : 'hidden'} lg:block`}>
               <SidebarFilter type="jobs" />
             </div>
 
@@ -168,12 +193,17 @@ export default function JobsPage() {
           </div>
         </div>
       </div>
-      <TestimonialSection />
+      <TestimonialSection 
+        type="job" 
+        titleHighlight="Alumni"
+        subtitle="Read success stories from our alumni who landed their dream jobs through our placement network."
+      />
       <PartnersSection 
         titlePrefix="Top Hiring " 
         highlightText="Companies" 
-        subtitle="Browse opportunities from 400+ hiring partners across industries" 
+        subtitle="Browse opportunities from 120+ hiring partners across industries" 
       />
     </MainLayout>
+    </>
   );
 }

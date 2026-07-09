@@ -1,0 +1,339 @@
+{
+  "totalPages": 66,
+  "passedPages": 66,
+  "failedPages": 0,
+  "consoleErrors": [],
+  "networkErrors": [],
+  "pages": [
+    {
+      "url": "/student/dashboard",
+      "status": "Passed",
+      "role": "student"
+    },
+    {
+      "url": "/student/courses",
+      "status": "Passed",
+      "role": "student"
+    },
+    {
+      "url": "/student/classes",
+      "status": "Passed",
+      "role": "student"
+    },
+    {
+      "url": "/student/assignments",
+      "status": "Passed",
+      "role": "student"
+    },
+    {
+      "url": "/student/internships",
+      "status": "Passed",
+      "role": "student"
+    },
+    {
+      "url": "/student/applications",
+      "status": "Passed",
+      "role": "student"
+    },
+    {
+      "url": "/student/placements",
+      "status": "Passed",
+      "role": "student"
+    },
+    {
+      "url": "/student/resume-builder",
+      "status": "Passed",
+      "role": "student"
+    },
+    {
+      "url": "/student/certificates",
+      "status": "Passed",
+      "role": "student"
+    },
+    {
+      "url": "/student/settings",
+      "status": "Passed",
+      "role": "student"
+    },
+    {
+      "url": "/student/support",
+      "status": "Passed",
+      "role": "student"
+    },
+    {
+      "url": "/admin/dashboard",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/media",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/users",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/users/students",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/users/instructors",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/verifications",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/roles",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/internships",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/jobs/applications",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/internships/add",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/courses",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/education/certificate",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/cms",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/clients",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/settings",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/settings/sidebar",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/settings/appearance",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/settings/newsletter",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/settings/notification",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/settings/push",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/settings/utility",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/admin/settings/backup",
+      "status": "Passed",
+      "role": "admin"
+    },
+    {
+      "url": "/company/dashboard",
+      "status": "Passed",
+      "role": "companies"
+    },
+    {
+      "url": "/company/jobs",
+      "status": "Passed",
+      "role": "companies"
+    },
+    {
+      "url": "/company/jobs/new",
+      "status": "Passed",
+      "role": "companies"
+    },
+    {
+      "url": "/company/applicants",
+      "status": "Passed",
+      "role": "companies"
+    },
+    {
+      "url": "/company/interviews",
+      "status": "Passed",
+      "role": "companies"
+    },
+    {
+      "url": "/company/profile",
+      "status": "Passed",
+      "role": "companies"
+    },
+    {
+      "url": "/company/analytics",
+      "status": "Passed",
+      "role": "companies"
+    },
+    {
+      "url": "/company/settings",
+      "status": "Passed",
+      "role": "companies"
+    },
+    {
+      "url": "/company/support",
+      "status": "Passed",
+      "role": "companies"
+    },
+    {
+      "url": "/expert/dashboard",
+      "status": "Passed",
+      "role": "expert"
+    },
+    {
+      "url": "/",
+      "status": "Passed",
+      "role": "expert"
+    },
+    {
+      "url": "/expert/schedule",
+      "status": "Passed",
+      "role": "expert"
+    },
+    {
+      "url": "/expert/mentees",
+      "status": "Passed",
+      "role": "expert"
+    },
+    {
+      "url": "/expert/earnings",
+      "status": "Passed",
+      "role": "expert"
+    },
+    {
+      "url": "/expert/settings",
+      "status": "Passed",
+      "role": "expert"
+    },
+    {
+      "url": "/college/dashboard",
+      "status": "Passed",
+      "role": "colleges"
+    },
+    {
+      "url": "/college/students",
+      "status": "Passed",
+      "role": "colleges"
+    },
+    {
+      "url": "/college/enrollment",
+      "status": "Passed",
+      "role": "colleges"
+    },
+    {
+      "url": "/college/cohorts",
+      "status": "Passed",
+      "role": "colleges"
+    },
+    {
+      "url": "/college/courses",
+      "status": "Passed",
+      "role": "colleges"
+    },
+    {
+      "url": "/college/performance",
+      "status": "Passed",
+      "role": "colleges"
+    },
+    {
+      "url": "/college/settings",
+      "status": "Passed",
+      "role": "colleges"
+    },
+    {
+      "url": "/college/support",
+      "status": "Passed",
+      "role": "colleges"
+    },
+    {
+      "url": "/intern/dashboard",
+      "status": "Passed",
+      "role": "intern"
+    },
+    {
+      "url": "/",
+      "status": "Passed",
+      "role": "intern"
+    },
+    {
+      "url": "/intern/applications",
+      "status": "Passed",
+      "role": "intern"
+    },
+    {
+      "url": "/intern/resume",
+      "status": "Passed",
+      "role": "intern"
+    },
+    {
+      "url": "/intern/settings",
+      "status": "Passed",
+      "role": "intern"
+    },
+    {
+      "url": "/jobseeker/dashboard",
+      "status": "Passed",
+      "role": "jobseeker"
+    },
+    {
+      "url": "/",
+      "status": "Passed",
+      "role": "jobseeker"
+    },
+    {
+      "url": "/jobseeker/applications",
+      "status": "Passed",
+      "role": "jobseeker"
+    },
+    {
+      "url": "/jobseeker/profile",
+      "status": "Passed",
+      "role": "jobseeker"
+    },
+    {
+      "url": "/jobseeker/settings",
+      "status": "Passed",
+      "role": "jobseeker"
+    }
+  ]
+}

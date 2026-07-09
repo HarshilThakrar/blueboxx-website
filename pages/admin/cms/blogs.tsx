@@ -24,7 +24,7 @@ export default function AdminBlogsPage() {
             <h1 className="text-2xl font-bold text-slate-900 mb-2">Blog Management</h1>
             <p className="text-slate-500 text-sm">Write, publish, and manage content for your platform's blog.</p>
           </div>
-          <Button variant="primary" className="shadow-md gap-2" onClick={() => router.push('/admin/cms/editor/new')}>
+          <Button variant="primary" className="shadow-md gap-2" onClick={() => router.push('/admin/cms/blog-editor/new')}>
             <Plus size={18}/> Write New Post
           </Button>
         </AnimatedContent>
@@ -68,7 +68,7 @@ export default function AdminBlogsPage() {
                      </div>
                      
                      <div className="flex items-center gap-2">
-                        <Button variant="outline" className="h-8 text-xs font-bold gap-1.5 border-slate-200 bg-white" onClick={() => router.push(`/admin/cms/editor/${blog.id}`)}><Edit3 size={14}/> Edit</Button>
+                        <Button variant="outline" className="h-8 text-xs font-bold gap-1.5 border-slate-200 bg-white" onClick={() => router.push(`/admin/cms/blog-editor/${blog.id}`)}><Edit3 size={14}/> Edit</Button>
                         <button onClick={() => setBlogs(prev => prev.filter(b => b.id !== blog.id))} className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors"><Trash2 size={14}/></button>
                         <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-[#1B2A6B] hover:bg-slate-50 transition-colors"><MoreHorizontal size={14}/></button>
                      </div>

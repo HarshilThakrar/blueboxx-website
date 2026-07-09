@@ -15,16 +15,24 @@ const INITIAL_APPLICATIONS = [
 export default function JobsApplicationsPage() {
   const [applications, setApplications] = useState(INITIAL_APPLICATIONS);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [typeFilter, setTypeFilter] = useState("All");
 
   const updateStatus = (id: number, newStatus: string) => {
     setApplications(prev => prev.map(app => app.id === id ? { ...app, status: newStatus } : app));
   };
 
-  const filteredApps = applications.filter(app => 
-    app.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    app.appliedFor.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    app.company.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredApps = applications.filter(app => {
+    const matchesSearch = app.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      app.appliedFor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.company.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesStatus = statusFilter === "All" || app.status === statusFilter;
+    const matchesType = typeFilter === "All" || app.type === typeFilter;
+
+    return matchesSearch && matchesStatus && matchesType;
+  });
 
   return (
     <AdminDashboardLayout>
@@ -39,18 +47,58 @@ export default function JobsApplicationsPage() {
           </div>
         </AnimatedContent>
 
-        <AnimatedContent direction="up" delay={0.2} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input 
-              type="text" 
-              placeholder="Search by applicant name, job title, or company..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none transition-all"
-            />
+        <AnimatedContent direction="up" delay={0.2} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input 
+                type="text" 
+                placeholder="Search by applicant name, job title, or company..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none transition-all"
+              />
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowFilters(!showFilters)} 
+              className={`gap-2 shrink-0 ${showFilters ? 'bg-slate-100 border-slate-300' : ''}`}
+            >
+              <Filter size={16}/> Filters
+            </Button>
           </div>
-          <Button variant="outline" className="gap-2 shrink-0"><Filter size={16}/> Filters</Button>
+
+          {showFilters && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Status</label>
+                <select 
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-[#1B2A6B]"
+                >
+                  <option value="All">All Statuses</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Reviewed">Reviewed</option>
+                  <option value="Accepted">Accepted</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Type</label>
+                <select 
+                  value={typeFilter}
+                  onChange={(e) => setTypeFilter(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-[#1B2A6B]"
+                >
+                  <option value="All">All Types</option>
+                  <option value="Job">Job</option>
+                  <option value="Internship">Internship</option>
+                </select>
+              </div>
+            </div>
+          )}
         </AnimatedContent>
 
         <AnimatedContent direction="up" delay={0.3} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -69,7 +117,7 @@ export default function JobsApplicationsPage() {
               <tbody className="divide-y divide-slate-100">
                 {filteredApps.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-slate-400 font-medium">No applications found matching your search.</td>
+                    <td colSpan={6} className="px-6 py-8 text-center text-slate-400 font-medium">No applications found matching filters.</td>
                   </tr>
                 ) : (
                   filteredApps.map((app) => (
@@ -84,9 +132,24 @@ export default function JobsApplicationsPage() {
                       </td>
                       <td className="px-6 py-4 text-slate-500 font-medium">{app.date}</td>
                       <td className="px-6 py-4">
-                        <a href={app.resume} className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
-                          View PDF <ExternalLink size={12} />
-                        </a>
+                        <div className="flex items-center gap-2">
+                          <a 
+                            href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+                          >
+                            View PDF <ExternalLink size={12} />
+                          </a>
+                          <a 
+                            href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" 
+                            download="resume.pdf"
+                            className="p-1.5 text-slate-400 hover:text-[#1B2A6B] hover:bg-slate-100 rounded-lg transition-colors"
+                            title="Download PDF"
+                          >
+                            <Download size={14} />
+                          </a>
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <Badge variant={

@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { staggerContainer, staggerItem, cardHover } from "../animations/variants";
+import { staggerContainer, staggerItem } from "../animations/variants";
 import { Star, Clock, Users, ArrowRight, Code, PenTool, BarChart } from "lucide-react";
 import Link from "next/link";
 import { TiltCard } from "../components/ui/TiltCard";

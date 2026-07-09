@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Filter, ChevronDown, Check, Briefcase, GraduationCap, Clock, IndianRupee,
-  BookOpen, Layers, MapPin, Star, Users, Cpu, Tag
+  BookOpen, Layers, MapPin, Cpu, Tag
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -64,7 +64,7 @@ function CoursesFilter() {
   return (
     <>
       <FilterSection title="Category" icon={BookOpen}
-        options={["Web Development", "UI/UX Design", "Data Science", "Machine Learning", "Cybersecurity", "Product Management", "Digital Marketing"]}
+        options={["Full Stack Development", "Frontend Development", "Backend Development", "AI/ML", "Graphic Design", "UI/UX Design", "Digital Marketing"]}
         selected={category} onChange={setCategory} />
       <FilterSection title="Level" icon={Layers}
         options={["Beginner", "Intermediate", "Advanced", "All Levels"]}
@@ -109,9 +109,7 @@ function JobsFilter() {
   const [mode, setMode] = useState("");
   const [type, setType] = useState("");
 
-  const handleClear = () => {
-    setRole(""); setExperience(""); setSalary(""); setMode(""); setType("");
-  };
+
 
   return (
     <>
@@ -139,9 +137,7 @@ function ExpertsFilter() {
   const [domain, setDomain] = useState("");
   const [exp, setExp] = useState("");
 
-  const handleClear = () => {
-    setDomain(""); setExp("");
-  };
+
 
   return (
     <>

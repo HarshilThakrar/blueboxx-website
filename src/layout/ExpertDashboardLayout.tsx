@@ -10,7 +10,6 @@ import {
   LogOut, 
   Menu,
   X,
-  Bell,
   Search,
   Users
 } from "lucide-react";

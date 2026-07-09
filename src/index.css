@@ -83,6 +83,7 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     cursor: auto;
+    scroll-behavior: smooth;
   }
 
   /* Loader specific */

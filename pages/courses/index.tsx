@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { MainLayout } from "../../src/layout/MainLayout";
 import { CourseCard, CourseProps } from "../../src/components/cards/CourseCard";
 import { Button } from "../../src/components/ui/Button";
@@ -5,61 +6,30 @@ import { Search, Filter } from "lucide-react";
 import { TestimonialSection } from "../../src/sections/TestimonialSection";
 import { PartnersSection } from "../../src/sections/PartnersSection";
 
+import { dummyCourses } from "../../src/data/courses";
+
 export default function CoursesPage() {
-  const courses: CourseProps[] = [
-    {
-      id: 1,
-      title: "Full Stack Web Development (MERN)",
-      instructor: "Ankit Sharma",
-      rating: 4.8,
-      students: 85200,
-      duration: "8h 20m",
-      modules: 12,
-      price: "₹3,499",
-      rawPrice: 3499,
-      image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80",
-      category: "Development"
-    },
-    {
-      id: 2,
-      title: "UI/UX Design Masterclass",
-      instructor: "Priya Desai",
-      rating: 4.9,
-      students: 42100,
-      duration: "6h 45m",
-      modules: 8,
-      price: "₹2,999",
-      rawPrice: 2999,
-      image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80",
-      category: "Design"
-    },
-    {
-      id: 3,
-      title: "Data Structures & Algorithms",
-      instructor: "Rahul Verma",
-      rating: 4.7,
-      students: 112000,
-      duration: "15h 30m",
-      modules: 24,
-      price: "₹4,999",
-      rawPrice: 4999,
-      image: "https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800&q=80",
-      category: "Computer Science"
-    },
-    {
-      id: 4,
-      title: "Complete Python Bootcamp",
-      instructor: "Sarah Jenkins",
-      rating: 4.6,
-      students: 95000,
-      duration: "22h 15m",
-      modules: 30,
-      price: "₹1,999",
-      rawPrice: 1999,
-      image: "https://images.unsplash.com/photo-1526379095098-d400fd0bfce8?w=800&q=80",
-      category: "Programming"
-    }
-  ];
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const courses: CourseProps[] = dummyCourses.map(course => ({
+    id: course.slug,
+    title: course.title,
+    instructor: course.instructor,
+    rating: course.rating,
+    students: course.students,
+    duration: course.duration,
+    modules: course.curriculum.reduce((acc, module) => acc + module.lectures, 0),
+    price: `₹${course.price.toLocaleString('en-IN')}`,
+    rawPrice: course.price,
+    image: course.thumbnail,
+    category: course.category
+  }));
+
+  const filteredCourses = courses.filter(course => 
+    course.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    course.category.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    course.instructor.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <MainLayout>
@@ -83,6 +53,8 @@ export default function CoursesPage() {
                   <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input 
                     type="text" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="What do you want to learn?" 
                     className="w-full h-14 pl-12 pr-4 rounded-xl bg-white/5 border border-white/10 text-white font-semibold outline-none focus:border-[#C9A227] focus:ring-1 focus:ring-[#C9A227]/50 transition-all placeholder-slate-500"
                   />
@@ -105,9 +77,15 @@ export default function CoursesPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {courses.map(course => (
-                <CourseCard key={course.id} course={course} />
-              ))}
+              {filteredCourses.length > 0 ? (
+                filteredCourses.map(course => (
+                  <CourseCard key={course.id} course={course} />
+                ))
+              ) : (
+                <div className="col-span-full py-12 text-center">
+                  <p className="text-slate-500 font-medium">No courses found matching your search.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Bold, Italic, Underline, Strikethrough, Code, Link2, Image, List, ListOrdered, Quote, AlignLeft, AlignCenter, AlignRight, Type, Minus, Heading1, Heading2, Undo, Redo, Eye, Edit3 } from "lucide-react";
+import { Bold, Italic, Underline, Strikethrough, Code, Link2, Image as ImageIcon, List, ListOrdered, Quote, AlignLeft, AlignCenter, AlignRight, Type, Minus, Heading1, Heading2, Undo, Redo, Eye, Edit3 } from "lucide-react";
 
 interface RichTextEditorProps {
   value?: string;
@@ -113,7 +113,7 @@ export function RichTextEditor({ value, onChange, placeholder = "Start writing..
           onMouseDown={(e) => { e.preventDefault(); handleInsertImage(); }}
           className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-slate-200 hover:text-[#1B2A6B] transition-colors"
         >
-          <Image size={15} />
+          <ImageIcon size={15} />
         </button>
 
         {/* Preview toggle — pushed to end */}

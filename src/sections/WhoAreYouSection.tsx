@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Briefcase, Building2, GraduationCap, Search, UserCheck, Users } from "lucide-react";
+import { Briefcase, Building2, GraduationCap, Search, UserCheck, Users } from "lucide-react";
 import { cardHover, staggerContainer, staggerItem } from "../animations/variants";
 
 const personas = [
@@ -84,27 +84,22 @@ export const WhoAreYouSection = () => {
                 key={persona.title}
                 variants={staggerItem}
                 whileHover={cardHover}
-                className="group relative overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white p-5 md:p-6 shadow-[0_12px_30px_rgba(13,22,53,0.04)] transition-all duration-300 hover:border-[#1B2A6B]/25 hover:shadow-[0_20px_50px_rgba(27,42,107,0.12)]"
+                className="group relative overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-[0_12px_30px_rgba(13,22,53,0.04)] transition-all duration-300 hover:border-[#1B2A6B]/25 hover:shadow-[0_20px_50px_rgba(27,42,107,0.12)]"
               >
                 {/* Top accent line on hover */}
                 <div className="absolute inset-x-6 top-0 h-[2px] bg-gradient-to-r from-[#1B2A6B] to-[#C9A227] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                <div className="absolute right-4 top-4 h-14 w-14 rounded-2xl bg-[#1B2A6B]/5 blur-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <div className="absolute right-4 top-4 h-12 w-12 rounded-2xl bg-[#1B2A6B]/5 blur-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
                 {/* Icon box */}
                 <div
-                  className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-[#E2E8F0] bg-gradient-to-br from-white to-[#1B2A6B]/5 text-[#1B2A6B] shadow-[0_6px_16px_rgba(27,42,107,0.05)] transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-105 group-hover:rotate-[-3deg] group-hover:border-[#1B2A6B]/20 group-hover:shadow-[0_8px_18px_rgba(27,42,107,0.15)]"
+                  className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl border border-[#E2E8F0] bg-gradient-to-br from-white to-[#1B2A6B]/5 text-[#1B2A6B] shadow-[0_6px_16px_rgba(27,42,107,0.05)] transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-105 group-hover:rotate-[-3deg] group-hover:border-[#1B2A6B]/20 group-hover:shadow-[0_8px_18px_rgba(27,42,107,0.15)]"
                 >
-                  <persona.icon size={22} />
+                  <persona.icon size={18} />
                 </div>
 
                 {/* Content */}
-                <h3 className="mb-1.5 text-lg font-bold text-[#0d1635]">{persona.title}</h3>
-                <p className="mb-4 text-[13px] leading-relaxed text-[#4a5568]">{persona.desc}</p>
-
-                {/* Hover CTA */}
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#1B2A6B] opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100">
-                  Explore track <ArrowRight size={13} />
-                </div>
+                <h3 className="mb-1 text-[15px] font-bold text-[#0d1635]">{persona.title}</h3>
+                <p className="text-[12px] leading-snug text-[#4a5568]">{persona.desc}</p>
               </motion.article>
             ))}
           </motion.div>

@@ -1,6 +1,7 @@
 import { AdminDashboardLayout } from "../../../src/layout/AdminDashboardLayout";
 import { Building, Search, Plus, ShieldCheck, X, Check, ShieldAlert, Trash2, MonitorPlay, ExternalLink, Image as ImageIcon } from "lucide-react";
 import { Badge } from "../../../src/components/ui/Badge";
+import { MediaUploader } from "../../../src/components/ui/MediaUploader";
 import { useState } from "react";
 
 const MOCK_COMPANIES = [
@@ -300,14 +301,12 @@ export default function AdminCompaniesPage() {
                   className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none transition-all"
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Company Logo URL</label>
-                <input 
-                  type="url" placeholder="https://..."
-                  value={newCompanyLogo} onChange={(e) => setNewCompanyLogo(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none transition-all"
-                />
-              </div>
+              <MediaUploader
+                label="Company Logo URL"
+                accept="image/*"
+                value={newCompanyLogo}
+                onUploadSuccess={setNewCompanyLogo}
+              />
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Jobs count</label>
                 <input 
@@ -408,12 +407,12 @@ export default function AdminCompaniesPage() {
                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none"
                        />
                      </div>
-                     <div className="space-y-1.5 md:col-span-2">
-                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cover Image URL</label>
-                       <input 
-                         type="url" placeholder="https://..."
-                         value={newProject.image} onChange={(e) => setNewProject({ ...newProject, image: e.target.value })}
-                         className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none"
+                     <div className="md:col-span-2">
+                       <MediaUploader
+                         label="Cover Image URL"
+                         accept="image/*"
+                         value={newProject.image}
+                         onUploadSuccess={(url) => setNewProject({ ...newProject, image: url })}
                        />
                      </div>
                   </div>

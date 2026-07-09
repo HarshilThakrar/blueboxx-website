@@ -1,10 +1,10 @@
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useRef } from "react";
-import { BookOpen, FolderGit2, Briefcase, Users, Target, Rocket } from "lucide-react";
+import { LucideIcon, BookOpen, FolderGit2, Briefcase, Users, Target, Rocket } from "lucide-react";
 
 interface StepType {
   id: number;
-  icon: React.ComponentType<{ size?: number }>;
+  icon: LucideIcon;
   title: string;
   desc: string;
 }
@@ -18,7 +18,7 @@ const steps: StepType[] = [
   { id: 6, icon: Rocket, title: "Career Growth", desc: "Continuous learning support, salary negotiation, and promotions." },
 ];
 
-const EcosystemStep = ({ step, index, isLeft }: { step: StepType; index: number; isLeft: boolean }) => {
+const EcosystemStep = ({ step, isLeft }: { step: StepType; isLeft: boolean }) => {
   const rowRef = useRef<HTMLDivElement>(null);
 
   // Detects when the step row is in the middle 20% of the viewport (40% from top to 40% from bottom)
@@ -148,7 +148,6 @@ export const EcosystemSection = () => {
                 <EcosystemStep
                   key={step.id}
                   step={step}
-                  index={index}
                   isLeft={isLeft}
                 />
               );

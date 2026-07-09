@@ -14,7 +14,7 @@ export const dummyCourses = [
     students: 8500,
     tools: ["Python"],
     shortDesc: "The perfect starting point for AI/ML covering Python basics.",
-    thumbnail: "https://images.unsplash.com/photo-1526379095098-d400fd0bfce8?w=800&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=800&q=80",
     badges: ["Beginner Friendly"],
     lastUpdated: "11/2026",
     language: "English",
@@ -352,7 +352,7 @@ export const dummyCourses = [
     students: 19500,
     tools: ["Node.js", "Python", "SQL", "Docker"],
     shortDesc: "Learn server architecture, databases, caching, and secure APIs.",
-    thumbnail: "https://images.unsplash.com/photo-1526379095098-d400fd0bfce8?w=800&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80",
     badges: [],
     lastUpdated: "11/2026",
     language: "English",
@@ -386,6 +386,90 @@ export const dummyCourses = [
           { title: "SQL vs NoSQL", time: "25:00", type: "video" },
           { title: "Data Modeling with PostgreSQL", time: "50:00", type: "video" },
           { title: "Connecting Server to Database", time: "40:00", type: "video" }
+        ]
+      }
+    ]
+  },
+  {
+    id: "ui-ux-design",
+    slug: "ui-ux-design",
+    title: "UI/UX Design Masterclass",
+    subtitle: "Learn modern design processes, user research, wireframing, prototyping, and high-fidelity UI design in Figma.",
+    category: "Design",
+    duration: "3 Months",
+    difficulty: "Beginner",
+    price: 11999,
+    originalPrice: 22999,
+    rating: 4.9,
+    reviews: 3100,
+    students: 12500,
+    tools: ["Figma", "Adobe XD", "Miro"],
+    shortDesc: "Master user-centric design principles, wireframing, prototyping, and user testing.",
+    thumbnail: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80",
+    badges: ["Best Seller"],
+    lastUpdated: "12/2026",
+    language: "English",
+    instructor: "Priya Desai",
+    videoUrl: "https://www.youtube.com/embed/c9Wg6Ry_OMY?autoplay=1",
+    whatYouWillLearn: [
+      "Understand the UX design process end-to-end",
+      "Conduct user research and build personas",
+      "Create wireframes and interactive prototypes",
+      "Master Figma auto-layout and component systems",
+      "Build a professional UI/UX portfolio"
+    ],
+    curriculum: [
+      {
+        id: 1,
+        title: "Module 1: Introduction to UX",
+        lectures: 4,
+        duration: "2h 15m",
+        items: [
+          { title: "What is User Experience Design?", time: "20:00", type: "video" },
+          { title: "The Double Diamond Process", time: "30:00", type: "video" },
+          { title: "User Research & Interviews", time: "45:00", type: "video" }
+        ]
+      }
+    ]
+  },
+  {
+    id: "data-analytics",
+    slug: "data-analytics",
+    title: "Data Analytics Bootcamp",
+    subtitle: "Master SQL, Excel, Tableau, and Python for data-driven decision making.",
+    category: "Data",
+    duration: "4 Months",
+    difficulty: "Beginner",
+    price: 13999,
+    originalPrice: 27999,
+    rating: 4.8,
+    reviews: 2400,
+    students: 9800,
+    tools: ["SQL", "Excel", "Tableau", "Power BI", "Python"],
+    shortDesc: "Learn to analyze data, build dashboards, and present insights to stakeholders.",
+    thumbnail: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80",
+    badges: ["Placement Assistance"],
+    lastUpdated: "11/2026",
+    language: "English",
+    instructor: "Rahul Verma",
+    videoUrl: "https://www.youtube.com/embed/yDp3Oj2ZsMU?autoplay=1",
+    whatYouWillLearn: [
+      "Write complex SQL queries to extract data",
+      "Build interactive dashboards in Tableau and Power BI",
+      "Analyze datasets using Excel pivot tables and formulas",
+      "Basic statistical analysis using Python",
+      "Data storytelling and presentation skills"
+    ],
+    curriculum: [
+      {
+        id: 1,
+        title: "Module 1: SQL Fundamentals",
+        lectures: 5,
+        duration: "3h 30m",
+        items: [
+          { title: "Introduction to Databases", time: "25:00", type: "video" },
+          { title: "SELECT Statement & Filters", time: "35:00", type: "video" },
+          { title: "Joins and Aggregations", time: "50:00", type: "video" }
         ]
       }
     ]

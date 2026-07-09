@@ -5,7 +5,6 @@ import {
   Briefcase,
   Mic2,
   Award,
-  ArrowRight,
   Sparkles,
 } from "lucide-react";
 import {
@@ -34,7 +33,7 @@ const reasons = [
   {
     icon: Briefcase,
     title: "Placement Support",
-    desc: "400+ hiring partners, dedicated placement cell, resume reviews, and interview preparation until you land your dream role.",
+    desc: "120+ hiring partners, dedicated placement cell, resume reviews, and interview preparation until you land your dream role.",
     accent: "from-emerald-500 to-green-400",
     iconBg: "bg-emerald-50",
     iconColor: "text-emerald-600",
@@ -58,7 +57,7 @@ const reasons = [
   {
     icon: Sparkles,
     title: "Lifetime Community",
-    desc: "Join our active network of 5,000+ alumni and mentors. Gain access to weekly hackathons, study groups, and exclusive job referrals.",
+    desc: "Join our active network of 2,500+ alumni and mentors. Gain access to weekly hackathons, study groups, and exclusive job referrals.",
     accent: "from-sky-500 to-cyan-400",
     iconBg: "bg-sky-50",
     iconColor: "text-sky-600",
@@ -120,33 +119,28 @@ export const WhyChooseSection = () => {
               key={reason.title}
               variants={staggerItem}
               whileHover={cardHover}
-              className="group relative overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-[0_12px_30px_rgba(13,22,53,0.04)] transition-all duration-300 hover:border-[#1B2A6B]/30 hover:shadow-[0_20px_50px_rgba(27,42,107,0.12)]"
+              className="group relative overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-[0_12px_30px_rgba(13,22,53,0.04)] transition-all duration-300 hover:border-[#1B2A6B]/30 hover:shadow-[0_20px_50px_rgba(27,42,107,0.12)]"
             >
               {/* Dynamic top accent line on hover */}
               <div className={`absolute inset-x-6 top-0 h-[2px] bg-gradient-to-r ${reason.accent} opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
 
               {/* Glow blob */}
-              <div className="absolute right-4 top-4 h-16 w-16 rounded-2xl bg-blue-50/50 blur-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="absolute right-4 top-4 h-12 w-12 rounded-2xl bg-blue-50/50 blur-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
               {/* Icon */}
               <div
-                className={`relative mb-5 flex h-12 w-12 items-center justify-center rounded-xl border border-[#E2E8F0] bg-gradient-to-br from-white to-blue-50/30 shadow-[0_6px_16px_rgba(37,99,235,0.05)] transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-105 group-hover:rotate-[-4deg] group-hover:border-blue-200/80 group-hover:shadow-[0_8px_18px_rgba(37,99,235,0.15)] ${reason.iconColor}`}
+                className={`relative mb-3 flex h-9 w-9 items-center justify-center rounded-xl border border-[#E2E8F0] bg-gradient-to-br from-white to-blue-50/30 shadow-[0_6px_16px_rgba(37,99,235,0.05)] transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-105 group-hover:rotate-[-4deg] group-hover:border-blue-200/80 group-hover:shadow-[0_8px_18px_rgba(37,99,235,0.15)] ${reason.iconColor}`}
               >
-                <reason.icon size={22} />
+                <reason.icon size={18} />
               </div>
 
               {/* Content */}
-              <h3 className="relative mb-1.5 text-lg font-bold text-[#0F172A]">
+              <h3 className="relative mb-1 text-[15px] font-bold text-[#0F172A]">
                 {reason.title}
               </h3>
-              <p className="relative mb-4 text-[13px] leading-relaxed text-[#64748B]">
+              <p className="relative text-[12px] leading-snug text-[#64748B]">
                 {reason.desc}
               </p>
-
-              {/* Hover CTA */}
-              <div className="relative flex items-center gap-2 text-xs font-semibold text-blue-600 opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100">
-                Learn more <ArrowRight size={13} />
-              </div>
             </motion.article>
           ))}
         </motion.div>

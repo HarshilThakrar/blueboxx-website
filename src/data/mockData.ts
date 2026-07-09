@@ -1,4 +1,4 @@
-import { Code, PenTool, BarChart, Shield, Target, Cpu, TrendingUp, Smartphone, Users, Briefcase } from "lucide-react";
+import { Code, PenTool, BarChart, Cpu, TrendingUp, Smartphone } from "lucide-react";
 
 export const MOCK_COURSES = [
   {

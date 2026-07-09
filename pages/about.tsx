@@ -70,7 +70,7 @@ export default function AboutPage() {
                       { icon: Briefcase, label: "Industry", value: "Broadcast Media" },
                       { icon: Users, label: "Company Size", value: "11-50 employees" },
                       { icon: MapPin, label: "Headquarters", value: "Vadodara, Gujarat" },
-                      { icon: Calendar, label: "Founded", value: "2014" },
+                      { icon: Calendar, label: "Founded", value: "2015" },
                     ].map((stat, i) => (
                       <motion.div
                         key={i}
@@ -105,7 +105,7 @@ export default function AboutPage() {
                   <h2 className="text-3xl font-extrabold text-slate-900 mb-6">Company Overview</h2>
                   <div className="space-y-6 text-slate-600 text-lg leading-relaxed">
                     <p>
-                      Established in 2014, Blueboxx DA is one of the finest advertising firms in Vadodara, Gujarat India. Being an advertising agency, Blueboxx DA, not only helps you promote your brand and business but also assists you with the Technical, Creative, and Production Talent ready to create the next generation creatives and characters for feature films, commercials, merchandise, and other related products.
+                      Established in 2015, Blueboxx DA is one of the finest advertising firms in Vadodara, Gujarat India. Being an advertising agency, Blueboxx DA, not only helps you promote your brand and business but also assists you with the Technical, Creative, and Production Talent ready to create the next generation creatives and characters for feature films, commercials, merchandise, and other related products.
                     </p>
                     <p>
                       Over the past few years, we aimed to put the best efforts ever to produce high-quality work for our clients. Blueboxx DA’s main products are design & development, corporate brand identity, media planning & releases, 3D animation, 2D animation, animation for specific purposes, video editing, visual effects, web designing & development, SEO, SMM, YouTube marketing.
@@ -239,11 +239,11 @@ export default function AboutPage() {
                     <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-0.5 bg-indigo-100 -translate-x-1/2"></div>
                     
                     {[
-                      { year: "2014", title: "The Beginning", desc: "Founded in Vadodara as a small creative studio focusing on 3D animation." },
+                      { year: "2015", title: "The Beginning", desc: "Founded in Vadodara as a small creative studio focusing on 3D animation." },
                       { year: "2017", title: "Production House", desc: "Established our own full-scale production house for feature films and commercials." },
                       { year: "2020", title: "Digital Expansion", desc: "Launched comprehensive digital marketing and web development services." },
                       { year: "2023", title: "Education Hub", desc: "Started the Learn-Work-Earn initiative to bridge the industry skill gap." },
-                      { year: "2026", title: "Global Reach", desc: "Partnering with 400+ companies globally for guaranteed placements." }
+                      { year: "2026", title: "Global Reach", desc: "Partnering with 120+ companies globally for guaranteed placements." }
                     ].map((item, i) => (
                       <motion.div 
                         key={i}

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { staggerContainer, staggerItem, EASE_OUT_EXPO } from "../animations/variants";
+import { staggerContainer, staggerItem } from "../animations/variants";
 import { Star, Video, MessageSquare, Shield, UserCircle2, ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 
@@ -32,18 +32,18 @@ const mentors = [
 
 export const MentorsSection = () => {
   return (
-    <section className="py-24 border-y border-[#0d1635] relative overflow-hidden" style={{ backgroundColor: "#0d1635" }}>
-      {/* Deep Dark Navy Background with Glowing Orbs */}
+    <section className="py-24 border-y border-slate-200 relative overflow-hidden bg-slate-50">
+      {/* Soft Light Background with Subtle Orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-[#1B2A6B]/40 blur-[150px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[40%] rounded-full bg-[#C9A227]/20 blur-[120px]" />
+        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-blue-600/5 blur-[120px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[40%] rounded-full bg-[#C9A227]/10 blur-[120px]" />
       </div>
       {/* Subtle Light Dot Grid */}
       <div
         aria-hidden
-        className="absolute inset-0 pointer-events-none opacity-[0.05] z-0"
+        className="absolute inset-0 pointer-events-none opacity-[0.5] z-0"
         style={{
-          backgroundImage: "radial-gradient(#ffffff 2px, transparent 2px)",
+          backgroundImage: "radial-gradient(#e2e8f0 2px, transparent 2px)",
           backgroundSize: "36px 36px",
         }}
       />
@@ -56,19 +56,14 @@ export const MentorsSection = () => {
           viewport={{ once: true }}
           className="text-center max-w-2xl mx-auto mb-16"
         >
-          <motion.p variants={staggerItem} className="text-xs font-bold tracking-widest uppercase text-[#C9A227] mb-3">
+          <motion.p variants={staggerItem} className="text-xs font-bold tracking-widest uppercase text-[#1B2A6B] mb-3">
             Expert Guidance
           </motion.p>
-          <motion.h2 variants={staggerItem} className="text-3xl md:text-4xl font-bold mb-4">
-            <span className="text-white">Learn from </span>
-            <span style={{
-              background: "linear-gradient(135deg, #C9A227 20%, #fcd34d 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}>Industry Leaders</span>
+          <motion.h2 variants={staggerItem} className="text-3xl md:text-4xl font-bold mb-4 text-[#0d1635]">
+            <span>Learn from </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1B2A6B] to-[#C9A227]">Industry Leaders</span>
           </motion.h2>
-          <motion.p variants={staggerItem} className="text-base text-white/70">
+          <motion.p variants={staggerItem} className="text-base text-slate-600">
             Book 1-on-1 sessions for mock interviews, career guidance, and portfolio reviews with top professionals.
           </motion.p>
         </motion.div>
@@ -164,7 +159,7 @@ export const MentorsSection = () => {
           <motion.div whileHover={{ scale: 1.04, y: -2 }} whileTap={{ scale: 0.97 }} className="inline-block">
             <Link
               href="/experts"
-              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl font-bold text-sm transition-all border-2 border-[#C9A227] text-[#C9A227] hover:bg-[#C9A227] hover:text-[#0d1635]"
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl font-bold text-sm transition-all border-2 border-[#1B2A6B] text-[#1B2A6B] hover:bg-[#1B2A6B] hover:text-white"
             >
               <Sparkles size={15} />
               Browse All Experts

@@ -1,8 +1,9 @@
 import React, { useState, useRef } from "react";
 import { StudentDashboardLayout } from "../../../src/layout/StudentDashboardLayout";
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
-import { Download, Trash2, Plus, Loader2, Palette } from "lucide-react";
+import { Download, Trash2, Plus, Loader2, Palette, Sparkles, Target, TrendingUp, CheckCircle, AlertCircle, BookOpen, ArrowRight } from "lucide-react";
 import { MOCK_USER } from "../../../src/data/mockData";
+import { motion } from "framer-motion";
 
 // ── Types ──────────────────────────────────────────────────────
 interface EduEntry {
@@ -28,6 +29,8 @@ const labelCls = "block text-xs font-bold text-slate-500 uppercase mb-1.5";
 export default function ResumeBuilderPage() {
   const [activeTab, setActiveTab] = useState("personal");
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiResults, setAiResults] = useState<any>(null);
 
   // ── Personal ──────────────────────────────────────────────
   const [fullName, setFullName] = useState(MOCK_USER.name);
@@ -132,17 +135,18 @@ export default function ResumeBuilderPage() {
 
               {/* Tabs */}
               <div className="flex overflow-x-auto border-b border-slate-200 bg-slate-50/50">
-                {["personal", "education", "experience", "skills"].map((tab) => (
+                {["personal", "education", "experience", "skills", "ai analysis"].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`px-4 py-4 text-sm font-bold whitespace-nowrap border-b-2 transition-colors ${
+                    className={`px-4 py-4 text-sm font-bold whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${
                       activeTab === tab
-                        ? "border-[#1B2A6B] text-[#1B2A6B]"
-                        : "border-transparent text-slate-500 hover:text-slate-700"
+                        ? tab === "ai analysis" ? "border-purple-600 text-purple-700" : "border-[#1B2A6B] text-[#1B2A6B]"
+                        : tab === "ai analysis" ? "border-transparent text-purple-500 hover:text-purple-600" : "border-transparent text-slate-500 hover:text-slate-700"
                     }`}
                   >
-                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    {tab === "ai analysis" && <Sparkles size={14} />}
+                    {tab.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                   </button>
                 ))}
               </div>
@@ -318,6 +322,143 @@ export default function ResumeBuilderPage() {
                         </div>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {/* ── AI Analysis ── */}
+                {activeTab === "ai analysis" && (
+                  <div className="space-y-6 h-full flex flex-col">
+                    {!aiResults && !isAnalyzing && (
+                      <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+                        <div className="w-20 h-20 bg-purple-50 rounded-full flex items-center justify-center mb-6">
+                          <Sparkles size={32} className="text-purple-600" />
+                        </div>
+                        <h2 className="text-xl font-black text-slate-800 mb-3">AI Resume Scorer</h2>
+                        <p className="text-sm font-medium text-slate-500 mb-8 max-w-sm mx-auto">
+                          Let our AI instantly analyze your resume against industry standards, identify gaps, and recommend steps to boost your hiring chances.
+                        </p>
+                        <button
+                          onClick={() => {
+                            setIsAnalyzing(true);
+                            setTimeout(() => {
+                              setAiResults({
+                                score: 78,
+                                strengths: ["Clear education timeline", "Good formatting", "Listed key technical skills"],
+                                weaknesses: ["Experience descriptions lack quantifiable metrics (e.g. 'Increased efficiency by 20%')", "Missing soft skills (Communication, Leadership)"],
+                                recommendations: [
+                                  { title: "Advanced React Patterns", tag: "Highly Recommended", icon: BookOpen },
+                                  { title: "Technical Interview Prep", tag: "Career Growth", icon: Target }
+                                ]
+                              });
+                              setIsAnalyzing(false);
+                            }, 2500);
+                          }}
+                          className="px-8 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-black shadow-xl shadow-purple-500/30 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all flex items-center gap-2"
+                        >
+                          <Sparkles size={18} /> Run AI Scan Now
+                        </button>
+                      </div>
+                    )}
+
+                    {isAnalyzing && (
+                      <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+                        <Loader2 size={40} className="text-purple-600 animate-spin mb-6" />
+                        <h2 className="text-lg font-black text-slate-800 mb-2">Analyzing Profile...</h2>
+                        <p className="text-sm font-medium text-slate-500">Cross-referencing skills with industry requirements.</p>
+                      </div>
+                    )}
+
+                    {aiResults && (
+                      <AnimatedContent direction="up" delay={0.1} className="space-y-6 pb-6">
+                        {/* Score Card */}
+                        <div className="bg-gradient-to-br from-purple-900 to-[#0d1635] rounded-3xl p-6 md:p-8 text-white relative overflow-hidden shadow-xl shadow-purple-900/20">
+                          <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+                          
+                          <div className="flex flex-col sm:flex-row items-center gap-8 relative z-10">
+                            <div className="relative w-32 h-32 shrink-0">
+                              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="8" />
+                                <motion.circle 
+                                  initial={{ strokeDashoffset: 283 }}
+                                  animate={{ strokeDashoffset: 283 - (283 * aiResults.score) / 100 }}
+                                  transition={{ duration: 1.5, ease: "easeOut" }}
+                                  cx="50" cy="50" r="45" fill="none" stroke="#C9A227" strokeWidth="8" strokeLinecap="round" 
+                                  strokeDasharray="283"
+                                />
+                              </svg>
+                              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <span className="text-4xl font-black text-white leading-none">{aiResults.score}</span>
+                                <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest mt-1">/ 100</span>
+                              </div>
+                            </div>
+                            
+                            <div className="text-center sm:text-left">
+                              <h3 className="text-2xl font-black mb-2 flex items-center justify-center sm:justify-start gap-2">
+                                <Target size={24} className="text-[#C9A227]" /> Good Potential!
+                              </h3>
+                              <p className="text-sm font-medium text-white/70 leading-relaxed max-w-sm">
+                                Your resume is well-structured but lacks measurable impact. Adding specific metrics will boost your score above 90.
+                              </p>
+                              <button onClick={() => setAiResults(null)} className="mt-4 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-bold transition-colors">
+                                Rescan Profile
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Feedback Split */}
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5">
+                            <h4 className="text-sm font-black text-emerald-800 mb-4 flex items-center gap-2">
+                              <CheckCircle size={16} /> Key Strengths
+                            </h4>
+                            <ul className="space-y-3">
+                              {aiResults.strengths.map((str: string, i: number) => (
+                                <li key={i} className="flex items-start gap-2 text-sm font-medium text-emerald-700">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" /> {str}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5">
+                            <h4 className="text-sm font-black text-amber-800 mb-4 flex items-center gap-2">
+                              <AlertCircle size={16} /> Areas to Improve
+                            </h4>
+                            <ul className="space-y-3">
+                              {aiResults.weaknesses.map((wk: string, i: number) => (
+                                <li key={i} className="flex items-start gap-2 text-sm font-medium text-amber-700">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" /> {wk}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+
+                        {/* Smart Recommendations */}
+                        <div>
+                          <h4 className="text-sm font-black text-slate-800 mb-4 flex items-center gap-2">
+                            <TrendingUp size={18} className="text-[#1B2A6B]" /> AI Course Recommendations
+                          </h4>
+                          <div className="space-y-3">
+                            {aiResults.recommendations.map((rec: any, i: number) => (
+                              <div key={i} className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between hover:shadow-md transition-shadow group cursor-pointer">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+                                    <rec.icon size={20} />
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-1 block">{rec.tag}</span>
+                                    <p className="text-sm font-bold text-slate-800 group-hover:text-[#1B2A6B] transition-colors">{rec.title}</p>
+                                  </div>
+                                </div>
+                                <ArrowRight size={18} className="text-slate-300 group-hover:text-[#1B2A6B] transition-colors shrink-0" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                      </AnimatedContent>
+                    )}
                   </div>
                 )}
               </div>

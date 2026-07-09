@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthContext";
-import { LayoutDashboard, Users, BookOpen, Settings, LogOut, Menu, X, Bell, Search } from "lucide-react";
+import { LayoutDashboard, Users, BookOpen, Settings, LogOut, Menu, X, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NotificationPopover } from "../components/ui/NotificationPopover";
 

@@ -24,7 +24,7 @@ export const HowToEarnSection = () => {
             <div className="h-36 overflow-hidden bg-slate-100 relative">
               <div className="absolute inset-0 bg-[#1B2A6B]/10 z-10 mix-blend-multiply transition-opacity duration-300 opacity-100 group-hover:opacity-0"></div>
               <img 
-                src="https://images.unsplash.com/photo-1556761175-5973dc0f32b7?auto=format&fit=crop&q=80&w=600" 
+                src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=600" 
                 alt="Join Our Network" 
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 grayscale-[50%] group-hover:grayscale-0"
               />
@@ -60,7 +60,7 @@ export const HowToEarnSection = () => {
             <div className="h-36 overflow-hidden bg-slate-100 relative">
               <div className="absolute inset-0 bg-[#1B2A6B]/10 z-10 mix-blend-multiply transition-opacity duration-300 opacity-100 group-hover:opacity-0"></div>
               <img 
-                src="https://images.unsplash.com/photo-1579621970588-a3f5ce599fac?auto=format&fit=crop&q=80&w=600" 
+                src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600" 
                 alt="Get Paid & Grow" 
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 grayscale-[50%] group-hover:grayscale-0"
               />

@@ -2,7 +2,7 @@ import { DashboardLayout } from "../../../src/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../src/components/ui/Card";
 import { Badge } from "../../../src/components/ui/Badge";
 import { Button } from "../../../src/components/ui/Button";
-import { Briefcase, TrendingUp, FileText, CheckCircle2, Clock, AlertCircle, Building2, Calendar, ChevronRight } from "lucide-react";
+import { Briefcase, TrendingUp, FileText, CheckCircle2, Clock, AlertCircle, Building2, Calendar, ChevronRight, PlayCircle } from "lucide-react";
 
 export default function PlacementProgressPage() {
   const stats = [

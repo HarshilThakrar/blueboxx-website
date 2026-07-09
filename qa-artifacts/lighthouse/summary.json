@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Homepage",
+    "url": "http://localhost:3000/",
+    "performance": 0,
+    "accessibility": 86,
+    "bestPractices": 100,
+    "seo": 82
+  },
+  {
+    "name": "Courses",
+    "url": "http://localhost:3000/courses",
+    "performance": 0,
+    "accessibility": 86,
+    "bestPractices": 100,
+    "seo": 82
+  },
+  {
+    "name": "Jobs",
+    "url": "http://localhost:3000/jobs",
+    "performance": 0,
+    "accessibility": 86,
+    "bestPractices": 100,
+    "seo": 82
+  },
+  {
+    "name": "Student Dashboard",
+    "url": "http://localhost:3000/student/dashboard",
+    "performance": 0,
+    "accessibility": 86,
+    "bestPractices": 100,
+    "seo": 82
+  },
+  {
+    "name": "Company Dashboard",
+    "url": "http://localhost:3000/company/dashboard",
+    "performance": 0,
+    "accessibility": 86,
+    "bestPractices": 100,
+    "seo": 82
+  }
+]

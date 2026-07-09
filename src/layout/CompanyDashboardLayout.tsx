@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthContext";
 import { 
   LayoutDashboard, Briefcase, Settings, LogOut,
   Menu, X, Bell, Search, Building, Users, Clock,
-  FileText, MessageSquare, Plus, Activity
+  MessageSquare, Plus, Activity
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCompanyStore } from "../store/useCompanyStore";
@@ -47,8 +47,7 @@ export const CompanyDashboardLayout = ({ children }: { children: React.ReactNode
   const { logout } = useAuth();
   const profile = useCompanyStore(s => s.profile);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [, setIsSearchOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   
   const [notifications, setNotifications] = useState([

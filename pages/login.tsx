@@ -81,6 +81,15 @@ export default function LoginPage() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#C9A227]/10 blur-[130px]" />
       </div>
 
+      {/* EdTech Background Image Overlay */}
+      <motion.div 
+        initial={{ scale: 1.1, opacity: 0 }}
+        animate={{ scale: 1, opacity: 0.25 }}
+        transition={{ duration: 2, ease: "easeOut" }}
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat mix-blend-overlay grayscale"
+        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&q=80")' }} 
+      />
+
       {/* Grid Pattern Overlay */}
       <div
         aria-hidden
@@ -96,12 +105,12 @@ export default function LoginPage() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-[390px] bg-white rounded-3xl border border-slate-200/80 shadow-2xl p-6 sm:p-8 z-10 flex flex-col relative"
+        className="w-full max-w-[390px] bg-white rounded-3xl border border-slate-200/80 shadow-2xl p-6 sm:p-8 z-10 flex flex-col relative font-inter"
       >
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <Link href="/">
-            <img src="/Boxx Logo.png" alt="BlueBoxx" className="h-10 w-auto object-contain" />
+            <img src="/Boxx logo.png" alt="BlueBoxx" className="h-10 w-auto object-contain" />
           </Link>
         </div>
 

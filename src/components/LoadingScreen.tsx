@@ -38,6 +38,7 @@ export const LoadingScreen = ({ onComplete }: { onComplete?: () => void }) => {
       if (vid && onEnded) vid.removeEventListener('ended', onEnded);
       document.body.style.overflow = "";
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!show) return null;

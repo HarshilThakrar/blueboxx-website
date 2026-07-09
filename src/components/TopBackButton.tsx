@@ -1,6 +1,5 @@
 "use client";
 
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';

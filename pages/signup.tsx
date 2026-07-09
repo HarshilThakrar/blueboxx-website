@@ -70,17 +70,17 @@ export default function SignupPage() {
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="w-full lg:w-[450px] shrink-0 flex flex-col justify-center px-8 sm:px-12 py-6 relative overflow-y-auto custom-scrollbar z-10 shadow-[20px_0_40px_rgba(0,0,0,0.05)] bg-white"
+        className="w-full lg:w-[450px] shrink-0 flex flex-col justify-center px-8 sm:px-12 py-6 relative overflow-y-auto custom-scrollbar z-10 shadow-[20px_0_40px_rgba(0,0,0,0.05)] bg-white font-inter"
       >
         <div className="w-full mx-auto max-w-sm py-4">
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 mb-6">
-            <img src="/logoblue.png" alt="BlueBoxx" className="h-10 w-auto object-contain" />
+            <img src="/Boxx logo.png" alt="BlueBoxx" className="h-10 w-auto object-contain" />
           </Link>
 
           <motion.div variants={container} initial="hidden" animate="show" className="mb-6">
-            <motion.h2 variants={item} className="text-2xl font-black text-slate-800 mb-1.5">Create an account</motion.h2>
+            <motion.h2 variants={item} className="text-2xl font-black text-slate-800 mb-1.5 font-sora">Create an account</motion.h2>
             <motion.p variants={item} className="text-sm text-slate-500 font-medium">Join BlueBoxx and start building your career.</motion.p>
           </motion.div>
 

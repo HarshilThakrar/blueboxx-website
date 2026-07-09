@@ -4,8 +4,53 @@ import { Calendar, Clock, Video, User, CheckCircle2, ChevronRight, ChevronLeft }
 import { Card, CardContent } from "../src/components/ui/Card";
 import { Button } from "../src/components/ui/Button";
 import { Input } from "../src/components/ui/Input";
+import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import toast from "react-hot-toast";
+
+const bookingSchema = z.object({
+  fullName: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  courseInterest: z.string().min(1, { message: "Please select a course" }),
+});
+type BookingFormValues = z.infer<typeof bookingSchema>;
 
 export default function BookConsultationPage() {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedTime, setSelectedTime] = useState<string>("2:00 PM");
+
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<BookingFormValues>({
+    resolver: zodResolver(bookingSchema),
+    defaultValues: {
+      courseInterest: "Full Stack Web Development"
+    }
+  });
+
+  const onSubmit = async (data: BookingFormValues) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    toast.success(`Consultation booked successfully for ${selectedDate.toDateString()} at ${selectedTime}! We will email you the meeting link.`);
+    reset();
+  };
+
+  const today = new Date();
+  const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay(); 
+  const startDayOffset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1; // 0 for Monday
+
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const shortMonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  
+  const currentMonthName = monthNames[currentMonth.getMonth()];
+  const currentYear = currentMonth.getFullYear();
+
+  const nextMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+  const prevMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+  const timeSlots = ["10:00 AM", "11:30 AM", "2:00 PM", "3:30 PM", "5:00 PM"];
+
   return (
     <MainLayout>
       <div className="bg-[#0d1635] min-h-screen pt-24 pb-20 relative overflow-hidden text-white">
@@ -78,8 +123,8 @@ export default function BookConsultationPage() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="icon" className="w-8 h-8 rounded-lg"><ChevronLeft size={16}/></Button>
-                      <Button variant="outline" size="icon" className="w-8 h-8 rounded-lg"><ChevronRight size={16}/></Button>
+                      <Button type="button" onClick={prevMonth} variant="outline" size="icon" className="w-8 h-8 rounded-lg"><ChevronLeft size={16}/></Button>
+                      <Button type="button" onClick={nextMonth} variant="outline" size="icon" className="w-8 h-8 rounded-lg"><ChevronRight size={16}/></Button>
                     </div>
                   </div>
 
@@ -88,20 +133,28 @@ export default function BookConsultationPage() {
                       
                       {/* Calendar UI Mockup */}
                       <div className="w-full md:w-1/2 p-6 border-b md:border-b-0 md:border-r border-slate-100">
-                        <h3 className="font-bold text-slate-800 text-center mb-4">October 2026</h3>
+                        <h3 className="font-bold text-slate-800 text-center mb-4">{currentMonthName} {currentYear}</h3>
                         <div className="grid grid-cols-7 gap-1 text-center mb-2">
                           {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => (
                             <div key={d} className="text-xs font-bold text-slate-400">{d}</div>
                           ))}
                         </div>
                         <div className="grid grid-cols-7 gap-1 text-center">
-                          {[...Array(31)].map((_, i) => {
-                            const isToday = i === 23;
-                            const isSelected = i === 25;
-                            const isPast = i < 23;
+                          {[...Array(startDayOffset)].map((_, i) => (
+                            <div key={`empty-${i}`} />
+                          ))}
+                          {[...Array(daysInMonth)].map((_, i) => {
+                            const day = i + 1;
+                            const dateObj = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+                            const isToday = dateObj.toDateString() === today.toDateString();
+                            const isSelected = selectedDate.toDateString() === dateObj.toDateString();
+                            const isPast = dateObj < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
                             return (
                               <button 
                                 key={i} 
+                                type="button"
+                                onClick={() => setSelectedDate(dateObj)}
                                 disabled={isPast}
                                 className={`w-8 h-8 mx-auto rounded-full text-sm font-semibold flex items-center justify-center transition-all ${
                                   isSelected ? "bg-[#1B2A6B] text-white shadow-md shadow-[#1B2A6B]/20" : 
@@ -110,7 +163,7 @@ export default function BookConsultationPage() {
                                   "text-slate-700 hover:bg-slate-100"
                                 }`}
                               >
-                                {i + 1}
+                                {day}
                               </button>
                             );
                           })}
@@ -119,13 +172,15 @@ export default function BookConsultationPage() {
 
                       {/* Time Slots Mockup */}
                       <div className="w-full md:w-1/2 p-6 bg-slate-50/50">
-                        <h3 className="font-bold text-slate-800 text-center mb-4">Monday, Oct 26</h3>
+                        <h3 className="font-bold text-slate-800 text-center mb-4">{dayNames[selectedDate.getDay()]}, {shortMonthNames[selectedDate.getMonth()]} {selectedDate.getDate()}</h3>
                         <div className="space-y-2 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
-                          {["10:00 AM", "11:30 AM", "2:00 PM", "3:30 PM", "5:00 PM"].map((time, i) => (
+                          {timeSlots.map((time, i) => (
                             <button 
                               key={i} 
+                              type="button"
+                              onClick={() => setSelectedTime(time)}
                               className={`w-full p-3 rounded-xl border text-sm font-semibold transition-all text-center ${
-                                i === 2 
+                                selectedTime === time 
                                   ? "bg-[#1B2A6B] border-[#1B2A6B] text-white shadow-md shadow-[#1B2A6B]/20" 
                                   : "bg-white border-slate-200 text-slate-700 hover:border-[#1B2A6B]/50 hover:bg-blue-50"
                               }`}
@@ -141,30 +196,46 @@ export default function BookConsultationPage() {
                     {/* Booking Form */}
                     <div className="p-8">
                       <h3 className="font-bold text-slate-900 mb-6">Your Details</h3>
-                      <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+                      <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                           <div className="space-y-2">
                             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Full Name</label>
-                            <Input placeholder="John Doe" icon={<User size={16}/>} />
+                            <Input 
+                              placeholder="John Doe" 
+                              icon={<User size={16}/>} 
+                              {...register("fullName")}
+                              className={errors.fullName ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500' : ''}
+                            />
+                            {errors.fullName && <p className="text-red-500 text-xs font-semibold">{errors.fullName.message}</p>}
                           </div>
                           <div className="space-y-2">
                             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</label>
-                            <Input type="email" placeholder="john@example.com" />
+                            <Input 
+                              type="email" 
+                              placeholder="john@example.com" 
+                              {...register("email")}
+                              className={errors.email ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500' : ''}
+                            />
+                            {errors.email && <p className="text-red-500 text-xs font-semibold">{errors.email.message}</p>}
                           </div>
                         </div>
 
                         <div className="space-y-2">
                           <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Preferred Course Interest</label>
-                          <select className="flex w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2A6B]/20 focus-visible:border-[#1B2A6B] transition-all shadow-sm">
-                            <option>Full Stack Web Development</option>
-                            <option>Data Science Masterclass</option>
-                            <option>UI/UX Design Pro</option>
-                            <option>Not Sure Yet</option>
+                          <select 
+                            {...register("courseInterest")}
+                            className={`flex w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2A6B]/20 focus-visible:border-[#1B2A6B] transition-all shadow-sm ${errors.courseInterest ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500' : ''}`}
+                          >
+                            <option value="Full Stack Web Development">Full Stack Web Development</option>
+                            <option value="Data Science Masterclass">Data Science Masterclass</option>
+                            <option value="UI/UX Design Pro">UI/UX Design Pro</option>
+                            <option value="Not Sure Yet">Not Sure Yet</option>
                           </select>
+                          {errors.courseInterest && <p className="text-red-500 text-xs font-semibold">{errors.courseInterest.message}</p>}
                         </div>
 
-                        <Button variant="primary" size="lg" className="w-full mt-4 text-base">
-                          Confirm Booking for Oct 26, 2:00 PM
+                        <Button variant="primary" size="lg" className="w-full mt-4 text-base" type="submit" disabled={isSubmitting}>
+                          {isSubmitting ? 'Confirming...' : `Confirm Booking for ${shortMonthNames[selectedDate.getMonth()]} ${selectedDate.getDate()}, ${selectedTime}`}
                         </Button>
                       </form>
                     </div>

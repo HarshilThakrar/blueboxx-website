@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, Variants } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
@@ -11,7 +11,6 @@ import { ShoppingCart } from 'lucide-react';
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const ctaRef = useRef<HTMLAnchorElement | null>(null);
 
   const { user, isAuthenticated, logout } = useAuthStore();
   const cartItemCount = useStore((state) => state.cart.length);
@@ -67,17 +66,6 @@ export default function Navbar() {
     hidden: { opacity: 0, y: 18 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
   };
-
-  // magnetic CTA effect
-  const handleCtaMove = (e: React.MouseEvent) => {
-    const el = ctaRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const dx = (e.clientX - (rect.left + rect.width / 2)) * 0.12; // small influence
-    const dy = (e.clientY - (rect.top + rect.height / 2)) * 0.06;
-    el.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
-  };
-  const resetCta = () => { if (ctaRef.current) ctaRef.current.style.transform = ''; };
 
   // Dashboard link based on role
   const getDashboardLink = () => {

@@ -69,7 +69,7 @@ const mockProjects = [
     category: "2D Animation",
     icon: "PlayCircle",
     color: "bg-orange-50 text-orange-600 border-orange-100",
-    image: "https://images.unsplash.com/photo-1574717024453-354056aece4e?w=600&q=80",
+    image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80",
     description: "Series of 10 animated explainer videos for a children's educational brand with custom characters and storyboards.",
     tags: ["2D Animation", "Storyboarding", "Voice-over"],
     duration: "6 weeks",
@@ -107,6 +107,7 @@ const PROJECT_CATEGORIES = [
   "All", "3D Animation", "Web Development",
   "Digital Marketing", "2D Animation", "Graphic Design", "UI/UX Design",
 ];
+import { SEO } from "../../src/components/seo/SEO";
 
 export default function CompaniesPublicPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -147,8 +148,14 @@ export default function CompaniesPublicPage() {
   });
 
   return (
-    <MainLayout>
-      {/* Dark Blue Hero Section matching Placement Partners */}
+    <>
+      <SEO 
+        title="Top Hiring Partners & Placements | Blueboxx DA"
+        description="We collaborate with industry leaders and innovative startups to ensure our learners land their dream roles and deliver high-impact live projects."
+        keywords="Hire Developers, Hire Interns, Campus Hiring, Recruit Freshers, Recruit Software Engineers, Hire AI Developers"
+      />
+      <MainLayout>
+        {/* Dark Blue Hero Section matching Placement Partners */}
       <div className="pt-24 pb-16 bg-[#0d1635] text-white relative overflow-hidden">
         {/* Premium Grid Background */}
         <div
@@ -410,5 +417,6 @@ export default function CompaniesPublicPage() {
         </div>
       </div>
     </MainLayout>
+    </>
   );
 }

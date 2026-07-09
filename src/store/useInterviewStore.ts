@@ -22,7 +22,7 @@ interface InterviewState {
 
 export const useInterviewStore = create<InterviewState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       interviews: [
         { id: 1, name: 'Alex Johnson', role: 'Frontend Developer', date: 'Today', time: '10:30 AM', type: 'Technical Round', match: 95, status: 'Upcoming', applicantId: 'APP-seed-1' },
         { id: 2, name: 'Sarah Smith', role: 'UI/UX Designer', date: 'Today', time: '2:00 PM', type: 'Portfolio Review', match: 88, status: 'Upcoming', applicantId: 'APP-seed-2' },

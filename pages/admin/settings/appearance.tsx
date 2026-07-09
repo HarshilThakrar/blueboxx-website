@@ -7,6 +7,12 @@ import { useState } from "react";
 export default function AdminAppearanceSettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  
+  const [logo, setLogo] = useState<string | null>(null);
+  const [favicon, setFavicon] = useState<string | null>(null);
+  const [themeMode, setThemeMode] = useState<'light' | 'dark' | 'system'>('light');
+  const [primaryColor, setPrimaryColor] = useState('#1B2A6B');
+  const [accentColor, setAccentColor] = useState('#F59E0B');
 
   const handleSave = () => {
     setIsSaving(true);
@@ -15,6 +21,16 @@ export default function AdminAppearanceSettingsPage() {
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 3000);
     }, 1500);
+  };
+
+  const handleLogoUpload = () => {
+    setLogo("uploaded");
+    alert("Main Logo uploaded successfully (mock)!");
+  };
+
+  const handleFaviconUpload = () => {
+    setFavicon("uploaded");
+    alert("Favicon uploaded successfully (mock)!");
   };
 
   return (
@@ -52,9 +68,9 @@ export default function AdminAppearanceSettingsPage() {
               <div className="space-y-4">
                  <div>
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Main Logo</label>
-                    <div className="border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:bg-slate-50 transition-colors cursor-pointer">
-                       <ImageIcon size={32} className="text-slate-400 mb-2" />
-                       <p className="text-sm font-bold text-slate-700">Click to upload logo</p>
+                    <div onClick={handleLogoUpload} className="border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:bg-slate-50 transition-all cursor-pointer">
+                       <ImageIcon size={32} className={logo ? "text-emerald-500 mb-2" : "text-slate-400 mb-2"} />
+                       <p className="text-sm font-bold text-slate-700">{logo ? "Logo Uploaded Successfully!" : "Click to upload logo"}</p>
                        <p className="text-xs font-medium text-slate-400 mt-1">SVG, PNG, or JPG (max 2MB)</p>
                     </div>
                  </div>
@@ -62,9 +78,9 @@ export default function AdminAppearanceSettingsPage() {
               <div className="space-y-4">
                  <div>
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Favicon</label>
-                    <div className="border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:bg-slate-50 transition-colors cursor-pointer">
-                       <div className="w-8 h-8 bg-slate-200 rounded mb-2 flex items-center justify-center text-slate-400"><ImageIcon size={16}/></div>
-                       <p className="text-sm font-bold text-slate-700">Upload Favicon</p>
+                    <div onClick={handleFaviconUpload} className="border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:bg-slate-50 transition-all cursor-pointer">
+                       <div className={`w-8 h-8 rounded mb-2 flex items-center justify-center ${favicon ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-400'}`}><ImageIcon size={16}/></div>
+                       <p className="text-sm font-bold text-slate-700">{favicon ? "Favicon Uploaded!" : "Upload Favicon"}</p>
                        <p className="text-xs font-medium text-slate-400 mt-1">32x32px ICO or PNG</p>
                     </div>
                  </div>
@@ -83,15 +99,30 @@ export default function AdminAppearanceSettingsPage() {
               <div>
                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-3">Default Color Scheme</label>
                  <div className="flex gap-4">
-                    <button className="flex-1 flex flex-col items-center justify-center p-4 border-2 border-[#1B2A6B] bg-slate-50 rounded-xl gap-2">
+                    <button 
+                      onClick={() => setThemeMode('light')} 
+                      className={`flex-1 flex flex-col items-center justify-center p-4 border-2 rounded-xl gap-2 transition-all ${
+                        themeMode === 'light' ? 'border-[#1B2A6B] bg-blue-50/30' : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
                        <Sun size={24} className="text-[#1B2A6B]" />
                        <span className="text-sm font-bold text-slate-800">Light Mode</span>
                     </button>
-                    <button className="flex-1 flex flex-col items-center justify-center p-4 border-2 border-slate-200 hover:border-slate-300 rounded-xl gap-2 transition-colors">
+                    <button 
+                      onClick={() => setThemeMode('dark')} 
+                      className={`flex-1 flex flex-col items-center justify-center p-4 border-2 rounded-xl gap-2 transition-all ${
+                        themeMode === 'dark' ? 'border-[#1B2A6B] bg-blue-50/30' : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
                        <Moon size={24} className="text-slate-400" />
                        <span className="text-sm font-bold text-slate-500">Dark Mode</span>
                     </button>
-                    <button className="flex-1 flex flex-col items-center justify-center p-4 border-2 border-slate-200 hover:border-slate-300 rounded-xl gap-2 transition-colors">
+                    <button 
+                      onClick={() => setThemeMode('system')} 
+                      className={`flex-1 flex flex-col items-center justify-center p-4 border-2 rounded-xl gap-2 transition-all ${
+                        themeMode === 'system' ? 'border-[#1B2A6B] bg-blue-50/30' : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
                        <Monitor size={24} className="text-slate-400" />
                        <span className="text-sm font-bold text-slate-500">System Sync</span>
                     </button>
@@ -102,17 +133,37 @@ export default function AdminAppearanceSettingsPage() {
                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-3">Brand Colors (Hex)</label>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex items-center gap-3">
-                       <div className="w-10 h-10 rounded-lg bg-[#1B2A6B] shadow-sm border border-slate-200"></div>
+                       <input 
+                         type="color" 
+                         value={primaryColor} 
+                         onChange={(e) => setPrimaryColor(e.target.value)} 
+                         className="w-10 h-10 rounded-lg shadow-sm border border-slate-200 cursor-pointer p-0 bg-transparent overflow-hidden" 
+                       />
                        <div className="flex-1">
                           <p className="text-xs font-semibold text-slate-500 mb-1">Primary Color</p>
-                          <input type="text" defaultValue="#1B2A6B" className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-mono font-bold outline-none focus:ring-2 focus:ring-[#1B2A6B]" />
+                          <input 
+                            type="text" 
+                            value={primaryColor} 
+                            onChange={(e) => setPrimaryColor(e.target.value)} 
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-mono font-bold outline-none focus:ring-2 focus:ring-[#1B2A6B]" 
+                          />
                        </div>
                     </div>
                     <div className="flex items-center gap-3">
-                       <div className="w-10 h-10 rounded-lg bg-[#F59E0B] shadow-sm border border-slate-200"></div>
+                       <input 
+                         type="color" 
+                         value={accentColor} 
+                         onChange={(e) => setAccentColor(e.target.value)} 
+                         className="w-10 h-10 rounded-lg shadow-sm border border-slate-200 cursor-pointer p-0 bg-transparent overflow-hidden" 
+                       />
                        <div className="flex-1">
                           <p className="text-xs font-semibold text-slate-500 mb-1">Accent Color</p>
-                          <input type="text" defaultValue="#F59E0B" className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-mono font-bold outline-none focus:ring-2 focus:ring-[#1B2A6B]" />
+                          <input 
+                            type="text" 
+                            value={accentColor} 
+                            onChange={(e) => setAccentColor(e.target.value)} 
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-mono font-bold outline-none focus:ring-2 focus:ring-[#1B2A6B]" 
+                          />
                        </div>
                     </div>
                  </div>

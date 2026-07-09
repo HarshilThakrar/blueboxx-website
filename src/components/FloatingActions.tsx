@@ -1,14 +1,46 @@
 "use client";
 
 import { useState } from 'react';
-import { WhatsappIcon } from './WhatsappIcon';
 import { MessageCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
+import toast from 'react-hot-toast';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+
+const inquirySchema = z.object({
+  fullName: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  email: z.string().email({ message: "Please enter a valid email" }),
+  phone: z.string().min(10, { message: "Please enter a valid 10-digit phone number" }),
+  query: z.string().optional(),
+});
+type InquiryFormValues = z.infer<typeof inquirySchema>;
 
 export const FloatingActions = () => {
   const [isInquiryOpen, setIsInquiryOpen] = useState(false);
+
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<InquiryFormValues>({
+    resolver: zodResolver(inquirySchema),
+  });
+
+  const onSubmit = (_data: InquiryFormValues) => {
+    toast.success('Callback request sent successfully! Our team will contact you soon.', {
+      style: {
+        borderRadius: '12px',
+        background: '#0d1635',
+        color: '#fff',
+        fontWeight: 'bold',
+      },
+      iconTheme: {
+        primary: '#C9A227',
+        secondary: '#0d1635',
+      },
+    }); 
+    setIsInquiryOpen(false); 
+    reset();
+  };
 
   return (
     <div className="fixed bottom-6 right-6 z-[99] flex flex-col gap-4 items-end pointer-events-none">
@@ -33,23 +65,49 @@ export const FloatingActions = () => {
               Discover more information about the program and get your questions answered.
             </p>
             
-            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); alert('Callback request sent successfully!'); setIsInquiryOpen(false); }}>
+            <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
               <div>
                 <label className="block text-sm font-bold text-[#0d1635] mb-1.5">Full name</label>
-                <Input placeholder="Enter your full name" required className="bg-white border-[#1B2A6B]/20 focus-visible:border-[#C9A227] focus-visible:ring-[#C9A227]" />
+                <Input 
+                  placeholder="Enter your full name" 
+                  {...register("fullName")}
+                  className={`bg-white border-[#1B2A6B]/20 focus-visible:border-[#C9A227] focus-visible:ring-[#C9A227] ${errors.fullName ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500' : ''}`} 
+                />
+                {errors.fullName && <p className="text-red-500 text-xs mt-1 font-semibold">{errors.fullName.message}</p>}
               </div>
               <div>
                 <label className="block text-sm font-bold text-[#0d1635] mb-1.5">Email</label>
-                <Input type="email" placeholder="Enter your email" required className="bg-white border-[#1B2A6B]/20 focus-visible:border-[#C9A227] focus-visible:ring-[#C9A227]" />
+                <Input 
+                  type="email" 
+                  placeholder="Enter your email" 
+                  {...register("email")}
+                  className={`bg-white border-[#1B2A6B]/20 focus-visible:border-[#C9A227] focus-visible:ring-[#C9A227] ${errors.email ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500' : ''}`} 
+                />
+                {errors.email && <p className="text-red-500 text-xs mt-1 font-semibold">{errors.email.message}</p>}
               </div>
               <div>
                 <label className="block text-sm font-bold text-[#0d1635] mb-1.5">Phone number</label>
                 <div className="flex">
-                  <div className="bg-slate-50 border border-[#1B2A6B]/20 border-r-0 rounded-l-lg px-3 flex items-center justify-center">
+                  <div className={`bg-slate-50 border border-[#1B2A6B]/20 border-r-0 rounded-l-lg px-3 flex items-center justify-center ${errors.phone ? 'border-red-500 border-r-0' : ''}`}>
                     <span className="text-lg">🇮🇳</span>
                   </div>
-                  <Input type="tel" placeholder="(000) 000-0000" required className="rounded-l-none bg-white border-[#1B2A6B]/20 focus-visible:border-[#C9A227] focus-visible:ring-[#C9A227]" />
+                  <Input 
+                    type="tel" 
+                    placeholder="(000) 000-0000" 
+                    {...register("phone")}
+                    className={`rounded-l-none bg-white border-[#1B2A6B]/20 focus-visible:border-[#C9A227] focus-visible:ring-[#C9A227] ${errors.phone ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500' : ''}`} 
+                  />
                 </div>
+                {errors.phone && <p className="text-red-500 text-xs mt-1 font-semibold">{errors.phone.message}</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-[#0d1635] mb-1.5">Your Query (Optional)</label>
+                <textarea 
+                  placeholder="How can we help you?" 
+                  rows={2}
+                  {...register("query")}
+                  className="w-full flex rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 border-[#1B2A6B]/20 focus-visible:border-[#C9A227] focus-visible:ring-[#C9A227] resize-none"
+                />
               </div>
               <Button className="w-full bg-[#C9A227] hover:bg-[#d8b02c] text-[#0d1635] font-bold mt-2 py-3 shadow-lg shadow-[#C9A227]/20" type="submit">
                 Request Callback

@@ -3,6 +3,7 @@ import { AnimatedContent } from "../../../src/components/reactbits/AnimatedConte
 import { Card, CardContent } from "../../../src/components/ui/Card";
 import { Search, Plus, MoreVertical, Edit2, Trash2, Eye, X, BookOpen, Users, Star, Clock } from "lucide-react";
 import { Button } from "../../../src/components/ui/Button";
+import { MediaUploader } from "../../../src/components/ui/MediaUploader";
 import { useState } from "react";
 import { useRouter } from "next/router";
 
@@ -106,7 +107,7 @@ export default function AdminCoursesPage() {
         </AnimatedContent>
 
         <AnimatedContent direction="up" delay={0.2}>
-          <Card className="border border-slate-200 shadow-sm overflow-visible bg-white">
+          <Card className="border border-slate-200 shadow-sm overflow-hidden bg-white w-full max-w-full">
             <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div className="relative w-full sm:w-96">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -118,8 +119,8 @@ export default function AdminCoursesPage() {
               </div>
             </div>
             
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm whitespace-nowrap">
+            <div className="overflow-x-auto w-full custom-scrollbar">
+              <table className="w-full text-left text-sm whitespace-nowrap min-w-[800px]">
                 <thead className="bg-white border-b border-slate-200">
                   <tr>
                     <th className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Course Details</th>
@@ -257,22 +258,20 @@ export default function AdminCoursesPage() {
                         className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none"
                       />
                     </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cover Image URL</label>
-                      <input 
-                        type="url" placeholder="https://..."
-                        value={newCourse.image} onChange={(e) => handleInputChange('image', e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none"
-                      />
-                    </div>
                     
-                    <div className="space-y-1.5 md:col-span-2">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Video Preview URL (Optional)</label>
-                      <input 
-                        type="url" placeholder="e.g. https://youtube.com/watch?v=..."
-                        value={(newCourse as any).videoUrl || ''} onChange={(e) => handleInputChange('videoUrl', e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none"
+                    <MediaUploader
+                      label="Course Thumbnail Image URL"
+                      accept="image/*"
+                      value={newCourse.image}
+                      onUploadSuccess={(url) => handleInputChange('image', url)}
+                    />
+                    
+                    <div className="md:col-span-2">
+                      <MediaUploader
+                        label="Preview Video URL"
+                        accept="video/*"
+                        value={(newCourse as any).videoUrl || ''}
+                        onUploadSuccess={(url) => handleInputChange('videoUrl', url)}
                       />
                     </div>
                   </div>

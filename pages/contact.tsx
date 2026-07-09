@@ -4,8 +4,35 @@ import { MapPin, Phone, Mail, Clock, MessageSquare, Send } from "lucide-react";
 import { Card, CardContent } from "../src/components/ui/Card";
 import { Button } from "../src/components/ui/Button";
 import { Input } from "../src/components/ui/Input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import toast from "react-hot-toast";
+
+const contactSchema = z.object({
+  firstName: z.string().min(2, { message: "First name must be at least 2 characters" }),
+  lastName: z.string().min(2, { message: "Last name must be at least 2 characters" }),
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  phone: z.string().min(10, { message: "Please enter a valid 10-digit phone number" }),
+  subject: z.string().min(1, { message: "Please select a subject" }),
+  message: z.string().min(10, { message: "Message must be at least 10 characters long" }),
+});
+type ContactFormValues = z.infer<typeof contactSchema>;
 
 export default function ContactPage() {
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<ContactFormValues>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: {
+      subject: "Course Inquiry"
+    }
+  });
+
+  const onSubmit = async (data: ContactFormValues) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    toast.success("Message sent successfully! Our team will contact you within 24 hours.");
+    reset();
+  };
+
   return (
     <MainLayout>
       {/* Hero Section */}
@@ -112,50 +139,78 @@ export default function ContactPage() {
                   <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 mb-2">Send us a message</h2>
                   <p className="text-slate-600 mb-8">Fill out the form below and our team will get back to you within 24 hours.</p>
                   
-                  <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                  <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-slate-700">First Name</label>
-                        <Input placeholder="John" />
+                        <Input 
+                          placeholder="John" 
+                          {...register("firstName")}
+                          className={errors.firstName ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500' : ''} 
+                        />
+                        {errors.firstName && <p className="text-red-500 text-xs font-semibold">{errors.firstName.message}</p>}
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-slate-700">Last Name</label>
-                        <Input placeholder="Doe" />
+                        <Input 
+                          placeholder="Doe" 
+                          {...register("lastName")}
+                          className={errors.lastName ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500' : ''} 
+                        />
+                        {errors.lastName && <p className="text-red-500 text-xs font-semibold">{errors.lastName.message}</p>}
                       </div>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-slate-700">Email Address</label>
-                        <Input type="email" placeholder="john@example.com" />
+                        <Input 
+                          type="email" 
+                          placeholder="john@example.com" 
+                          {...register("email")}
+                          className={errors.email ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500' : ''} 
+                        />
+                        {errors.email && <p className="text-red-500 text-xs font-semibold">{errors.email.message}</p>}
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-slate-700">Phone Number</label>
-                        <Input type="tel" placeholder="+91 98765 43210" />
+                        <Input 
+                          type="tel" 
+                          placeholder="+91 98765 43210" 
+                          {...register("phone")}
+                          className={errors.phone ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500' : ''} 
+                        />
+                        {errors.phone && <p className="text-red-500 text-xs font-semibold">{errors.phone.message}</p>}
                       </div>
                     </div>
 
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-slate-700">Subject</label>
-                      <select className="flex w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2A6B]/20 focus-visible:border-[#1B2A6B] transition-all shadow-sm">
-                        <option>Course Inquiry</option>
-                        <option>Mentorship Details</option>
-                        <option>Corporate Training</option>
-                        <option>Other</option>
+                      <select 
+                        {...register("subject")}
+                        className={`flex w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2A6B]/20 focus-visible:border-[#1B2A6B] transition-all shadow-sm ${errors.subject ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500' : ''}`}
+                      >
+                        <option value="Course Inquiry">Course Inquiry</option>
+                        <option value="Mentorship Details">Mentorship Details</option>
+                        <option value="Corporate Training">Corporate Training</option>
+                        <option value="Other">Other</option>
                       </select>
+                      {errors.subject && <p className="text-red-500 text-xs font-semibold">{errors.subject.message}</p>}
                     </div>
 
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-slate-700">Your Message</label>
                       <textarea 
                         rows={5} 
-                        className="flex w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm ring-offset-white placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2A6B]/20 focus-visible:border-[#1B2A6B] transition-all shadow-sm resize-none"
+                        {...register("message")}
+                        className={`flex w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm ring-offset-white placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2A6B]/20 focus-visible:border-[#1B2A6B] transition-all shadow-sm resize-none ${errors.message ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500' : ''}`}
                         placeholder="How can we help you?"
                       />
+                      {errors.message && <p className="text-red-500 text-xs font-semibold">{errors.message.message}</p>}
                     </div>
 
-                    <Button variant="primary" size="lg" className="w-full gap-2">
-                      <Send size={18} /> Send Message
+                    <Button variant="primary" size="lg" className="w-full gap-2" type="submit" disabled={isSubmitting}>
+                      {isSubmitting ? 'Sending...' : <><Send size={18} /> Send Message</>}
                     </Button>
                   </form>
                 </CardContent>

@@ -1,17 +1,14 @@
 import { useRef } from "react";
 import { motion, useAnimationFrame, useInView } from "framer-motion";
-import Link from "next/link";
 import { useCountUp } from "../hooks/useAnimations";
 import {
   GraduationCap,
   Users,
   Briefcase,
   Star,
-  CheckCircle2,
   Sparkles,
   ChevronLeft,
-  ChevronRight,
-  ArrowRight
+  ChevronRight
 } from "lucide-react";
 
 interface CompanyType {
@@ -20,31 +17,31 @@ interface CompanyType {
 }
 
 const ROW1_COMPANIES: CompanyType[] = [
-  { name: "Framestore", logoUrl: "https://logo.clearbit.com/framestore.com" },
-  { name: "Weta Digital", logoUrl: "https://logo.clearbit.com/wetafx.co.nz" },
-  { name: "Method Studios", logoUrl: "https://logo.clearbit.com/methodstudios.com" },
-  { name: "Vistaprint", logoUrl: "https://logo.clearbit.com/vistaprint.com" },
-  { name: "Anibrain", logoUrl: "https://logo.clearbit.com/anibrain.com" },
-  { name: "Basilic Fly Studio", logoUrl: "https://logo.clearbit.com/basilicfly.com" },
-  { name: "Lakshya Digital", logoUrl: "https://logo.clearbit.com/lakshyadigital.com" },
-  { name: "Tau Films", logoUrl: "https://logo.clearbit.com/taufilms.com" },
+  { name: "Framestore" },
+  { name: "Weta Digital" },
+  { name: "Method Studios" },
+  { name: "Vistaprint" },
+  { name: "Anibrain" },
+  { name: "Basilic Fly Studio" },
+  { name: "Lakshya Digital" },
+  { name: "Tau Films" },
 ];
 
 const ROW2_COMPANIES: CompanyType[] = [
-  { name: "Office Beacon", logoUrl: "https://logo.clearbit.com/officebeacon.com" },
-  { name: "DQ Entertainment", logoUrl: "https://logo.clearbit.com/dqentertainment.com" },
-  { name: "Hopmotion", logoUrl: "https://logo.clearbit.com/hopmotion.com" },
-  { name: "AISECT", logoUrl: "https://logo.clearbit.com/aisect.org" },
-  { name: "ADF Aroma De France", logoUrl: "https://logo.clearbit.com/aromadefrance.com" },
-  { name: "Contiloe Pictures", logoUrl: "https://logo.clearbit.com/contiloe.in" },
-  { name: "Golden Robot", logoUrl: "https://logo.clearbit.com/goldenrobot.com" },
-  { name: "After Studios", logoUrl: "https://logo.clearbit.com/after.studio" }
+  { name: "Office Beacon" },
+  { name: "DQ Entertainment" },
+  { name: "Hopmotion" },
+  { name: "AISECT" },
+  { name: "ADF Aroma De France" },
+  { name: "Contiloe Pictures" },
+  { name: "Golden Robot" },
+  { name: "After Studios" }
 ];
 
 const stats = [
-  { value: 5000, suffix: "+", label: "Students Placed", icon: GraduationCap },
-  { value: 400, suffix: "+", label: "Hiring Partners", icon: Users },
-  { value: 3000, suffix: "+", label: "Projects Completed", icon: Briefcase },
+  { value: 2500, suffix: "+", label: "Students", icon: GraduationCap },
+  { value: 120, suffix: "+", label: "Partners", icon: Users },
+  { value: 850, suffix: "+", label: "Projects", icon: Briefcase },
   { value: 94, suffix: "%", label: "Placement Rate", icon: Star },
 ];
 
@@ -70,28 +67,7 @@ const GrowthCurve = () => (
   </svg>
 );
 
-const DotGrid = () => (
-  <svg className="w-16 h-8 text-slate-200/80" fill="currentColor" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="5" cy="5" r="1.5" />
-    <circle cx="15" cy="5" r="1.5" />
-    <circle cx="25" cy="5" r="1.5" />
-    <circle cx="35" cy="5" r="1.5" />
-    <circle cx="45" cy="5" r="1.5" />
-    <circle cx="55" cy="5" r="1.5" />
-    <circle cx="5" cy="15" r="1.5" />
-    <circle cx="15" cy="15" r="1.5" />
-    <circle cx="25" cy="15" r="1.5" />
-    <circle cx="35" cy="15" r="1.5" />
-    <circle cx="45" cy="15" r="1.5" />
-    <circle cx="55" cy="15" r="1.5" />
-    <circle cx="5" cy="25" r="1.5" />
-    <circle cx="15" cy="25" r="1.5" />
-    <circle cx="25" cy="25" r="1.5" />
-    <circle cx="35" cy="25" r="1.5" />
-    <circle cx="45" cy="25" r="1.5" />
-    <circle cx="55" cy="25" r="1.5" />
-  </svg>
-);
+
 
 const CompanyLogo = ({ name, logoUrl }: { name: string; logoUrl?: string }) => {
   if (logoUrl) {
@@ -150,9 +126,9 @@ export interface ClientsSectionProps {
 }
 
 export const ClientsSection = ({
-  titlePrefix = "Experts from ",
-  highlightText = "Top Companies",
-  subtitle = "Our mentors come from the world's leading technology companies"
+  titlePrefix = "Our ",
+  highlightText = "Clients & Partners",
+  subtitle = "The world-class companies we work with"
 }: ClientsSectionProps = {}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });

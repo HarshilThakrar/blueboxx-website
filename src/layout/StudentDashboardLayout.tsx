@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthContext";
 import {
   LayoutDashboard, BookOpen, Briefcase, Settings, LogOut,
-  Menu, X, Bell, Search, GraduationCap,
-  FileText, MessageSquare, PlayCircle, ClipboardList,
-  Award, Calendar, Users, HelpCircle, FileEdit
+  Menu, X, Search, Bell,
+  FileText, ClipboardList,
+  Award
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -16,7 +16,6 @@ const SIDEBAR_CATEGORIES = [
     links: [
       { name: "My Dashboard",   href: "/student/dashboard",   icon: LayoutDashboard },
       { name: "My Courses",     href: "/student/courses",     icon: BookOpen },
-      { name: "Live Classes",   href: "/student/classes",     icon: PlayCircle },
       { name: "Assignments",    href: "/student/assignments",  icon: FileText },
     ],
   },
@@ -25,13 +24,11 @@ const SIDEBAR_CATEGORIES = [
     links: [
       { name: "Internships",    href: "/student/internships",  icon: Briefcase },
       { name: "Applications",   href: "/student/applications", icon: ClipboardList },
-      { name: "Placements",     href: "/student/placements",   icon: Users },
     ],
   },
   {
     title: "Tools",
     links: [
-      { name: "Resume Builder", href: "/student/resume-builder", icon: FileEdit },
       { name: "Certificates",   href: "/student/certificates",   icon: Award },
     ],
   },
@@ -39,7 +36,6 @@ const SIDEBAR_CATEGORIES = [
     title: "Account",
     links: [
       { name: "Settings",       href: "/student/settings",    icon: Settings },
-      { name: "Support",        href: "/student/support",     icon: HelpCircle },
     ],
   },
 ];

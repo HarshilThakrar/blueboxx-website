@@ -1,5 +1,5 @@
-import { AdminDashboardLayout } from "../../../src/layout/AdminDashboardLayout";
-import { RichTextEditor } from "../../../src/components/ui/RichTextEditor";
+import { AdminDashboardLayout } from "../../../../src/layout/AdminDashboardLayout";
+import { RichTextEditor } from "../../../../src/components/ui/RichTextEditor";
 import { ArrowLeft, Save, Eye, ImagePlus, Tag, Calendar, Globe } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";

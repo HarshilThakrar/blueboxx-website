@@ -7,7 +7,7 @@ import { SkeletonCard } from "../../../src/components/ui/Skeleton";
 import { useConfirm } from "../../../src/context/ConfirmContext";
 import { 
   Upload, Search, Filter, FolderOpen, Image as ImageIcon, 
-  FileText, Video, MoreVertical, Trash2, ExternalLink 
+  FileText, Video, MoreVertical, Trash2, ExternalLink, Copy 
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -22,29 +22,77 @@ interface MediaFile {
   uploadedAt: string;
 }
 
-const MOCK_MEDIA: MediaFile[] = [
-  { id: "1", name: "hero-banner-v2.jpg", type: "image", size: "2.4 MB", url: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&auto=format&fit=crop&q=60", uploadedAt: "2 hours ago" },
-  { id: "2", name: "student-handbook-2026.pdf", type: "document", size: "1.8 MB", url: "#", uploadedAt: "1 day ago" },
-  { id: "3", name: "platform-walkthrough.mp4", type: "video", size: "45.2 MB", url: "#", uploadedAt: "3 days ago" },
-  { id: "4", name: "company-logo-pack.zip", type: "document", size: "12.1 MB", url: "#", uploadedAt: "1 week ago" },
-  { id: "5", name: "dashboard-preview.png", type: "image", size: "850 KB", url: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&auto=format&fit=crop&q=60", uploadedAt: "2 weeks ago" },
-];
+
 
 export default function AdminMediaPage() {
   const [filter, setFilter] = useState<"all" | MediaType>("all");
   const [search, setSearch] = useState("");
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const confirm = useConfirm();
 
-  // Simulate network request to show skeleton loading
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setFiles(MOCK_MEDIA);
+  const fetchMedia = async () => {
+    try {
+      const res = await fetch('/api/media');
+      const data = await res.json();
+      if (res.ok) {
+        setFiles(data);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load media files.");
+    } finally {
       setIsLoading(false);
-    }, 2000);
-    return () => clearTimeout(timer);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchMedia();
   }, []);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (fileInputRef.current) fileInputRef.current.value = "";
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64Data = event.target?.result;
+      if (typeof base64Data !== 'string') return;
+
+      setIsUploading(true);
+      const loadingToast = toast.loading("Uploading file...");
+
+      try {
+        const res = await fetch('/api/media', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: file.name,
+            data: base64Data
+          })
+        });
+
+        const result = await res.json();
+        
+        if (res.ok) {
+          toast.success("File uploaded successfully", { id: loadingToast });
+          fetchMedia();
+        } else {
+          toast.error(result.error || "Upload failed", { id: loadingToast });
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error("Network error during upload", { id: loadingToast });
+      } finally {
+        setIsUploading(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const filteredFiles = files.filter(f => 
     (filter === "all" || f.type === filter) &&
@@ -60,9 +108,23 @@ export default function AdminMediaPage() {
     });
     
     if (isConfirmed) {
-      setFiles(prev => prev.filter(f => f.id !== id));
-      toast.success("File deleted successfully");
+      try {
+        const res = await fetch(`/api/media?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+        if (res.ok) {
+          setFiles(prev => prev.filter(f => f.id !== id));
+          toast.success("File deleted successfully");
+        } else {
+          toast.error("Failed to delete file.");
+        }
+      } catch (error) {
+        toast.error("Error deleting file.");
+      }
     }
+  };
+
+  const handleCopyLink = (url: string) => {
+    navigator.clipboard.writeText(url);
+    toast.success("Link copied to clipboard!");
   };
 
   const renderFileIcon = (type: MediaType) => {
@@ -84,11 +146,13 @@ export default function AdminMediaPage() {
             <p className="text-slate-500 font-medium">Upload, organize, and manage global assets across the platform.</p>
           </div>
           <div className="flex gap-3">
+            <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
             <Button 
-              onClick={() => toast("Upload modal opened", { icon: '☁️' })}
-              className="h-11 px-5 bg-[#1B2A6B] hover:bg-[#0d1635] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#1B2A6B]/20 flex items-center gap-2"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="h-11 px-5 bg-[#1B2A6B] hover:bg-[#0d1635] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#1B2A6B]/20 flex items-center gap-2 disabled:opacity-70"
             >
-              <Upload size={18} /> Upload Files
+              <Upload size={18} /> {isUploading ? "Uploading..." : "Upload Files"}
             </Button>
           </div>
         </div>
@@ -143,10 +207,13 @@ export default function AdminMediaPage() {
                   
                   {/* Hover Overlay */}
                   <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-[2px]">
-                    <button className="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:scale-110 transition-transform">
-                      <ExternalLink size={18} />
+                    <button onClick={() => handleCopyLink(file.url)} title="Copy Link" className="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:scale-110 transition-transform">
+                      <Copy size={18} />
                     </button>
-                    <button onClick={() => handleDelete(file.id, file.name)} className="w-10 h-10 rounded-full bg-rose-500 text-white flex items-center justify-center hover:scale-110 transition-transform shadow-lg shadow-rose-500/30">
+                    <a href={file.url} target="_blank" rel="noreferrer" title="Open File" className="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:scale-110 transition-transform">
+                      <ExternalLink size={18} />
+                    </a>
+                    <button onClick={() => handleDelete(file.id, file.name)} title="Delete File" className="w-10 h-10 rounded-full bg-rose-500 text-white flex items-center justify-center hover:scale-110 transition-transform shadow-lg shadow-rose-500/30">
                       <Trash2 size={18} />
                     </button>
                   </div>
@@ -169,7 +236,7 @@ export default function AdminMediaPage() {
             title="No media found"
             description={search ? `No files match your search "${search}"` : "Upload images, videos, and documents to use across your platform."}
             actionLabel="Upload First File"
-            onAction={() => toast("Upload modal opened", { icon: '☁️' })}
+            onAction={() => fileInputRef.current?.click()}
           />
         )}
       </div>

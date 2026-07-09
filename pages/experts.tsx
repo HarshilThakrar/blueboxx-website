@@ -9,27 +9,51 @@ import { TestimonialSection } from "../src/sections/TestimonialSection";
 import { PartnersSection } from "../src/sections/PartnersSection";
 import { Card, CardContent } from "../src/components/ui/Card";
 import { Button } from "../src/components/ui/Button";
-import { Star, Building, ArrowRight, Video, X } from "lucide-react";
+import { Star, Building, ArrowRight, Video, X, Filter } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import { SEO } from "../src/components/seo/SEO";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const mentorSchema = z.object({
+  experience: z.string().min(1, { message: "Please select your experience" }),
+  subject: z.string().min(2, { message: "Please enter your domain/subject" }),
+});
+type MentorFormValues = z.infer<typeof mentorSchema>;
 
 export default function ExpertsPage() {
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("top-rated");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [isMentorModalOpen, setIsMentorModalOpen] = useState(false);
   const [mentorStep, setMentorStep] = useState(1);
   const [mentorData, setMentorData] = useState({ experience: '', subject: '' });
 
+  const { register: registerMentor, handleSubmit: handleSubmitMentor, formState: { errors: mentorErrors, isValid: isMentorValid } } = useForm<MentorFormValues>({
+    resolver: zodResolver(mentorSchema),
+    mode: "onChange"
+  });
+
+  const onMentorContinue = (data: MentorFormValues) => {
+    setMentorData({ experience: data.experience, subject: data.subject });
+    setMentorStep(2);
+  };
+
   useEffect(() => {
-    // Automatically show popup when user visits the mentor section
-    const timer = setTimeout(() => {
-      setIsMentorModalOpen(true);
-    }, 1500);
-    return () => clearTimeout(timer);
+    // Intentionally left empty to remove the annoying auto-popup
   }, []);
 
-  const sortedMentors = [...dummyMentors].sort((a, b) => {
+  const filteredMentors = dummyMentors.filter(mentor => 
+    mentor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    mentor.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    mentor.designation.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const sortedMentors = [...filteredMentors].sort((a, b) => {
     if (sortOption === "most-sessions") {
       const aVal = parseInt(String(a.students).replace(/[^0-9]/g, '')) || 0;
       const bVal = parseInt(String(b.students).replace(/[^0-9]/g, '')) || 0;
@@ -42,7 +66,13 @@ export default function ExpertsPage() {
   });
 
   return (
-    <MainLayout>
+    <>
+      <SEO 
+        title="Learn from 1% Industry Experts | Blueboxx DA Mentors"
+        description="Book 1:1 sessions with experts from FAANG and top product companies. Get personalized guidance, resume reviews, and interview prep."
+        keywords="Career Guidance, Resume Building, Mock Interview, Placement Preparation, Mentorship, Industry Experts"
+      />
+      <MainLayout>
 
       <div>
         <div className="bg-[#0d1635] pt-24 pb-16 relative overflow-hidden">
@@ -88,10 +118,20 @@ export default function ExpertsPage() {
 
         <div className="container mx-auto px-4 max-w-7xl relative z-10">
           
-          <TopSearchBar />
+          <TopSearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search experts by name, role, or company..." />
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-1 hidden lg:block">
+            <div className="lg:hidden">
+              <Button 
+                onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)} 
+                variant="outline" 
+                className="w-full border-slate-200 text-slate-700 bg-white hover:bg-slate-50 shadow-sm h-12 rounded-xl gap-2 font-extrabold text-sm uppercase tracking-wider"
+              >
+                <Filter size={16} /> Filters
+              </Button>
+            </div>
+
+            <div className={`lg:col-span-1 ${isMobileFilterOpen ? 'block' : 'hidden'} lg:block`}>
               <SidebarFilter type="experts" />
             </div>
 
@@ -187,38 +227,38 @@ export default function ExpertsPage() {
               </div>
               <div className="p-8">
                 {mentorStep === 1 && (
-                  <div className="space-y-6">
+                  <form className="space-y-6" onSubmit={handleSubmitMentor(onMentorContinue)}>
                     <div>
                       <label className="block text-sm font-bold text-slate-700 mb-2">How much experience do you have?</label>
                       <select 
-                        value={mentorData.experience}
-                        onChange={(e) => setMentorData({...mentorData, experience: e.target.value})}
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#1B2A6B]"
+                        {...registerMentor("experience")}
+                        className={`w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm focus:outline-none focus:border-[#1B2A6B] ${mentorErrors.experience ? 'border-red-500' : 'border-slate-200'}`}
                       >
                         <option value="">Select experience</option>
                         <option value="1-3">1-3 Years</option>
                         <option value="3-5">3-5 Years</option>
                         <option value="5+">5+ Years</option>
                       </select>
+                      {mentorErrors.experience && <p className="text-red-500 text-xs mt-1 font-semibold">{mentorErrors.experience.message}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-slate-700 mb-2">Which subject/domain?</label>
                       <input 
                         type="text" 
-                        value={mentorData.subject}
-                        onChange={(e) => setMentorData({...mentorData, subject: e.target.value})}
+                        {...registerMentor("subject")}
                         placeholder="e.g. React, UI/UX, Python"
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#1B2A6B]"
+                        className={`w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm focus:outline-none focus:border-[#1B2A6B] ${mentorErrors.subject ? 'border-red-500' : 'border-slate-200'}`}
                       />
+                      {mentorErrors.subject && <p className="text-red-500 text-xs mt-1 font-semibold">{mentorErrors.subject.message}</p>}
                     </div>
                     <button 
-                      onClick={() => setMentorStep(2)}
-                      disabled={!mentorData.experience || !mentorData.subject}
+                      type="submit"
+                      disabled={!isMentorValid}
                       className="w-full py-3 bg-[#1B2A6B] hover:bg-[#0d1635] text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50"
                     >
                       Continue
                     </button>
-                  </div>
+                  </form>
                 )}
                 {mentorStep === 2 && (
                   <div className="text-center space-y-6">
@@ -248,5 +288,6 @@ export default function ExpertsPage() {
         )}
       </AnimatePresence>
     </MainLayout>
+    </>
   );
 }

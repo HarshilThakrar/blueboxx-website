@@ -5,7 +5,7 @@ import { staggerContainer, staggerItem, EASE_OUT_EXPO } from "../animations/vari
 import Link from "next/link";
 
 const faqs = [
-  { q: "Do you provide placement guarantee?", a: "We provide best-in-class placement assistance with 400+ hiring partners. Our curriculum ensures you're 100% industry-ready with a strong portfolio and interview preparation." },
+  { q: "Do you provide placement guarantee?", a: "We provide best-in-class placement assistance with 120+ hiring partners. Our curriculum ensures you're 100% industry-ready with a strong portfolio and interview preparation." },
   { q: "Are the internships paid?", a: "Yes, we offer stipend-based internships (₹5,000–₹15,000/month) based on your skillset and the company. Unpaid internships also come with an industry-recognized certificate." },
   { q: "Can I book a mentor session without enrolling in a course?", a: "Absolutely. Our mentorship platform is open to everyone. Book 1-on-1 sessions for career guidance, mock interviews, or portfolio reviews — no enrollment required." },
   { q: "What is the refund policy?", a: "We offer a 7-day no-questions-asked refund policy. If the course doesn't meet your expectations in the first week, we will process a full refund immediately." },

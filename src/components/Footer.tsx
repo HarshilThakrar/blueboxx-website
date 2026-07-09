@@ -18,11 +18,11 @@ const footerLinks = {
     { label: "Teach on Blueboxx", href: "/contact" },
   ],
   featuredCourses: [
-    { label: "Full Stack Development", href: "/courses/fullstack" },
-    { label: "Graphic Design", href: "/courses/graphic-design" },
-    { label: "Digital Marketing", href: "/courses/marketing" },
-    { label: "UI/UX Design", href: "/courses/uiux" },
-    { label: "Data Analytics", href: "/courses/data" },
+    { label: "Full Stack Development", href: "/courses/full-stack-development" },
+    { label: "Graphic Design", href: "/courses/graphic-designing" },
+    { label: "Digital Marketing", href: "/courses/digital-marketing" },
+    { label: "UI/UX Design", href: "/courses/ui-ux-design" },
+    { label: "Data Analytics", href: "/courses/data-analytics" },
     { label: "View All Courses", href: "/courses" },
   ],
   legal: [
@@ -35,8 +35,8 @@ const footerLinks = {
 
 const stats = [
   { icon: BookOpen, value: "20+", label: "Industry Courses" },
-  { icon: Users, value: "5K+", label: "Students Placed" },
-  { icon: Briefcase, value: "400+", label: "Hiring Partners" },
+  { icon: Users, value: "2.5K+", label: "Students Placed" },
+  { icon: Briefcase, value: "120+", label: "Hiring Partners" },
   { icon: Award, value: "4.9★", label: "Avg Rating" },
 ];
 

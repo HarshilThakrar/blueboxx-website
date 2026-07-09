@@ -86,11 +86,8 @@ export default function AdminInternshipsPage() {
           ) : (
             filteredInternships.map((job) => (
               <Card key={job.id} className="border border-slate-200 shadow-sm overflow-hidden bg-white relative">
-                <button onClick={() => handleDelete(job.id)} className="absolute top-4 right-4 p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors z-10" title="Delete Listing">
-                   <Trash2 size={18} />
-                </button>
                 <CardContent className="p-6">
-                  <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="flex items-start gap-4">
                       <div className="w-16 h-16 rounded-xl border border-slate-200 flex items-center justify-center bg-white p-2 shrink-0">
                         <img src={job.logo} alt={job.company} className="max-w-full max-h-full object-contain" />
@@ -129,10 +126,10 @@ export default function AdminInternshipsPage() {
                       </div>
                     </div>
                     
-                    <div className="flex gap-2 w-full sm:w-auto mt-4 sm:mt-0 flex-shrink-0">
+                    <div className="flex items-center gap-2 w-full sm:w-auto mt-4 sm:mt-0 flex-shrink-0">
                       {job.status === 'Pending' ? (
                         <>
-                          <Button onClick={() => handleReject(job.id)} variant="outline" className="flex-1 sm:flex-none text-red-600 border-red-200 hover:bg-red-50 gap-2"><XCircle size={16}/> Reject</Button>
+                          <Button onClick={() => handleReject(job.id)} variant="outline" className="flex-1 sm:flex-none text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 gap-2"><XCircle size={16}/> Reject</Button>
                           <Button onClick={() => handleApprove(job.id)} variant="primary" className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 border-emerald-600 shadow-md gap-2"><CheckCircle2 size={16}/> Approve</Button>
                         </>
                       ) : (
@@ -140,6 +137,9 @@ export default function AdminInternshipsPage() {
                           <Button onClick={() => router.push(`/admin/internships/add`)} variant="outline" className="flex-1 sm:flex-none text-sm bg-white shadow-sm border-slate-200">Edit</Button>
                         </>
                       )}
+                      <Button onClick={() => handleDelete(job.id)} variant="outline" className="text-red-500 border-red-100 hover:bg-red-50 hover:text-red-600 p-2.5 h-11 w-11 shadow-sm shrink-0" title="Delete Listing">
+                         <Trash2 size={18} />
+                      </Button>
                     </div>
                   </div>
                 </CardContent>

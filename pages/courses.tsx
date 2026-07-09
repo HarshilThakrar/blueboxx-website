@@ -11,9 +11,11 @@ import { TopSearchBar } from '../src/components/ui/TopSearchBar';
 import { SidebarFilter } from '../src/components/ui/SidebarFilter';
 import { Clock, Users, Star, ArrowRight } from 'lucide-react';
 import { PartnersSection } from '../src/sections/PartnersSection';
+import { SEO } from '../src/components/seo/SEO';
 
 export default function CoursesPage() {
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("recommended");
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,13 +26,28 @@ export default function CoursesPage() {
   }, []);
 
   let sortedCourses = [...courses];
+  
+  if (searchQuery) {
+    sortedCourses = sortedCourses.filter(c => 
+      c.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      c.category.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      c.shortDesc.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+  
   if (sortOption === "price-asc") sortedCourses.sort((a, b) => a.price - b.price);
   if (sortOption === "price-desc") sortedCourses.sort((a, b) => b.price - a.price);
   if (sortOption === "rating-desc") sortedCourses.sort((a, b) => b.rating - a.rating);
 
   return (
-    <MainLayout>
-      {/* Hero Section */}
+    <>
+      <SEO 
+        title="Premium Tech Courses & Programs | Blueboxx DA"
+        description="Browse our industry-aligned curriculum built by experts from top product companies. Master Full Stack, AI/ML, and more with 100% placement support."
+        keywords="Web Development Course Vadodara, Full Stack Development Course, MERN Stack Course, React JS Training Vadodara, Artificial Intelligence Course, Machine Learning Course, Graphic Design Course, UI UX Design Course, Digital Marketing Course, Mobile App Development Course, SEO Training, Best Full Stack Development Course in Vadodara, Learn Web Development from Industry Experts"
+      />
+      <MainLayout>
+        {/* Hero Section */}
       <div className="pt-24 pb-16 bg-[#0d1635] text-white relative overflow-hidden">
         {/* Premium Grid Background */}
         <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)", backgroundSize: "32px 32px" }}></div>
@@ -65,7 +82,7 @@ export default function CoursesPage() {
 
         <div className="container mx-auto px-4 max-w-7xl relative z-10">
           
-          <TopSearchBar />
+          <TopSearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search courses by title, category, or skills..." />
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div className="lg:col-span-1 hidden lg:block">
@@ -132,17 +149,7 @@ export default function CoursesPage() {
                           
                           <p className="text-xs text-slate-500 mb-3 line-clamp-2 leading-relaxed">{course.shortDesc}</p>
                           
-                          {/* Trust Avatars */}
-                          <div className="flex items-center gap-2 mb-4 mt-auto">
-                            <div className="flex -space-x-1.5">
-                              {[1, 2, 3, 4, 5].map((i) => (
-                                <img key={i} src={`https://i.pravatar.cc/100?u=${course.id}-${i}`} className="w-5 h-5 rounded-full border border-white shadow-sm relative" style={{ zIndex: 5 - i }} alt="Student" />
-                              ))}
-                            </div>
-                            <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">{course.students.toLocaleString()} Enrolled</span>
-                          </div>
-                          
-                          <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-slate-600 mb-5">
+                          <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-slate-600 mb-5 mt-auto">
                             <div className="flex items-center gap-1"><Clock size={12} className="text-[#1B2A6B]"/> {course.duration}</div>
                             <div className="flex items-center gap-1"><Star size={12} className="text-[#C9A227] fill-[#C9A227]"/> {course.rating}</div>
                           </div>
@@ -185,5 +192,6 @@ export default function CoursesPage() {
         subtitle="Learn from instructors at world's top tech and product companies" 
       />
     </MainLayout>
+    </>
   );
 }

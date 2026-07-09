@@ -78,7 +78,7 @@ export default function AdminGamificationPage() {
           </div>
           <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-center">
              <p className="text-3xl font-black text-slate-800 mb-1">450+</p>
-             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Daily Streaks > 30</p>
+             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Daily Streaks &gt; 30</p>
           </div>
         </AnimatedContent>
 

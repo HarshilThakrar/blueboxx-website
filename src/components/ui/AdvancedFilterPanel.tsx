@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, X, ChevronDown, Check } from 'lucide-react';
+import { Filter, ChevronDown, Check } from 'lucide-react';
 
 export type FilterOption = {
   id: string;

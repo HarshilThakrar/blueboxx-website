@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 import { MainLayout } from "../../src/layout/MainLayout";
 import { dummyMentors } from "../../src/data/mentors";
 import { motion, AnimatePresence } from "framer-motion";

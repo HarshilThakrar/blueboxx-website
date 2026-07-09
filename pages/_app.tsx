@@ -11,23 +11,6 @@ import { LoadingScreen } from "../src/components/LoadingScreen";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/router";
 import { Toaster } from "react-hot-toast";
-import Head from "next/head";
-
-const generateTitle = (pathname: string) => {
-  if (pathname === "/") return "Blueboxx DA";
-  
-  const segments = pathname.split("/").filter(Boolean);
-  if (segments.length === 0) return "Blueboxx DA";
-
-  const pageName = segments
-    .map(segment => {
-      if (segment.startsWith('[') && segment.endsWith(']')) return "Details";
-      return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
-    })
-    .join(" ");
-
-  return `${pageName} | Blueboxx DA`;
-};
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [isLoading, setIsLoading] = useState(true);
@@ -38,19 +21,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     return () => clearTimeout(t);
   }, []);
 
-  const pageTitle = generateTitle(router.pathname);
-
   return (
     <ThemeProvider>
-      <Head>
-        <title>{pageTitle}</title>
-        <meta name="description" content="Blueboxx DA - Where Creativity Meets Innovation" />
-        <meta name="application-name" content="Blueboxx DA" />
-        <meta property="og:title" content={pageTitle} />
-        <meta property="og:site_name" content="Blueboxx DA" />
-        <meta property="og:description" content="Blueboxx DA - Where Creativity Meets Innovation" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
       <AuthProvider>
         <ConfirmProvider>
           <TourProvider>

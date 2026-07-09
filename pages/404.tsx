@@ -41,9 +41,9 @@ export default function Custom404() {
         >
           {/* Giant 404 */}
           <div className="relative mb-6 select-none">
-            <h1 className="text-[10rem] sm:text-[14rem] font-black leading-none text-transparent bg-clip-text bg-gradient-to-b from-white/20 to-white/5 tracking-tighter">
+            <div className="text-[10rem] sm:text-[14rem] font-black leading-none text-transparent bg-clip-text bg-gradient-to-b from-white/20 to-white/5 tracking-tighter">
               404
-            </h1>
+            </div>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-24 h-24 rounded-3xl bg-[#C9A227]/10 border border-[#C9A227]/30 flex items-center justify-center backdrop-blur-sm shadow-xl">
                 <Compass size={48} className="text-[#C9A227]" strokeWidth={1.5} />
@@ -51,9 +51,9 @@ export default function Custom404() {
             </div>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl font-black text-white mb-3 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-black text-white mb-3 tracking-tight">
             You're Off the Map
-          </h2>
+          </h1>
           <p className="text-slate-400 font-medium text-base mb-10 leading-relaxed">
             The page you're looking for has moved, been deleted, or never existed.
             Let's get you back on track.

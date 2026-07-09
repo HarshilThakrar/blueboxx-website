@@ -4,13 +4,8 @@ import type { Variants } from "framer-motion";
    Mirror CSS custom props for use in JS motion values
 ──────────────────────────────────────────────────────────── */
 export const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
-export const EASE_IN_OUT_EXPO = [0.87, 0, 0.13, 1] as const;
-export const EASE_SPRING = [0.34, 1.56, 0.64, 1] as const;
-
-/* ─── Spring configs ──────────────────────────────────────*/
-export const springSnappy = { type: "spring", stiffness: 400, damping: 30 } as const;
-export const springGentle = { type: "spring", stiffness: 200, damping: 25 } as const;
-export const springBouncy = { type: "spring", stiffness: 300, damping: 18, mass: 0.8 } as const;
+const EASE_IN_OUT_EXPO = [0.87, 0, 0.13, 1] as const;
+const springSnappy = { type: "spring", stiffness: 400, damping: 30 } as const;
 
 /* ─── Fade Up (most-used section reveal) ─────────────────*/
 export const fadeUp: Variants = {

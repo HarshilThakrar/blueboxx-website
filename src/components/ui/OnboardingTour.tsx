@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTour } from '../../context/TourContext';
 import { Button } from './Button';
@@ -48,7 +48,7 @@ export const OnboardingTour = () => {
   const isFirstStep = currentStepIndex === 0;
 
   // Determine Tooltip Position
-  let tooltipStyle: React.CSSProperties = { top: targetRect.bottom + 16, left: targetRect.left };
+  let tooltipStyle: any = { top: targetRect.bottom + 16, left: targetRect.left };
   if (currentStep.placement === 'top') {
     tooltipStyle = { top: targetRect.top - 200, left: targetRect.left };
   } else if (currentStep.placement === 'left') {

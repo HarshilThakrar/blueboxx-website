@@ -1,20 +1,13 @@
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
-import { useCountUp } from "../hooks/useAnimations";
 import { 
   Star, 
   ChevronLeft, 
   ChevronRight, 
   Sparkles, 
   Send, 
-  Heart,
-  Users,
-  Building2,
-  TrendingUp,
-  Trophy,
-  ArrowRight
+  Heart
 } from "lucide-react";
-import Link from "next/link";
 
 interface TestimonialType {
   id: number;
@@ -31,66 +24,161 @@ interface TestimonialType {
 const testimonials: TestimonialType[] = [
   {
     id: 1,
-    name: "Vikram Nair",
-    role: "Data Analyst",
-    company: "Amazon",
-    year: "Placed in 2024",
+    name: "Ved Patel",
+    role: "Graphic Design Student",
+    company: "",
+    year: "2023",
     rating: 5,
-    content: "I had zero coding background. Now I'm a Data Analyst at Amazon. The structured curriculum, patient mentors, and hands-on projects made this possible. Thank you BlueBoxx!",
+    content: "I'm currently learning Graphic Design at Blueboxx DA, and my experience has been excellent. The faculty are highly supportive, the environment is creative, and the practical approach has helped me improve my skills significantly. Highly recommended for aspiring designers.",
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
-    highlightedText: "Data Analyst at Amazon."
+    highlightedText: "improve my skills significantly"
   },
   {
     id: 2,
-    name: "Priya Patel",
-    role: "Software Engineer",
-    company: "Microsoft",
-    year: "Placed in 2023",
+    name: "Mansi Sonvane",
+    role: "Creative Student",
+    company: "",
+    year: "2021",
     rating: 5,
-    content: "The full stack course completely transformed my career trajectory. The live projects were real, the mentorship was gold, and the placement support team was with me every step of the way.",
+    content: "Blueboxx DA is one of the best creative and training institutes in Vadodara. The team is professional, mentorship is excellent, and the practical learning approach makes it a great place to build real-world skills.",
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
-    highlightedText: "Software Engineer @ Microsoft"
+    highlightedText: "build real-world skills"
   },
   {
     id: 3,
-    name: "Rahul Singh",
-    role: "UX Designer",
-    company: "Flipkart",
-    year: "Placed in 2024",
+    name: "Krish Bhuvela",
+    role: "Web Development Student",
+    company: "",
+    year: "2024",
     rating: 5,
-    content: "BlueBoxx is unlike any edtech platform. I didn't just learn design, I got a 3-month internship that filled my portfolio with real-world projects. The curriculum is world-class.",
+    content: "My experience at Blueboxx DA has been extremely positive. The mentors are knowledgeable, supportive, and focused on practical learning. I highly recommend it to anyone looking to build a strong career in IT and web development.",
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop",
-    highlightedText: "UX Designer @ Flipkart"
+    highlightedText: "strong career in IT and web development"
   },
   {
     id: 4,
-    name: "Ananya Sharma",
-    role: "Digital Marketer",
-    company: "Zomato",
-    year: "Placed in 2024",
+    name: "Ansh Gohil",
+    role: "Digital Marketing Student",
+    company: "",
+    year: "2019",
     rating: 5,
-    content: "The mock interview sessions and resume feedback sessions were a game-changer. I walked into my interview with confidence. Worth every investment!",
+    content: "Blueboxx DA provided me with real industry exposure and a supportive work environment. I gained valuable hands-on experience in digital marketing and learned practical skills that boosted my confidence.",
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop",
-    highlightedText: "Digital Marketer @ Zomato"
+    highlightedText: "real industry exposure"
+  },
+  {
+    id: 5,
+    name: "Mihir Shah",
+    role: "Graphic Design Student",
+    company: "",
+    year: "2022",
+    rating: 5,
+    content: "The Graphic Design training at Blueboxx DA helped me grow professionally and improve my practical skills. The guidance I received also helped me start my career, and I'm grateful for the support.",
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop",
+    highlightedText: "improve my practical skills"
+  },
+  {
+    id: 6,
+    name: "Adarsh Pandey",
+    role: "Web Development Student",
+    company: "",
+    year: "2025",
+    rating: 5,
+    content: "I joined Blueboxx DA for Web Development training, and my experience was excellent. The instructors explained concepts clearly and provided practical knowledge that was very helpful throughout the course.",
+    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop",
+    highlightedText: "explained concepts clearly"
+  },
+  {
+    id: 7,
+    name: "Saifil Vohra",
+    role: "Student",
+    company: "",
+    year: "2018",
+    rating: 5,
+    content: "Amazing experience! The team is creative, professional, and delivers high-quality work. I'm very satisfied with the services and would highly recommend Blueboxx DA.",
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop",
+    highlightedText: "delivers high-quality work"
+  },
+  {
+    id: 8,
+    name: "Yadav Mayurdhavaj Sinh",
+    role: "Student",
+    company: "",
+    year: "2020",
+    rating: 5,
+    content: "Blueboxx DA stands out for its creativity, professionalism, and attention to detail. The team delivers quality work and creates an inspiring environment for learning and growth.",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
+    highlightedText: "inspiring environment for learning"
+  },
+  {
+    id: 9,
+    name: "Jay Salunke",
+    role: "Student",
+    company: "",
+    year: "2017",
+    rating: 5,
+    content: "Blueboxx DA is a great place to gain industry knowledge. The experienced faculty and practical approach helped me learn valuable skills for my career.",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop",
+    highlightedText: "gain industry knowledge"
+  },
+  {
+    id: 10,
+    name: "Varsha Savant",
+    role: "Intern",
+    company: "",
+    year: "2016",
+    rating: 5,
+    content: "The company provided valuable learning opportunities and practical experience. The supportive environment made it a great place to develop new skills.",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
+    highlightedText: "valuable learning opportunities"
+  },
+  {
+    id: 11,
+    name: "Hardik Shah",
+    role: "Student",
+    company: "",
+    year: "2015",
+    rating: 5,
+    content: "Had a great experience with Blueboxx DA. The team is professional, supportive, and genuinely focused on helping learners grow. The training programs are practical, well-structured, and aligned with current industry requirements.",
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop",
+    highlightedText: "aligned with current industry requirements"
+  },
+  {
+    id: 12,
+    name: "Deepak Patel",
+    role: "Intern",
+    company: "",
+    year: "2014",
+    rating: 5,
+    content: "I am currently doing an internship at Blueboxx DA, and my experience has been very positive. The team is supportive, and I am getting practical exposure to real-world projects. The mentors guide us well and help improve both technical and professional skills.",
+    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop",
+    highlightedText: "practical exposure to real-world projects"
+  },
+  {
+    id: 13,
+    name: "Prem Thapa",
+    role: "App Development Student",
+    company: "",
+    year: "2026",
+    rating: 5,
+    content: "Excellent organization with a professional team and a strong focus on quality. Blueboxx DA provides practical learning, software and mobile application development experience, and great career growth opportunities.",
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop",
+    highlightedText: "software and mobile application development experience"
+  },
+  {
+    id: 14,
+    name: "Parth Shiravale",
+    role: "Student",
+    company: "",
+    year: "2021",
+    rating: 5,
+    content: "My experience at Blueboxx DA has been excellent. The trainers are knowledgeable, supportive, and explain concepts in a practical way. The hands-on learning approach has helped me build confidence and improve my skills.",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop",
+    highlightedText: "explain concepts in a practical way"
   }
 ];
 
-const statItems = [
-  { label: "Alumni Placed", value: 5000, suffix: "+", icon: Users, color: "text-blue-600 bg-blue-50 border-blue-100" },
-  { label: "Hiring Partners", value: 400, suffix: "+", icon: Building2, color: "text-emerald-600 bg-emerald-50 border-emerald-100" },
-  { label: "Success Rate", value: 94, suffix: "%", icon: TrendingUp, color: "text-purple-600 bg-purple-50 border-purple-100" },
-  { label: "Projects Completed", value: 3000, suffix: "+", icon: Trophy, color: "text-amber-500 bg-amber-50 border-amber-100" },
-];
 
-const AnimatedCount = ({ end, suffix }: { end: number; suffix: string }) => {
-  const { count, ref } = useCountUp(end, 1800);
-  return (
-    <>
-      <span ref={ref}>{count.toLocaleString("en-IN")}</span>
-      {suffix}
-    </>
-  );
-};
 
 const CompanyMiniLogo = ({ name }: { name: string }) => {
   if (name === "Google") {
@@ -160,7 +248,7 @@ export const TestimonialsSection = () => {
   const [current, setCurrent] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(containerRef, { once: true, margin: "-100px" });
+  useInView(containerRef, { once: true, margin: "-100px" });
 
   useEffect(() => {
     if (!isAutoPlaying) return;
@@ -219,14 +307,14 @@ export const TestimonialsSection = () => {
         <div className="text-center max-w-2xl mx-auto mb-16">
           <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#1B2A6B]/15 bg-[#1B2A6B]/5 text-[#1B2A6B] text-xs font-semibold mb-5 shadow-sm">
             <Heart size={13} className="text-[#1B2A6B] fill-[#1B2A6B]/10" />
-            <span>OUR ALUMNI, OUR PRIDE</span>
+            <span>REAL REVIEWS, REAL IMPACT</span>
           </div>
 
           <h2 className="text-3xl md:text-5xl font-extrabold text-[#0d1635] tracking-tight leading-tight mb-4 font-sora">
-            Alumni <span className="text-[#C9A227]">Success</span> Stories
+            Our <span className="text-[#C9A227]">Success</span> Stories
           </h2>
           <p className="text-base text-[#4a5568] font-inter">
-            Hear from our alumni who are now working at top tech companies worldwide.
+            Hear from our students, interns, and employees about their journey with Blueboxx DA.
           </p>
         </div>
 
@@ -290,14 +378,6 @@ export const TestimonialsSection = () => {
 
                   {/* Profile Block */}
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-full border-2 border-[#C9A227]/50 relative overflow-hidden flex-shrink-0 shadow-sm">
-                      <img 
-                        src={testimonials[current].avatar} 
-                        alt={testimonials[current].name} 
-                        className="w-full h-full object-cover" 
-                      />
-                      <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white bg-emerald-400"></span>
-                    </div>
                     <div>
                       <div className="font-extrabold text-white text-base leading-tight font-sora">{testimonials[current].name}</div>
                       <div className="flex flex-wrap items-center gap-1.5 text-xs text-white/55 mt-1 font-inter">
@@ -332,31 +412,6 @@ export const TestimonialsSection = () => {
           </div>
         </div>
 
-        {/* Bottom stats row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto mt-20 border-t border-slate-100 pt-12">
-          {statItems.map((stat) => (
-            <div key={stat.label} className="flex items-center gap-4 justify-center lg:justify-start">
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${stat.color} flex-shrink-0 shadow-[0_4px_12px_rgba(0,0,0,0.01)]`}>
-                <stat.icon size={20} />
-              </div>
-              <div>
-                <div className="text-2xl font-extrabold text-[#0F172A] tracking-tight font-sora leading-tight">
-                  <AnimatedCount end={stat.value} suffix={stat.suffix} />
-                </div>
-                <div className="text-xs font-semibold text-[#64748B] font-inter mt-0.5 tracking-wide">
-                  {stat.label}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Read More Stories Button */}
-        <div className="mt-16 text-center">
-          <Link href="/success-stories" className="inline-flex items-center gap-2 font-bold text-[#1B2A6B] hover:text-[#C9A227] transition-colors duration-200">
-            Read More Success Stories <ArrowRight size={16} />
-          </Link>
-        </div>
 
       </div>
     </section>

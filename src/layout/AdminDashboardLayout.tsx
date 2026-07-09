@@ -4,12 +4,12 @@ import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthContext";
 import {
   LayoutDashboard, Users, BookOpen, Briefcase, Settings, LogOut,
-  Menu, X, Bell, Search, ShieldCheck, BarChart4, GraduationCap, Building,
-  CreditCard, FileText, Activity, TerminalSquare, MessageSquare,
-  ChevronRight, Tags, ShieldAlert, Image as ImageIcon,
-  Trophy, MonitorPlay, Award, Rss, HelpCircle,
-  Gamepad2, MessageCircle, Mail, Smartphone, Archive, Sliders, List,
-  Book, UserPlus, ClipboardList
+  Menu, X, Bell, Search, ShieldCheck, GraduationCap,
+  FileText, Activity, TerminalSquare,
+  ChevronRight, ShieldAlert, Image as ImageIcon,
+  Award,
+  Archive, Sliders,
+  Book, ClipboardList
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -36,7 +36,6 @@ const SIDEBAR_CATEGORIES = [
     links: [
       { name: "All Internships", href: "/admin/internships", icon: Briefcase },
       { name: "Jobs Application", href: "/admin/jobs/applications", icon: ClipboardList },
-      { name: "Contest", href: "/admin/jobs/contest", icon: Trophy },
       { name: "Add Internship", href: "/admin/internships/add", icon: Activity },
     ]
   },
@@ -44,46 +43,22 @@ const SIDEBAR_CATEGORIES = [
     title: "Education",
     links: [
       { name: "Courses", href: "/admin/courses", icon: BookOpen },
-      { name: "Quiz", href: "/admin/education/quiz", icon: HelpCircle },
-      { name: "Virtual Class", href: "/admin/education/virtual-class", icon: MonitorPlay },
-      { name: "Zoom", href: "/admin/education/zoom", icon: MonitorPlay },
       { name: "Certificate", href: "/admin/education/certificate", icon: Award },
-    ]
-  },
-  {
-    title: "Reports & Analytics",
-    links: [
-      { name: "Report", href: "/admin/reports", icon: BarChart4 },
-      { name: "Enrollment", href: "/admin/reports/enrollment", icon: UserPlus },
-      { name: "MCQ Results", href: "/admin/reports/mcq", icon: List },
-      { name: "College Enquiries", href: "/admin/reports/enquiries", icon: Building },
     ]
   },
   {
     title: "Content",
     links: [
       { name: "Frontend CMS", href: "/admin/cms", icon: FileText },
-      { name: "Blogs", href: "/admin/cms/blogs", icon: Rss },
-      { name: "Gamification", href: "/admin/cms/gamification", icon: Gamepad2 },
+      { name: "Clients & Partners", href: "/admin/clients", icon: Briefcase },
     ]
   },
-  {
-    title: "Communication",
-    links: [
-      { name: "Communications", href: "/admin/communication", icon: MessageCircle },
-      { name: "Comments", href: "/admin/communication/comments", icon: MessageSquare },
-      { name: "Q&A", href: "/admin/communication/qna", icon: MessageCircle },
-    ]
-  },
+
   {
     title: "Administration",
     links: [
       { name: "System Setting", href: "/admin/settings", icon: Settings },
       { name: "Sidebar Manager", href: "/admin/settings/sidebar", icon: Sliders },
-      { name: "Appearance", href: "/admin/settings/appearance", icon: ImageIcon },
-      { name: "Newsletter", href: "/admin/settings/newsletter", icon: Mail },
-      { name: "Notification", href: "/admin/settings/notification", icon: Bell },
-      { name: "Push Notification", href: "/admin/settings/push", icon: Smartphone },
       { name: "Utility", href: "/admin/settings/utility", icon: TerminalSquare },
       { name: "Backup", href: "/admin/settings/backup", icon: Archive },
     ]

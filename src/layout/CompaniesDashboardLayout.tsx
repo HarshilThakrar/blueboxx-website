@@ -12,8 +12,7 @@ import {
   Menu,
   X,
   Bell,
-  Search,
-  Plus
+  Search
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 

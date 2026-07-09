@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { MainLayout } from "../src/layout/MainLayout";
+import { Filter } from "lucide-react";
 import { dummyInternships } from "../src/data/internships";
 import { TopSearchBar } from "../src/components/ui/TopSearchBar";
 import { SidebarFilter } from "../src/components/ui/SidebarFilter";
@@ -14,10 +15,13 @@ import { HowToEarnSection } from "../src/sections/HowToEarnSection";
 import { TestimonialSection } from "../src/sections/TestimonialSection";
 import { PartnersSection } from "../src/sections/PartnersSection";
 import { useJobStore } from "../src/store/useJobStore";
+import { SEO } from "../src/components/seo/SEO";
 
 export default function InternshipsPage() {
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("latest");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const storeInternships = useJobStore((s) => s.getPublicInternships());
 
   // Convert store internships to dummyInternships shape and merge
@@ -36,7 +40,12 @@ export default function InternshipsPage() {
 
   const allInternships = [...storeMapped, ...dummyInternships];
 
-  const sortedInternships = [...allInternships].sort((a, b) => {
+  const filteredInternships = allInternships.filter(internship => 
+    internship.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    internship.company.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const sortedInternships = [...filteredInternships].sort((a, b) => {
     if (sortOption === "highest-stipend") {
       const aVal = parseInt(a.stipend.replace(/[^0-9]/g, '')) || 0;
       const bVal = parseInt(b.stipend.replace(/[^0-9]/g, '')) || 0;
@@ -46,8 +55,14 @@ export default function InternshipsPage() {
   });
 
   return (
-    <MainLayout>
-      {/* Hero Section */}
+    <>
+      <SEO 
+        title="Guaranteed Paid Internships for Students | Blueboxx DA"
+        description="Apply for premium internships with real clients. Build your portfolio, gain hands-on experience, and get paid while learning. 100% placement assistance."
+        keywords="Blueboxx Internship, IT Internship, Summer Internship, Final Year Internship, Industrial Training, Live Projects, Career Guidance, Best Internship Program for Students, Internship in Vadodara"
+      />
+      <MainLayout>
+        {/* Hero Section */}
       <div className="pt-24 pb-16 bg-[#0d1635] text-white relative overflow-hidden">
         {/* Premium Grid Background */}
         <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)", backgroundSize: "32px 32px" }}></div>
@@ -82,10 +97,20 @@ export default function InternshipsPage() {
 
         <div className="container mx-auto px-4 max-w-7xl relative z-10">
 
-          <TopSearchBar />
+          <TopSearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search internships by title or company..." />
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-1 hidden lg:block">
+            <div className="lg:hidden">
+              <Button 
+                onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)} 
+                variant="outline" 
+                className="w-full border-slate-200 text-slate-700 bg-white hover:bg-slate-50 shadow-sm h-12 rounded-xl gap-2 font-extrabold text-sm uppercase tracking-wider"
+              >
+                <Filter size={16} /> Filters
+              </Button>
+            </div>
+
+            <div className={`lg:col-span-1 ${isMobileFilterOpen ? 'block' : 'hidden'} lg:block`}>
               <SidebarFilter type="internships" />
             </div>
 
@@ -169,12 +194,16 @@ export default function InternshipsPage() {
         </div>
       </div>
       <HowToEarnSection />
-      <TestimonialSection />
+      <TestimonialSection 
+        type="internship" 
+        subtitle="Real success feedback from learners who joined our internship track and built real-world projects." 
+      />
       <PartnersSection 
         titlePrefix="Experts from " 
         highlightText="Top Companies" 
         subtitle="Our experts have hands-on experience from top companies and organizations" 
       />
     </MainLayout>
+    </>
   );
 }

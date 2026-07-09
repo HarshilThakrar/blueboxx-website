@@ -1,7 +1,20 @@
 import { Star } from "lucide-react";
 
-export const TestimonialSection = () => {
-  const testimonials = [
+export interface TestimonialSectionProps {
+  titlePrefix?: string;
+  titleHighlight?: string;
+  subtitle?: string;
+  type?: "default" | "internship" | "job";
+}
+
+export const TestimonialSection = ({
+  titlePrefix = "Our ",
+  titleHighlight = "Learners",
+  subtitle = "Real success feedback from learners who booked mentor mock calls and resume review sessions.",
+  type = "default"
+}: TestimonialSectionProps) => {
+
+  const defaultTestimonials = [
     { text: "Got an internship after two mocks with Aarav. Highly recommended!", author: "Ayushi Sharma", role: "Frontend Developer", initial: "A", color: "bg-pink-100 text-pink-600" },
     { text: "Ishita helped me ship a full ML capstone. Amazing mentorship.", author: "Samar Verma", role: "Data Science Intern", initial: "S", color: "bg-blue-100 text-blue-600" },
     { text: "Best 30 minutes on React. Web vitals improved significantly.", author: "Prakash Iyer", role: "SDE I @ Startup", initial: "P", color: "bg-emerald-100 text-emerald-600" },
@@ -9,6 +22,26 @@ export const TestimonialSection = () => {
     { text: "Priya's product strategy session changed my approach completely.", author: "Rahul Das", role: "Senior PM", initial: "R", color: "bg-amber-100 text-amber-600" },
     { text: "Vikram's DevOps guidance saved me weeks of trial and error.", author: "Karan Patel", role: "DevOps Engineer", initial: "K", color: "bg-cyan-100 text-cyan-600" }
   ];
+
+  const internshipTestimonials = [
+    { text: "The live project experience I gained here helped me secure a top-tier frontend internship!", author: "Ayushi Sharma", role: "Frontend Developer", initial: "A", color: "bg-pink-100 text-pink-600" },
+    { text: "Working with actual clients during my training gave me the exact portfolio I needed to land a Data Science intern role.", author: "Samar Verma", role: "Data Science Intern", initial: "S", color: "bg-blue-100 text-blue-600" },
+    { text: "Blueboxx's internship track is incredible. I learned more in 3 months here than a whole year in college.", author: "Prakash Iyer", role: "SDE Intern", initial: "P", color: "bg-emerald-100 text-emerald-600" },
+    { text: "From practical assignments to real client feedback, this internship bridged the gap between learning and doing.", author: "Ritika Singh", role: "Product Intern", initial: "R", color: "bg-purple-100 text-purple-600" },
+    { text: "I was able to build a complete ML capstone project under great mentorship, landing me a pre-placement offer.", author: "Rahul Das", role: "ML Intern", initial: "R", color: "bg-amber-100 text-amber-600" },
+    { text: "The DevOps internship gave me hands-on cloud experience that recruiters actively look for.", author: "Karan Patel", role: "DevOps Intern", initial: "K", color: "bg-cyan-100 text-cyan-600" }
+  ];
+
+  const jobTestimonials = [
+    { text: "The placement support was outstanding. I transitioned from learning to a full-time Frontend Developer role smoothly.", author: "Ayushi Sharma", role: "Frontend Developer", initial: "A", color: "bg-pink-100 text-pink-600" },
+    { text: "Blueboxx's training and network directly connected me with a top tech firm for my current Data Scientist position.", author: "Samar Verma", role: "Data Scientist", initial: "S", color: "bg-blue-100 text-blue-600" },
+    { text: "The rigorous practical work and mock interviews prepared me perfectly for my SDE I role.", author: "Prakash Iyer", role: "SDE I", initial: "P", color: "bg-emerald-100 text-emerald-600" },
+    { text: "The product management roadmap they provided was crucial for me clearing all my PM interview rounds.", author: "Ritika Singh", role: "Product Manager", initial: "R", color: "bg-purple-100 text-purple-600" },
+    { text: "Great mentorship and industry-relevant curriculum helped me land a Senior PM role faster than I expected.", author: "Rahul Das", role: "Senior PM", initial: "R", color: "bg-amber-100 text-amber-600" },
+    { text: "I went from zero cloud knowledge to a full-time DevOps Engineer thanks to their structured placement program.", author: "Karan Patel", role: "DevOps Engineer", initial: "K", color: "bg-cyan-100 text-cyan-600" }
+  ];
+
+  const testimonials = type === "internship" ? internshipTestimonials : type === "job" ? jobTestimonials : defaultTestimonials;
 
   return (
     <div className="bg-slate-50 py-20 relative overflow-hidden border-t border-slate-100">
@@ -22,8 +55,8 @@ export const TestimonialSection = () => {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1B2A6B]/5 border border-[#1B2A6B]/10 text-[#1B2A6B] text-xs font-bold mb-4">
             <Star size={14} className="fill-[#C9A227] text-[#C9A227]" /> 4.9/5 Average Rating
           </div>
-          <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-4 font-sora tracking-tight">Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1B2A6B] to-[#C9A227]">Learners</span></h2>
-          <p className="text-sm font-semibold text-slate-500 max-w-lg mx-auto">Real success feedback from learners who booked mentor mock calls and resume review sessions.</p>
+          <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-4 font-sora tracking-tight">{titlePrefix} <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1B2A6B] to-[#C9A227]">{titleHighlight}</span></h2>
+          <p className="text-sm font-semibold text-slate-500 max-w-lg mx-auto">{subtitle}</p>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">

@@ -16,6 +16,11 @@ export default function AdminCertificatePage() {
   const [isDesignerOpen, setIsDesignerOpen] = useState(false);
   const [isIssueOpen, setIsIssueOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [activePreviewCert, setActivePreviewCert] = useState<{student: string, course: string, date: string, cid: string} | null>(null);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [showFilters, setShowFilters] = useState(false);
 
   const [newCert, setNewCert] = useState({ student: "", course: "" });
 
@@ -37,6 +42,16 @@ export default function AdminCertificatePage() {
     setNewCert({ student: "", course: "" });
     setIsIssueOpen(false);
   };
+
+  const filteredCerts = certificates.filter(cert => {
+    const matchesSearch = cert.student.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      cert.cid.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cert.course.toLowerCase().includes(searchQuery.toLowerCase());
+      
+    const matchesStatus = statusFilter === "All" || cert.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <AdminDashboardLayout>
@@ -90,15 +105,46 @@ export default function AdminCertificatePage() {
         </AnimatedContent>
 
         <AnimatedContent direction="up" delay={0.3} className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
-             <h2 className="text-lg font-black text-slate-800 ml-2">Recent Credentials</h2>
-             <div className="flex gap-2 w-full sm:w-auto">
-               <div className="relative flex-1 sm:w-64">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input type="text" placeholder="Search by name or ID..." className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1B2A6B] focus:bg-white" />
-               </div>
-               <Button variant="outline" className="shrink-0"><Filter size={16}/></Button>
+          <div className="p-4 border-b border-slate-100 flex flex-col gap-4">
+             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <h2 className="text-lg font-black text-slate-800 ml-2">Recent Credentials</h2>
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <div className="relative flex-1 sm:w-64">
+                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                     <input 
+                       type="text" 
+                       placeholder="Search by name or ID..." 
+                       value={searchQuery}
+                       onChange={(e) => setSearchQuery(e.target.value)}
+                       className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1B2A6B] focus:bg-white" 
+                     />
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowFilters(!showFilters)} 
+                    className={`shrink-0 ${showFilters ? 'bg-slate-100 border-slate-300' : ''}`}
+                  >
+                    <Filter size={16}/>
+                  </Button>
+                </div>
              </div>
+
+             {showFilters && (
+               <div className="grid grid-cols-1 gap-4 pt-4 border-t border-slate-100 animate-in fade-in slide-in-from-top-2 duration-200">
+                 <div className="space-y-1.5">
+                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Status</label>
+                   <select 
+                     value={statusFilter}
+                     onChange={(e) => setStatusFilter(e.target.value)}
+                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-[#1B2A6B]"
+                   >
+                     <option value="All">All Statuses</option>
+                     <option value="Issued">Issued</option>
+                     <option value="Revoked">Revoked</option>
+                   </select>
+                 </div>
+               </div>
+             )}
           </div>
 
           <div className="overflow-x-auto">
@@ -114,20 +160,35 @@ export default function AdminCertificatePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {certificates.map((cert) => (
-                  <tr key={cert.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4 font-mono text-sm text-[#1B2A6B] font-bold">{cert.cid}</td>
-                    <td className="px-6 py-4 font-bold text-slate-900">{cert.student}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-slate-700">{cert.course}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-slate-500">{cert.date}</td>
-                    <td className="px-6 py-4">
-                       <Badge variant={cert.status === 'Issued' ? 'success' : 'danger'}>{cert.status}</Badge>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                       <Button variant="outline" className="text-xs py-1.5 h-8 gap-1.5 bg-white"><Download size={14}/> PDF</Button>
-                    </td>
+                {filteredCerts.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-8 text-center text-slate-400 font-medium">No certificates found matching filters.</td>
                   </tr>
-                ))}
+                ) : (
+                  filteredCerts.map((cert) => (
+                    <tr key={cert.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4 font-mono text-sm text-[#1B2A6B] font-bold">{cert.cid}</td>
+                      <td className="px-6 py-4 font-bold text-slate-900">{cert.student}</td>
+                      <td className="px-6 py-4 text-sm font-semibold text-slate-700">{cert.course}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-slate-500">{cert.date}</td>
+                      <td className="px-6 py-4">
+                         <Badge variant={cert.status === 'Issued' ? 'success' : 'danger'}>{cert.status}</Badge>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                         <Button 
+                           variant="outline" 
+                           onClick={() => {
+                             setActivePreviewCert(cert);
+                             setIsPreviewOpen(true);
+                           }} 
+                           className="text-xs py-1.5 h-8 gap-1.5 bg-white"
+                         >
+                           <Eye size={14}/> View / PDF
+                         </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -188,7 +249,7 @@ export default function AdminCertificatePage() {
                 {isDesignerOpen ? <Edit3 size={20} className="text-[#1B2A6B]" /> : <Eye size={20} className="text-[#1B2A6B]" />} 
                 {isDesignerOpen ? "Template Designer" : "Certificate Preview"}
               </h2>
-              <button onClick={() => { setIsDesignerOpen(false); setIsPreviewOpen(false); }} className="text-slate-400 hover:text-slate-600 transition-colors">
+              <button onClick={() => { setIsDesignerOpen(false); setIsPreviewOpen(false); setActivePreviewCert(null); }} className="text-slate-400 hover:text-slate-600 transition-colors">
                 <X size={24} />
               </button>
             </div>
@@ -200,20 +261,31 @@ export default function AdminCertificatePage() {
                  <div className="absolute inset-3 border border-slate-100"></div>
                  <h1 className="text-3xl font-serif text-[#1B2A6B] mb-4">Certificate of Completion</h1>
                  <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-6">This is to certify that</p>
-                 <h2 className="text-2xl font-script text-slate-800 mb-4 border-b border-slate-300 pb-2 px-12">[ Student Name ]</h2>
+                 <h2 className="text-2xl font-script text-slate-800 mb-4 border-b border-slate-300 pb-2 px-12">
+                   {activePreviewCert ? activePreviewCert.student : "[ Student Name ]"}
+                 </h2>
                  <p className="text-[10px] text-slate-500 mb-4 max-w-[80%]">has successfully completed the requirements for the course</p>
-                 <h3 className="font-bold text-slate-800 mb-8">[ Course Title ]</h3>
+                 <h3 className="font-bold text-slate-800 mb-8">
+                   {activePreviewCert ? activePreviewCert.course : "[ Course Title ]"}
+                 </h3>
                  
                  <div className="w-full flex justify-between px-8 text-[8px] text-slate-500 font-bold uppercase tracking-wider">
-                    <div className="border-t border-slate-300 pt-2 w-24">Date: [Issue Date]</div>
+                    <div className="border-t border-slate-300 pt-2 w-24">Date: {activePreviewCert ? activePreviewCert.date : "[Issue Date]"}</div>
                     <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-500 border border-amber-200"><Award size={24}/></div>
-                    <div className="border-t border-slate-300 pt-2 w-24">BlueBoxx Verified</div>
+                    <div className="border-t border-slate-300 pt-2 w-24">ID: {activePreviewCert ? activePreviewCert.cid : "BlueBoxx Verified"}</div>
                  </div>
               </div>
             </div>
 
-            <div className="p-4 border-t border-slate-100 bg-white flex justify-end">
-               <Button variant="primary" onClick={() => { setIsDesignerOpen(false); setIsPreviewOpen(false); }}>Close</Button>
+            <div className="p-4 border-t border-slate-100 bg-white flex justify-end gap-3">
+               <a 
+                 href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" 
+                 download={`${activePreviewCert ? activePreviewCert.student.replace(/\s+/g, '_') : 'Certificate'}_Certificate.pdf`}
+                 className="inline-flex items-center justify-center rounded-xl text-sm font-semibold transition-all h-11 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+               >
+                 <Download size={16} className="mr-2"/> Download PDF
+               </a>
+               <Button variant="outline" onClick={() => { setIsDesignerOpen(false); setIsPreviewOpen(false); setActivePreviewCert(null); }}>Close</Button>
             </div>
           </AnimatedContent>
         </div>

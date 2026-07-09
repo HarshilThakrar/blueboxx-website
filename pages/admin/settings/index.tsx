@@ -73,14 +73,31 @@ export default function AdminSettings() {
               <div className="space-y-6">
                 <h2 className="text-lg font-bold text-slate-900 mb-6">General Configuration</h2>
                 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Platform Name</label>
-                  <input type="text" defaultValue="BlueBoxx" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Platform Name</label>
+                    <input type="text" defaultValue="BlueBoxx" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-semibold text-slate-800" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Support Phone Number</label>
+                    <input type="tel" defaultValue="+91 90235 12853" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-semibold text-slate-800" />
+                  </div>
                 </div>
                 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Support Email</label>
-                  <input type="email" defaultValue="support@blueboxx.in" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Support Email</label>
+                    <input type="email" defaultValue="support@blueboxx.in" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-semibold text-slate-800" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Default Timezone</label>
+                    <select className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-semibold text-slate-800">
+                      <option value="IST">Asia/Kolkata (IST +5:30)</option>
+                      <option value="UTC">Coordinated Universal Time (UTC)</option>
+                      <option value="EST">Eastern Standard Time (EST -5:00)</option>
+                      <option value="PST">Pacific Standard Time (PST -8:00)</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between p-4 border border-slate-200 rounded-xl">
@@ -118,11 +135,115 @@ export default function AdminSettings() {
               </div>
             )}
 
-            {activeTab !== 'general' && activeTab !== 'security' && (
-              <div className="flex flex-col items-center justify-center h-48 text-center">
-                <Settings className="text-slate-300 mb-2" size={32} />
-                <h3 className="text-slate-700 font-bold mb-1">Configuration for {activeTab}</h3>
-                <p className="text-sm text-slate-500">This module is part of the Phase 8 backend integration.</p>
+            {activeTab === 'billing' && (
+              <div className="space-y-6">
+                <h2 className="text-lg font-bold text-slate-900 mb-6">Payment Gateways</h2>
+                
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Stripe Secret Key</label>
+                  <input type="password" placeholder="••••••••••••••••••••••••" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Razorpay Key ID</label>
+                  <input type="text" defaultValue="rzp_test_K29sDlKds9" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                </div>
+
+                <div className="flex items-center justify-between p-4 border border-slate-200 rounded-xl">
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-sm">Enable Cash on Delivery (COD)</h4>
+                    <p className="text-xs text-slate-500 mt-1">Allow students to purchase offline or select COD option.</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'email' && (
+              <div className="space-y-6">
+                <h2 className="text-lg font-bold text-slate-900 mb-6">Email Provider (SMTP)</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">SMTP Host</label>
+                    <input type="text" defaultValue="smtp.gmail.com" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">SMTP Port</label>
+                    <input type="number" defaultValue="587" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">SMTP Username</label>
+                  <input type="text" defaultValue="notifications@blueboxx.in" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">SMTP Password</label>
+                  <input type="password" placeholder="••••••••••••••••" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'seo' && (
+              <div className="space-y-6">
+                <h2 className="text-lg font-bold text-slate-900 mb-6">SEO & Metadata</h2>
+                
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Default Meta Title</label>
+                  <input type="text" defaultValue="BlueBoxx DA - Premium Training & Placements" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Default Meta Description</label>
+                  <textarea rows={3} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none">Join the most premium tech program designed to build careers, with 1-on-1 mentorship, placement drives and active internships.</textarea>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Google Analytics ID</label>
+                  <input type="text" defaultValue="G-K3910FKS92" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'backups' && (
+              <div className="space-y-6">
+                <h2 className="text-lg font-bold text-slate-900 mb-6">Backups & Recovery</h2>
+                
+                <div className="flex items-center justify-between p-4 border border-slate-200 rounded-xl">
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-sm">Automated Daily Backups</h4>
+                    <p className="text-xs text-slate-500 mt-1">Schedule full database backups to run every day at midnight.</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" defaultChecked className="sr-only peer" />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Backup Storage Location</label>
+                    <select className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-semibold text-slate-800">
+                      <option value="s3">Amazon S3 Bucket</option>
+                      <option value="gdrive">Google Drive Cloud</option>
+                      <option value="local">Local Server Storage</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Retention Count</label>
+                    <input type="number" defaultValue="30" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-xs text-slate-500 font-semibold">Last Backup: 5 hours ago (Size: 42.1 MB)</span>
+                  <Button variant="outline" className="border-slate-200 font-bold bg-white text-[#1B2A6B]" onClick={() => alert("Starting database backup...")}>Run Backup Now</Button>
+                </div>
               </div>
             )}
 

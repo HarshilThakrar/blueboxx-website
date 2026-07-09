@@ -61,7 +61,7 @@ export const CTASection = () => {
               transition={{ delay: 0.2, duration: 0.55, ease: EASE_OUT_EXPO }}
               className="mx-auto mb-10 max-w-lg text-base leading-7 text-blue-200/80"
             >
-              Join 5,000+ students transforming learning, internships, mentorship, and placement into one premium pathway.
+              Join 2,500+ students transforming learning, internships, mentorship, and placement into one premium pathway.
             </motion.p>
 
             <motion.div
@@ -73,7 +73,7 @@ export const CTASection = () => {
             >
               <motion.div variants={staggerItem} whileHover={{ scale: 1.04, y: -2 }} whileTap={{ scale: 0.97 }} data-magnetic>
                 <Link
-                  href="/checkout"
+                  href="/courses"
                   className="bg-gradient-to-r from-[#C9A227] to-[#e0b840] text-[#0d1635] font-bold px-8 py-3.5 rounded-xl hover:opacity-90 transition-all flex items-center gap-2 shadow-[0_4px_20px_rgba(201,162,39,0.25)]"
                 >
                   Enroll Now <ArrowRight size={16} />

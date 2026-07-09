@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, X, CheckCircle, Info, AlertCircle } from 'lucide-react';
+import { Bell, CheckCircle, Info, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Notification = {

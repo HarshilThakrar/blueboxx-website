@@ -24,6 +24,12 @@ export default function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
+  // File Upload Refs and State
+  const expertFileInputRef = useRef<HTMLInputElement>(null);
+  const collegeFileInputRef = useRef<HTMLInputElement>(null);
+  const [expertFile, setExpertFile] = useState<File | null>(null);
+  const [collegeFile, setCollegeFile] = useState<File | null>(null);
+
   // Expert specific
   const [expertDesignation, setExpertDesignation] = useState("");
   const [expertCompany, setExpertCompany] = useState("");
@@ -253,9 +259,36 @@ export default function OnboardingPage() {
                       </div>
                       <div className="pt-2">
                         <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2 block">Upload Resume (PDF)</label>
-                        <div className="w-full h-24 border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-slate-400 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer">
-                          <UploadCloud size={24} className="mb-1" />
-                          <span className="text-[10px] font-bold">Click to browse files</span>
+                        <input 
+                          type="file" 
+                          accept=".pdf,.doc,.docx" 
+                          className="hidden" 
+                          ref={expertFileInputRef}
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              setExpertFile(e.target.files[0]);
+                            }
+                          }}
+                        />
+                        <div 
+                          onClick={() => expertFileInputRef.current?.click()}
+                          className={`w-full h-24 border-2 border-dashed rounded-xl flex flex-col items-center justify-center transition-colors cursor-pointer ${
+                            expertFile 
+                              ? 'border-[#1B2A6B] bg-blue-50/50 text-[#1B2A6B]' 
+                              : 'border-slate-300 text-slate-400 bg-slate-50 hover:bg-slate-100'
+                          }`}
+                        >
+                          {expertFile ? (
+                            <>
+                              <CheckCircle2 size={24} className="mb-1 text-emerald-500" />
+                              <span className="text-[10px] font-bold truncate max-w-[200px]">{expertFile.name}</span>
+                            </>
+                          ) : (
+                            <>
+                              <UploadCloud size={24} className="mb-1" />
+                              <span className="text-[10px] font-bold">Click to browse files</span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -304,9 +337,36 @@ export default function OnboardingPage() {
                       </div>
                       <div className="pt-2">
                         <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2 block">Upload Verification Letter (PDF)</label>
-                        <div className="w-full h-24 border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-slate-400 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer">
-                          <UploadCloud size={24} className="mb-1" />
-                          <span className="text-[10px] font-bold">Upload letter on official letterhead</span>
+                        <input 
+                          type="file" 
+                          accept=".pdf,.doc,.docx" 
+                          className="hidden" 
+                          ref={collegeFileInputRef}
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              setCollegeFile(e.target.files[0]);
+                            }
+                          }}
+                        />
+                        <div 
+                          onClick={() => collegeFileInputRef.current?.click()}
+                          className={`w-full h-24 border-2 border-dashed rounded-xl flex flex-col items-center justify-center transition-colors cursor-pointer ${
+                            collegeFile 
+                              ? 'border-[#1B2A6B] bg-blue-50/50 text-[#1B2A6B]' 
+                              : 'border-slate-300 text-slate-400 bg-slate-50 hover:bg-slate-100'
+                          }`}
+                        >
+                          {collegeFile ? (
+                            <>
+                              <CheckCircle2 size={24} className="mb-1 text-emerald-500" />
+                              <span className="text-[10px] font-bold truncate max-w-[200px]">{collegeFile.name}</span>
+                            </>
+                          ) : (
+                            <>
+                              <UploadCloud size={24} className="mb-1" />
+                              <span className="text-[10px] font-bold">Upload letter on official letterhead</span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>

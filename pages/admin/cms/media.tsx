@@ -1,31 +1,53 @@
 import { AdminDashboardLayout } from "../../../src/layout/AdminDashboardLayout";
 import { UploadCloud, Image as ImageIcon, Search, Filter, Trash2, CheckCircle2, Download, ExternalLink, X } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
-// Mock Media Data
-const INITIAL_MEDIA = [
-  { id: 1, name: 'hero-banner.jpg', size: '2.4 MB', dimensions: '1920x1080', date: '2026-07-01', url: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=800&auto=format&fit=crop', type: 'image/jpeg' },
-  { id: 2, name: 'company-logo-google.png', size: '145 KB', dimensions: '400x150', date: '2026-07-02', url: 'https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?q=80&w=400&auto=format&fit=crop', type: 'image/png' },
-  { id: 3, name: 'student-avatar-1.jpg', size: '890 KB', dimensions: '800x800', date: '2026-07-03', url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop', type: 'image/jpeg' },
-  { id: 4, name: 'course-thumbnail-react.jpg', size: '1.1 MB', dimensions: '1280x720', date: '2026-07-04', url: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=800&auto=format&fit=crop', type: 'image/jpeg' },
-  { id: 5, name: 'campus-tour-bg.jpg', size: '3.2 MB', dimensions: '2560x1440', date: '2026-06-28', url: 'https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=800&auto=format&fit=crop', type: 'image/jpeg' },
-  { id: 6, name: 'instructor-profile.jpg', size: '1.5 MB', dimensions: '1000x1000', date: '2026-06-25', url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop', type: 'image/jpeg' },
-];
+interface MediaItem {
+  id: string;
+  name: string;
+  size: string;
+  dimensions?: string;
+  uploadedAt: string;
+  date?: string;
+  url: string;
+  type: string;
+}
 
 export default function AdminMediaLibrary() {
-  const [mediaItems, setMediaItems] = useState(INITIAL_MEDIA);
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [previewImage, setPreviewImage] = useState<any>(null);
+  const [previewImage, setPreviewImage] = useState<MediaItem | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchMedia = async () => {
+    try {
+      const res = await fetch('/api/media');
+      const data = await res.json();
+      if (res.ok) {
+        setMediaItems(data);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load media files.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMedia();
+  }, []);
 
   const filteredItems = mediaItems.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  const handleSelect = (id: number) => {
+  const handleSelect = (id: string) => {
     if (selectedItems.includes(id)) {
       setSelectedItems(selectedItems.filter(item => item !== id));
     } else {
@@ -41,41 +63,80 @@ export default function AdminMediaLibrary() {
     }
   };
 
-  const handleDeleteSelected = () => {
-    if (confirm(`Are you sure you want to delete ${selectedItems.length} items?`)) {
-      setMediaItems(mediaItems.filter(item => !selectedItems.includes(item.id)));
+  const handleDeleteSelected = async () => {
+    if (confirm(`Are you sure you want to delete ${selectedItems.length} items permanently?`)) {
+      const toastId = toast.loading(`Deleting ${selectedItems.length} files...`);
+      let successCount = 0;
+      for (const id of selectedItems) {
+        try {
+          const res = await fetch(`/api/media?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+          if (res.ok) successCount++;
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      toast.success(`Successfully deleted ${successCount} files`, { id: toastId });
       setSelectedItems([]);
+      fetchMedia();
     }
   };
 
-  const simulateUpload = () => {
-    setIsUploading(true);
-    setUploadProgress(0);
-    
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            setIsUploading(false);
-            setUploadProgress(0);
-            // Add a mock new image
-            const newImage = {
-              id: Date.now(),
-              name: `new-upload-${Date.now()}.jpg`,
-              size: '1.8 MB',
-              dimensions: '1920x1080',
-              date: new Date().toISOString().split('T')[0],
-              url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop',
-              type: 'image/jpeg'
-            };
-            setMediaItems([newImage, ...mediaItems]);
-          }, 500);
-          return 100;
+  const handleSingleDelete = async (id: string) => {
+    if (confirm("Are you sure you want to delete this file permanently?")) {
+      const toastId = toast.loading("Deleting file...");
+      try {
+        const res = await fetch(`/api/media?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+        if (res.ok) {
+          toast.success("File deleted successfully", { id: toastId });
+          setPreviewImage(null);
+          setSelectedItems(selectedItems.filter(selectedId => selectedId !== id));
+          fetchMedia();
+        } else {
+          toast.error("Failed to delete file", { id: toastId });
         }
-        return prev + 15;
-      });
-    }, 200);
+      } catch (error) {
+        toast.error("Error deleting file", { id: toastId });
+      }
+    }
+  };
+
+  const processUploadFiles = (files: FileList) => {
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64Data = event.target?.result;
+        if (typeof base64Data !== 'string') return;
+  
+        setIsUploading(true);
+        setUploadProgress(50);
+        const loadingToast = toast.loading(`Uploading ${file.name}...`);
+  
+        try {
+          const res = await fetch('/api/media', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: file.name,
+              data: base64Data
+            })
+          });
+  
+          if (res.ok) {
+            toast.success(`${file.name} uploaded!`, { id: loadingToast });
+            fetchMedia();
+          } else {
+            toast.error(`Failed to upload ${file.name}`, { id: loadingToast });
+          }
+        } catch (err) {
+          console.error(err);
+          toast.error("Network error during upload", { id: loadingToast });
+        } finally {
+          setIsUploading(false);
+          setUploadProgress(0);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -85,7 +146,7 @@ export default function AdminMediaLibrary() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      simulateUpload();
+      processUploadFiles(e.dataTransfer.files);
     }
   };
 
@@ -108,7 +169,7 @@ export default function AdminMediaLibrary() {
             className="hidden" 
             ref={fileInputRef}
             onChange={(e) => {
-              if (e.target.files && e.target.files.length > 0) simulateUpload();
+              if (e.target.files && e.target.files.length > 0) processUploadFiles(e.target.files);
             }}
           />
           <button 
@@ -231,7 +292,7 @@ export default function AdminMediaLibrary() {
                   <p className="text-xs font-bold text-slate-800 truncate mb-1" title={item.name}>{item.name}</p>
                   <div className="flex justify-between items-center text-[10px] font-semibold text-slate-400">
                     <span>{item.size}</span>
-                    <span>{item.dimensions}</span>
+                    <span>{item.uploadedAt}</span>
                   </div>
                 </div>
               </div>
@@ -279,22 +340,18 @@ export default function AdminMediaLibrary() {
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Uploaded On</p>
-                    <p className="text-sm font-semibold text-slate-800">{previewImage.date}</p>
+                    <p className="text-sm font-semibold text-slate-800">{previewImage.uploadedAt || previewImage.date}</p>
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">File Size</p>
                     <p className="text-sm font-semibold text-slate-800">{previewImage.size}</p>
                   </div>
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Dimensions</p>
-                    <p className="text-sm font-semibold text-slate-800">{previewImage.dimensions}</p>
-                  </div>
                 </div>
 
                 <div className="space-y-3">
-                  <button className="w-full py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors flex items-center justify-center gap-2">
-                    <Download size={16} /> Download File
-                  </button>
+                  <a href={previewImage.url} download={previewImage.name} target="_blank" rel="noreferrer" className="w-full py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors flex items-center justify-center gap-2">
+                    <Download size={16} /> Download / Open
+                  </a>
                   <button 
                     onClick={() => {
                       navigator.clipboard.writeText(previewImage.url);
@@ -317,10 +374,7 @@ export default function AdminMediaLibrary() {
                     Copy Public URL
                   </button>
                   <button 
-                    onClick={() => {
-                      setMediaItems(mediaItems.filter(item => item.id !== previewImage.id));
-                      setPreviewImage(null);
-                    }}
+                    onClick={() => handleSingleDelete(previewImage.id)}
                     className="w-full py-2.5 bg-rose-50 text-rose-600 rounded-xl text-sm font-bold hover:bg-rose-100 transition-colors flex items-center justify-center gap-2 mt-4"
                   >
                     <Trash2 size={16} /> Delete Permanently
