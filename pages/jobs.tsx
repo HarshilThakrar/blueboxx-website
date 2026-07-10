@@ -39,10 +39,18 @@ export default function JobsPage() {
 
   const allJobs = [...storeJobsMapped, ...dummyJobs];
 
-  const filteredJobs = allJobs.filter(job => 
-    job.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    job.company.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const [activeFilters, setActiveFilters] = useState<any>({});
+
+  const filteredJobs = allJobs.filter(job => {
+    const matchesSearch = job.role.toLowerCase().includes(searchQuery.toLowerCase()) || job.company.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Live Sidebar Filters
+    const matchesRole = activeFilters.role ? job.role.toLowerCase().includes(activeFilters.role.toLowerCase()) : true;
+    const matchesMode = activeFilters.mode ? (activeFilters.mode === "Remote" ? job.location === "Remote" : job.location !== "Remote") : true;
+    const matchesExperience = activeFilters.experience ? job.experience?.toLowerCase().includes(activeFilters.experience.split(' ')[0].toLowerCase()) : true;
+
+    return matchesSearch && matchesRole && matchesMode && matchesExperience;
+  });
 
   const sortedJobs = [...filteredJobs].sort((a, b) => {
     if (sortOption === "highest-salary") {
@@ -110,7 +118,7 @@ export default function JobsPage() {
             </div>
 
             <div className={`lg:col-span-1 ${isMobileFilterOpen ? 'block' : 'hidden'} lg:block`}>
-              <SidebarFilter type="jobs" />
+              <SidebarFilter type="jobs" onFilterChange={setActiveFilters} />
             </div>
 
             <main className="lg:col-span-3">

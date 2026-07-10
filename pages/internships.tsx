@@ -40,10 +40,18 @@ export default function InternshipsPage() {
 
   const allInternships = [...storeMapped, ...dummyInternships];
 
-  const filteredInternships = allInternships.filter(internship => 
-    internship.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    internship.company.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const [activeFilters, setActiveFilters] = useState<any>({});
+
+  const filteredInternships = allInternships.filter(internship => {
+    const matchesSearch = internship.title.toLowerCase().includes(searchQuery.toLowerCase()) || internship.company.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Live Sidebar Filters
+    const matchesDomain = activeFilters.domain ? internship.title.toLowerCase().includes(activeFilters.domain.split(' ')[0].toLowerCase()) : true;
+    const matchesMode = activeFilters.mode ? (activeFilters.mode === "Remote" ? internship.location === "Remote" : internship.location !== "Remote") : true;
+    const matchesDuration = activeFilters.duration ? internship.duration === activeFilters.duration : true;
+
+    return matchesSearch && matchesDomain && matchesMode && matchesDuration;
+  });
 
   const sortedInternships = [...filteredInternships].sort((a, b) => {
     if (sortOption === "highest-stipend") {
@@ -111,7 +119,7 @@ export default function InternshipsPage() {
             </div>
 
             <div className={`lg:col-span-1 ${isMobileFilterOpen ? 'block' : 'hidden'} lg:block`}>
-              <SidebarFilter type="internships" />
+              <SidebarFilter type="internships" onFilterChange={setActiveFilters} />
             </div>
 
             <main className="lg:col-span-3">

@@ -3,8 +3,7 @@
     "argv": [
       "C:\\Program Files\\nodejs\\node.exe",
       "D:\\blueboxx\\blueboxx web\\node_modules\\@playwright\\test\\cli.js",
-      "test",
-      "test/e2e/"
+      "test"
     ],
     "configFile": "D:\\blueboxx\\blueboxx web\\playwright.config.ts",
     "rootDir": "D:/blueboxx/blueboxx web/test",
@@ -82,6 +81,516 @@
   },
   "suites": [
     {
+      "title": "auth.spec.ts",
+      "file": "auth.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Authentication & Onboarding Flow",
+          "file": "auth.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Signup flow UI and basic validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 19850,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:32:15.519Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-8aae5e2f1a8370243927",
+              "file": "auth.spec.ts",
+              "line": 5,
+              "column": 3
+            },
+            {
+              "title": "Login flow UI",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 14441,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:32:15.445Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-f0a61c270b3aedd96a4e",
+              "file": "auth.spec.ts",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "Onboarding OTP and Role Selection",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 15393,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:32:15.461Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-ba8c18dd781039964ff7",
+              "file": "auth.spec.ts",
+              "line": 44,
+              "column": 3
+            },
+            {
+              "title": "Signup flow UI and basic validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 17384,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:37:48.059Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-6d7a23de5064c7b47621",
+              "file": "auth.spec.ts",
+              "line": 5,
+              "column": 3
+            },
+            {
+              "title": "Login flow UI",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 15712,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:37:48.472Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-c82ac6fbb93a6a6cadb8",
+              "file": "auth.spec.ts",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "Onboarding OTP and Role Selection",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 17451,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:37:48.503Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-23641c4ec0a7a15f6651",
+              "file": "auth.spec.ts",
+              "line": 44,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "dashboards.spec.ts",
+      "file": "dashboards.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Dashboards",
+          "file": "dashboards.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Admin Dashboard Overview",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 14639,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:32:15.444Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "86a5e4e303644cf814e4-08f356b1b046fbd1f6b2",
+              "file": "dashboards.spec.ts",
+              "line": 5,
+              "column": 3
+            },
+            {
+              "title": "Admin Verifications Page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 12965,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:32:15.581Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "86a5e4e303644cf814e4-c7617a78a88c13678d39",
+              "file": "dashboards.spec.ts",
+              "line": 28,
+              "column": 3
+            },
+            {
+              "title": "Student Dashboard Overview",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 13837,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:32:15.482Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "86a5e4e303644cf814e4-d77bc1aee5c32c38c38a",
+              "file": "dashboards.spec.ts",
+              "line": 37,
+              "column": 3
+            },
+            {
+              "title": "Company Jobs Page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 17109,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:32:28.962Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "86a5e4e303644cf814e4-76cf863e4a59f887bfa0",
+              "file": "dashboards.spec.ts",
+              "line": 48,
+              "column": 3
+            },
+            {
+              "title": "Admin Dashboard Overview",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 13331,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:37:49.326Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "86a5e4e303644cf814e4-48ed84e53470de4af32f",
+              "file": "dashboards.spec.ts",
+              "line": 5,
+              "column": 3
+            },
+            {
+              "title": "Admin Verifications Page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 14012,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:38:03.209Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "86a5e4e303644cf814e4-8f0bef11a82d22582965",
+              "file": "dashboards.spec.ts",
+              "line": 28,
+              "column": 3
+            },
+            {
+              "title": "Student Dashboard Overview",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12523,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:38:04.711Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "86a5e4e303644cf814e4-2f5b4cf78e44bfe2fc64",
+              "file": "dashboards.spec.ts",
+              "line": 37,
+              "column": 3
+            },
+            {
+              "title": "Company Jobs Page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 11120,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:38:05.916Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "86a5e4e303644cf814e4-3751b14568ac284f4408",
+              "file": "dashboards.spec.ts",
+              "line": 48,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
       "title": "e2e\\forms-and-actions.spec.ts",
       "file": "e2e/forms-and-actions.spec.ts",
       "column": 0,
@@ -107,15 +616,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 10596,
+                      "duration": 16634,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:48:15.095Z",
+                      "startTime": "2026-07-09T08:32:29.573Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -144,12 +653,12 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 6647,
+                      "duration": 6703,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:48:15.107Z",
+                      "startTime": "2026-07-09T08:32:30.151Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -175,15 +684,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 6636,
+                      "duration": 6310,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:48:15.107Z",
+                      "startTime": "2026-07-09T08:32:30.342Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -209,15 +718,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 8265,
+                      "duration": 5608,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:48:15.092Z",
+                      "startTime": "2026-07-09T08:32:31.100Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -243,15 +752,15 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 6,
-                      "parallelIndex": 3,
+                      "workerIndex": 7,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 7538,
+                      "duration": 8832,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:53:17.415Z",
+                      "startTime": "2026-07-09T08:38:06.401Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -277,15 +786,15 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 11,
-                      "parallelIndex": 1,
+                      "workerIndex": 7,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 4050,
+                      "duration": 3452,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:53:20.089Z",
+                      "startTime": "2026-07-09T08:38:15.256Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -311,15 +820,15 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
+                      "workerIndex": 6,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 4673,
+                      "duration": 2927,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:53:20.113Z",
+                      "startTime": "2026-07-09T08:38:17.080Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -345,15 +854,15 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 7,
-                      "parallelIndex": 2,
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2288,
+                      "duration": 3948,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:53:18.397Z",
+                      "startTime": "2026-07-09T08:38:17.280Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -396,10 +905,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 221514,
+                      "duration": 190482,
                       "errors": [],
                       "stdout": [
                         {
@@ -408,7 +917,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:48:15.156Z",
+                      "startTime": "2026-07-09T08:32:35.684Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -434,10 +943,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 5,
-                      "parallelIndex": 5,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 126535,
+                      "duration": 98740,
                       "errors": [],
                       "stdout": [
                         {
@@ -446,7 +955,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:48:15.136Z",
+                      "startTime": "2026-07-09T08:32:36.712Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -472,10 +981,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 138680,
+                      "duration": 118977,
                       "errors": [],
                       "stdout": [
                         {
@@ -484,7 +993,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:48:22.025Z",
+                      "startTime": "2026-07-09T08:32:36.759Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -510,10 +1019,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 147009,
+                      "duration": 156501,
                       "errors": [],
                       "stdout": [
                         {
@@ -522,7 +1031,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:48:22.071Z",
+                      "startTime": "2026-07-09T08:32:36.898Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -548,10 +1057,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 116586,
+                      "duration": 106789,
                       "errors": [],
                       "stdout": [
                         {
@@ -560,7 +1069,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:48:23.646Z",
+                      "startTime": "2026-07-09T08:32:46.121Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -586,10 +1095,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 94040,
+                      "duration": 91203,
                       "errors": [],
                       "stdout": [
                         {
@@ -598,7 +1107,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:48:25.922Z",
+                      "startTime": "2026-07-09T08:32:46.275Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -624,10 +1133,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 87212,
+                      "duration": 61676,
                       "errors": [],
                       "stdout": [
                         {
@@ -636,7 +1145,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:49:59.996Z",
+                      "startTime": "2026-07-09T08:34:15.486Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -662,10 +1171,10 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 10,
-                      "parallelIndex": 5,
+                      "workerIndex": 9,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 143900,
+                      "duration": 154953,
                       "errors": [],
                       "stdout": [
                         {
@@ -674,7 +1183,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:53:20.127Z",
+                      "startTime": "2026-07-09T08:38:17.297Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -700,10 +1209,10 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 9,
-                      "parallelIndex": 0,
+                      "workerIndex": 10,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 75384,
+                      "duration": 68419,
                       "errors": [],
                       "stdout": [
                         {
@@ -712,7 +1221,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:53:20.093Z",
+                      "startTime": "2026-07-09T08:38:23.038Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -739,9 +1248,9 @@
                   "results": [
                     {
                       "workerIndex": 7,
-                      "parallelIndex": 2,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 81636,
+                      "duration": 75041,
                       "errors": [],
                       "stdout": [
                         {
@@ -750,7 +1259,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:53:20.960Z",
+                      "startTime": "2026-07-09T08:38:18.761Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -776,10 +1285,10 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 11,
-                      "parallelIndex": 1,
+                      "workerIndex": 6,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 110216,
+                      "duration": 84164,
                       "errors": [],
                       "stdout": [
                         {
@@ -788,7 +1297,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:53:24.400Z",
+                      "startTime": "2026-07-09T08:38:20.083Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -815,9 +1324,9 @@
                   "results": [
                     {
                       "workerIndex": 8,
-                      "parallelIndex": 4,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 22756,
+                      "duration": 26497,
                       "errors": [],
                       "stdout": [
                         {
@@ -826,7 +1335,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:53:25.103Z",
+                      "startTime": "2026-07-09T08:38:21.272Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -852,10 +1361,10 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 6,
-                      "parallelIndex": 3,
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 69332,
+                      "duration": 56460,
                       "errors": [],
                       "stdout": [
                         {
@@ -864,7 +1373,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:53:25.151Z",
+                      "startTime": "2026-07-09T08:38:47.802Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -890,10 +1399,10 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
+                      "workerIndex": 10,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 64100,
+                      "duration": 57305,
                       "errors": [],
                       "stdout": [
                         {
@@ -902,7 +1411,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:53:47.897Z",
+                      "startTime": "2026-07-09T08:39:32.830Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -945,19 +1454,19 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 51580,
+                      "duration": 21430,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /]: [\n  \u001b[32m'button-name'\u001b[39m,\n  \u001b[32m'color-contrast'\u001b[39m,\n  \u001b[32m'landmark-unique'\u001b[39m,\n  \u001b[32m'link-name'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
+                          "text": "[a11y violations on /]: [\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:50:20.739Z",
+                      "startTime": "2026-07-09T08:34:17.722Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -983,19 +1492,19 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 5,
-                      "parallelIndex": 5,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 62570,
+                      "duration": 56267,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /about]: [\n  \u001b[32m'button-name'\u001b[39m,\n  \u001b[32m'color-contrast'\u001b[39m,\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'heading-order'\u001b[39m,\n  \u001b[32m'landmark-main-is-top-level'\u001b[39m,\n  \u001b[32m'landmark-no-duplicate-main'\u001b[39m,\n  \u001b[32m'landmark-unique'\u001b[39m,\n  \u001b[32m'link-name'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
+                          "text": "[a11y violations on /about]: [\n  \u001b[32m'button-name'\u001b[39m,\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'heading-order'\u001b[39m,\n  \u001b[32m'landmark-main-is-top-level'\u001b[39m,\n  \u001b[32m'landmark-no-duplicate-main'\u001b[39m,\n  \u001b[32m'landmark-unique'\u001b[39m,\n  \u001b[32m'link-name'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:50:22.252Z",
+                      "startTime": "2026-07-09T08:34:33.229Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1021,10 +1530,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 44786,
+                      "duration": 49039,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1033,7 +1542,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:50:41.163Z",
+                      "startTime": "2026-07-09T08:34:36.034Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1059,10 +1568,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 38897,
+                      "duration": 46059,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1071,7 +1580,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:50:49.394Z",
+                      "startTime": "2026-07-09T08:34:39.235Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1097,10 +1606,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 18313,
+                      "duration": 45791,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1109,7 +1618,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:51:12.461Z",
+                      "startTime": "2026-07-09T08:35:13.641Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1135,10 +1644,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 5,
-                      "parallelIndex": 5,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 59339,
+                      "duration": 45159,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1147,7 +1656,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:51:24.898Z",
+                      "startTime": "2026-07-09T08:35:17.391Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1173,22 +1682,19 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 53262,
+                      "duration": 54616,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
                           "text": "[a11y violations on /companies]: [\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
-                        },
-                        {
-                          "text": "Broken images on /companies: [\n  \u001b[32m'https://images.unsplash.com/photo-1574717024453-354056aece4e?w=600&q=80'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:51:26.013Z",
+                      "startTime": "2026-07-09T08:35:25.164Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1214,10 +1720,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 57432,
+                      "duration": 50302,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1226,7 +1732,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:51:27.443Z",
+                      "startTime": "2026-07-09T08:35:25.330Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1252,19 +1758,19 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 56224,
+                      "duration": 61165,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /placements]: [\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
+                          "text": "[a11y violations on /placements]: [\n  \u001b[32m'button-name'\u001b[39m,\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'heading-order'\u001b[39m,\n  \u001b[32m'landmark-main-is-top-level'\u001b[39m,\n  \u001b[32m'landmark-no-duplicate-main'\u001b[39m,\n  \u001b[32m'landmark-unique'\u001b[39m,\n  \u001b[32m'link-name'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:51:28.392Z",
+                      "startTime": "2026-07-09T08:35:29.568Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1290,10 +1796,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 51510,
+                      "duration": 58404,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1302,7 +1808,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:51:30.828Z",
+                      "startTime": "2026-07-09T08:35:46.418Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1328,10 +1834,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 30138,
+                      "duration": 55558,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1340,7 +1846,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:51:57.261Z",
+                      "startTime": "2026-07-09T08:35:59.490Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1366,10 +1872,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 9078,
+                      "duration": 43315,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1378,7 +1884,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:52:19.316Z",
+                      "startTime": "2026-07-09T08:36:02.640Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1404,10 +1910,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 35797,
+                      "duration": 40527,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1416,7 +1922,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:52:22.372Z",
+                      "startTime": "2026-07-09T08:36:15.670Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1442,10 +1948,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 5,
-                      "parallelIndex": 5,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 44702,
+                      "duration": 37936,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1454,7 +1960,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:52:24.273Z",
+                      "startTime": "2026-07-09T08:36:19.820Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1480,10 +1986,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 42080,
+                      "duration": 35597,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1492,7 +1998,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:52:24.653Z",
+                      "startTime": "2026-07-09T08:36:30.765Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1521,7 +2027,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 41587,
+                      "duration": 29893,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1530,7 +2036,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:52:24.953Z",
+                      "startTime": "2026-07-09T08:36:44.893Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1556,10 +2062,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 40523,
+                      "duration": 30326,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1571,7 +2077,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:52:27.496Z",
+                      "startTime": "2026-07-09T08:36:46.061Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1600,7 +2106,7 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 38124,
+                      "duration": 40046,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1609,7 +2115,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:52:28.425Z",
+                      "startTime": "2026-07-09T08:36:55.081Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1635,19 +2141,19 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 12942,
+                      "duration": 36386,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /payment-failed]: [\n  \u001b[32m'button-name'\u001b[39m,\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'heading-order'\u001b[39m,\n  \u001b[32m'landmark-unique'\u001b[39m,\n  \u001b[32m'link-name'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
+                          "text": "[a11y violations on /payment-failed]: [\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:52:58.207Z",
+                      "startTime": "2026-07-09T08:36:56.235Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1673,10 +2179,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 9999,
+                      "duration": 19969,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1685,7 +2191,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:53:06.572Z",
+                      "startTime": "2026-07-09T08:36:57.791Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1711,10 +2217,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 10454,
+                      "duration": 16160,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1723,7 +2229,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:53:06.792Z",
+                      "startTime": "2026-07-09T08:37:06.393Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1749,10 +2255,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 9819,
+                      "duration": 14297,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1761,7 +2267,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:53:06.790Z",
+                      "startTime": "2026-07-09T08:37:14.905Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1787,10 +2293,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 8537,
+                      "duration": 8759,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1799,7 +2305,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:53:08.046Z",
+                      "startTime": "2026-07-09T08:37:16.451Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1825,10 +2331,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 5,
-                      "parallelIndex": 5,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 7926,
+                      "duration": 9529,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1837,7 +2343,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:53:09.082Z",
+                      "startTime": "2026-07-09T08:37:17.828Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1863,19 +2369,19 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 6,
-                      "parallelIndex": 3,
+                      "workerIndex": 7,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 52101,
+                      "duration": 54660,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /]: [ \u001b[32m'button-name'\u001b[39m, \u001b[32m'link-name'\u001b[39m, \u001b[32m'region'\u001b[39m ]\n"
+                          "text": "[a11y violations on /]: [\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:54:34.758Z",
+                      "startTime": "2026-07-09T08:39:34.055Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1901,19 +2407,19 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 9,
-                      "parallelIndex": 0,
+                      "workerIndex": 6,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 36755,
+                      "duration": 64976,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /about]: [\n  \u001b[32m'button-name'\u001b[39m,\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'heading-order'\u001b[39m,\n  \u001b[32m'landmark-main-is-top-level'\u001b[39m,\n  \u001b[32m'landmark-no-duplicate-main'\u001b[39m,\n  \u001b[32m'landmark-unique'\u001b[39m,\n  \u001b[32m'link-name'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
+                          "text": "[a11y violations on /about]: [\n  \u001b[32m'button-name'\u001b[39m,\n  \u001b[32m'color-contrast'\u001b[39m,\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'heading-order'\u001b[39m,\n  \u001b[32m'landmark-main-is-top-level'\u001b[39m,\n  \u001b[32m'landmark-no-duplicate-main'\u001b[39m,\n  \u001b[32m'landmark-unique'\u001b[39m,\n  \u001b[32m'link-name'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:54:36.211Z",
+                      "startTime": "2026-07-09T08:39:44.567Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1939,19 +2445,19 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 7,
-                      "parallelIndex": 2,
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 44374,
+                      "duration": 64468,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /courses]: [\n  \u001b[32m'button-name'\u001b[39m,\n  \u001b[32m'landmark-main-is-top-level'\u001b[39m,\n  \u001b[32m'landmark-no-duplicate-main'\u001b[39m,\n  \u001b[32m'landmark-unique'\u001b[39m,\n  \u001b[32m'link-name'\u001b[39m,\n  \u001b[32m'region'\u001b[39m,\n  \u001b[32m'select-name'\u001b[39m\n]\n"
+                          "text": "[a11y violations on /courses]: [\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:54:43.024Z",
+                      "startTime": "2026-07-09T08:39:44.716Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1977,10 +2483,10 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
+                      "workerIndex": 7,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 51500,
+                      "duration": 33771,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1989,7 +2495,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:54:52.310Z",
+                      "startTime": "2026-07-09T08:40:28.814Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2015,10 +2521,10 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 9,
-                      "parallelIndex": 0,
+                      "workerIndex": 10,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 54639,
+                      "duration": 39554,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -2027,7 +2533,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:55:13.092Z",
+                      "startTime": "2026-07-09T08:40:30.512Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2053,19 +2559,19 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 11,
-                      "parallelIndex": 1,
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 50070,
+                      "duration": 60014,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /experts]: [\n  \u001b[32m'button-name'\u001b[39m,\n  \u001b[32m'color-contrast'\u001b[39m,\n  \u001b[32m'landmark-main-is-top-level'\u001b[39m,\n  \u001b[32m'landmark-no-duplicate-main'\u001b[39m,\n  \u001b[32m'landmark-unique'\u001b[39m,\n  \u001b[32m'link-name'\u001b[39m,\n  \u001b[32m'region'\u001b[39m,\n  \u001b[32m'select-name'\u001b[39m\n]\n"
+                          "text": "[a11y violations on /experts]: [\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:55:14.959Z",
+                      "startTime": "2026-07-09T08:40:49.277Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2092,21 +2598,18 @@
                   "results": [
                     {
                       "workerIndex": 6,
-                      "parallelIndex": 3,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 55187,
+                      "duration": 58522,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /companies]: [\n  \u001b[32m'button-name'\u001b[39m,\n  \u001b[32m'color-contrast'\u001b[39m,\n  \u001b[32m'landmark-main-is-top-level'\u001b[39m,\n  \u001b[32m'landmark-no-duplicate-main'\u001b[39m,\n  \u001b[32m'landmark-unique'\u001b[39m,\n  \u001b[32m'link-name'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
-                        },
-                        {
-                          "text": "Broken images on /companies: [\n  \u001b[32m'https://images.unsplash.com/photo-1574717024453-354056aece4e?w=600&q=80'\u001b[39m\n]\n"
+                          "text": "[a11y violations on /companies]: [\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:55:27.016Z",
+                      "startTime": "2026-07-09T08:40:49.615Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2132,19 +2635,19 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 7,
-                      "parallelIndex": 2,
+                      "workerIndex": 9,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 54642,
+                      "duration": 54220,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /colleges]: [\n  \u001b[32m'button-name'\u001b[39m,\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'heading-order'\u001b[39m,\n  \u001b[32m'link-name'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
+                          "text": "[a11y violations on /colleges]: [\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:55:27.469Z",
+                      "startTime": "2026-07-09T08:40:52.466Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2170,19 +2673,22 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
+                      "workerIndex": 7,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 51289,
+                      "duration": 47946,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /placements]: [\n  \u001b[32m'button-name'\u001b[39m,\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'heading-order'\u001b[39m,\n  \u001b[32m'landmark-main-is-top-level'\u001b[39m,\n  \u001b[32m'landmark-no-duplicate-main'\u001b[39m,\n  \u001b[32m'landmark-unique'\u001b[39m,\n  \u001b[32m'link-name'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
+                          "text": "[a11y violations on /placements]: [\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
+                        },
+                        {
+                          "text": "Broken images on /placements: [\n  \u001b[32m'https://logo.clearbit.com/3insys.com'\u001b[39m,\n  \u001b[32m'https://logo.clearbit.com/wr.indianrailways.gov.in'\u001b[39m,\n  \u001b[32m'https://logo.clearbit.com/globaldiscoveryschool.com'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:55:43.878Z",
+                      "startTime": "2026-07-09T08:41:02.659Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2209,9 +2715,9 @@
                   "results": [
                     {
                       "workerIndex": 10,
-                      "parallelIndex": 5,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 43423,
+                      "duration": 40277,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -2220,7 +2726,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:55:44.529Z",
+                      "startTime": "2026-07-09T08:41:10.152Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2246,10 +2752,10 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 11,
-                      "parallelIndex": 1,
+                      "workerIndex": 9,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 48532,
+                      "duration": 73809,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -2258,7 +2764,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:56:05.085Z",
+                      "startTime": "2026-07-09T08:41:46.775Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2284,10 +2790,10 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 9,
-                      "parallelIndex": 0,
+                      "workerIndex": 6,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 43612,
+                      "duration": 69279,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -2296,7 +2802,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:56:07.768Z",
+                      "startTime": "2026-07-09T08:41:48.181Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2322,19 +2828,19 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 7,
-                      "parallelIndex": 2,
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 40874,
+                      "duration": 69588,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /community]: [\n  \u001b[32m'button-name'\u001b[39m,\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'heading-order'\u001b[39m,\n  \u001b[32m'link-name'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
+                          "text": "[a11y violations on /community]: [\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:56:22.155Z",
+                      "startTime": "2026-07-09T08:41:49.324Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2360,19 +2866,19 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 6,
+                      "workerIndex": 10,
                       "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 40460,
+                      "duration": 68687,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /careers]: [ \u001b[32m'button-name'\u001b[39m, \u001b[32m'document-title'\u001b[39m, \u001b[32m'link-name'\u001b[39m, \u001b[32m'region'\u001b[39m ]\n"
+                          "text": "[a11y violations on /careers]: [\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:56:22.273Z",
+                      "startTime": "2026-07-09T08:41:50.467Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2398,10 +2904,10 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 10,
+                      "workerIndex": 7,
                       "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 33793,
+                      "duration": 69833,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -2410,7 +2916,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:56:27.994Z",
+                      "startTime": "2026-07-09T08:41:50.642Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2436,10 +2942,10 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
+                      "workerIndex": 6,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 29744,
+                      "duration": 65152,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -2448,7 +2954,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:56:35.235Z",
+                      "startTime": "2026-07-09T08:42:57.528Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2474,10 +2980,10 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 9,
+                      "workerIndex": 8,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 31851,
+                      "duration": 63752,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -2489,7 +2995,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:56:51.426Z",
+                      "startTime": "2026-07-09T08:42:58.965Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2515,10 +3021,10 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 11,
-                      "parallelIndex": 1,
+                      "workerIndex": 10,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 28869,
+                      "duration": 63123,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -2527,7 +3033,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:56:53.663Z",
+                      "startTime": "2026-07-09T08:42:59.215Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2553,19 +3059,19 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 10,
+                      "workerIndex": 7,
                       "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 26741,
+                      "duration": 59156,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /payment-failed]: [\n  \u001b[32m'button-name'\u001b[39m,\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'heading-order'\u001b[39m,\n  \u001b[32m'link-name'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
+                          "text": "[a11y violations on /payment-failed]: [\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:57:01.835Z",
+                      "startTime": "2026-07-09T08:43:00.511Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2591,10 +3097,10 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 6,
-                      "parallelIndex": 3,
+                      "workerIndex": 9,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 18460,
+                      "duration": 23715,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -2603,7 +3109,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:57:02.785Z",
+                      "startTime": "2026-07-09T08:43:00.624Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2629,19 +3135,19 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 7,
-                      "parallelIndex": 2,
+                      "workerIndex": 9,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 17703,
+                      "duration": 15929,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /signup]: [\n  \u001b[32m'button-name'\u001b[39m,\n  \u001b[32m'color-contrast'\u001b[39m,\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
+                          "text": "[a11y violations on /signup]: [\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:57:03.076Z",
+                      "startTime": "2026-07-09T08:43:24.393Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2667,19 +3173,19 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 8,
+                      "workerIndex": 9,
                       "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 15906,
+                      "duration": 18188,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /forgot-password]: [ \u001b[32m'document-title'\u001b[39m, \u001b[32m'region'\u001b[39m ]\n"
+                          "text": "[a11y violations on /forgot-password]: [\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:57:05.038Z",
+                      "startTime": "2026-07-09T08:43:40.351Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2705,10 +3211,10 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 7,
-                      "parallelIndex": 2,
+                      "workerIndex": 9,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 7759,
+                      "duration": 18129,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -2717,7 +3223,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:57:20.865Z",
+                      "startTime": "2026-07-09T08:43:58.613Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2743,19 +3249,19 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
+                      "workerIndex": 7,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 7653,
+                      "duration": 16068,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
                         {
-                          "text": "[a11y violations on /this-page-does-not-exist-404]: [\n  \u001b[32m'document-title'\u001b[39m,\n  \u001b[32m'landmark-one-main'\u001b[39m,\n  \u001b[32m'page-has-heading-one'\u001b[39m,\n  \u001b[32m'region'\u001b[39m\n]\n"
+                          "text": "Could not run Axe on /this-page-does-not-exist-404: page.evaluate: Execution context was destroyed, most likely because of a navigation\n Please check out https://github.com/dequelabs/axe-core-npm/blob/develop/packages/playwright/error-handling.md\n"
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-07-09T05:57:20.982Z",
+                      "startTime": "2026-07-09T08:43:59.708Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2771,15 +3277,1992 @@
           ]
         }
       ]
+    },
+    {
+      "title": "public.spec.ts",
+      "file": "public.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Public Pages",
+          "file": "public.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Homepage loads and contains key elements",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 11853,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:37:22.611Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "349fc90c6061c792a808-6512f2dae1d54482a04e",
+              "file": "public.spec.ts",
+              "line": 5,
+              "column": 3
+            },
+            {
+              "title": "About page renders correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 15559,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:37:25.296Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "349fc90c6061c792a808-a327681489cc76e83702",
+              "file": "public.spec.ts",
+              "line": 13,
+              "column": 3
+            },
+            {
+              "title": "Courses page works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 15381,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:37:27.413Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "349fc90c6061c792a808-116b30b4d9668872f83e",
+              "file": "public.spec.ts",
+              "line": 19,
+              "column": 3
+            },
+            {
+              "title": "Jobs page works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13611,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:37:29.249Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "349fc90c6061c792a808-c3755cecdf808d45d196",
+              "file": "public.spec.ts",
+              "line": 25,
+              "column": 3
+            },
+            {
+              "title": "Contact page form rendering",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 10421,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:37:32.679Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "349fc90c6061c792a808-86aa2e5bbb59d7093f81",
+              "file": "public.spec.ts",
+              "line": 32,
+              "column": 3
+            },
+            {
+              "title": "Privacy Policy renders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 11858,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:37:34.489Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "349fc90c6061c792a808-0394c9c2eba78b2f6c87",
+              "file": "public.spec.ts",
+              "line": 39,
+              "column": 3
+            },
+            {
+              "title": "Homepage loads and contains key elements",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 16962,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:44:02.428Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "349fc90c6061c792a808-9cc5f6e0841c0f8ead7c",
+              "file": "public.spec.ts",
+              "line": 5,
+              "column": 3
+            },
+            {
+              "title": "About page renders correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 17610,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:44:02.746Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "349fc90c6061c792a808-4d19e42c1a1bc534ea32",
+              "file": "public.spec.ts",
+              "line": 13,
+              "column": 3
+            },
+            {
+              "title": "Courses page works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 14627,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:44:02.797Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "349fc90c6061c792a808-657cb8e4ec578739f121",
+              "file": "public.spec.ts",
+              "line": 19,
+              "column": 3
+            },
+            {
+              "title": "Jobs page works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 18303,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:44:15.856Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "349fc90c6061c792a808-d3a2b7a7e8a2088a594f",
+              "file": "public.spec.ts",
+              "line": 25,
+              "column": 3
+            },
+            {
+              "title": "Contact page form rendering",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 17686,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:44:16.903Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "349fc90c6061c792a808-0e66c22232ade95fba92",
+              "file": "public.spec.ts",
+              "line": 32,
+              "column": 3
+            },
+            {
+              "title": "Privacy Policy renders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 15887,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:44:17.465Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "349fc90c6061c792a808-e9b825a69dcb3e6351e7",
+              "file": "public.spec.ts",
+              "line": 39,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "qa-audit-crawler.spec.ts",
+      "file": "qa-audit-crawler.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Automated QA Audit Crawler",
+          "file": "qa-audit-crawler.spec.ts",
+          "line": 27,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Crawl Portal: student",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 38537,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[student] Found 7 routes to test.\n"
+                        },
+                        {
+                          "text": "Testing /student/dashboard...\n"
+                        },
+                        {
+                          "text": "Testing /student/courses...\n"
+                        },
+                        {
+                          "text": "Testing /student/assignments...\n"
+                        },
+                        {
+                          "text": "Testing /student/internships...\n"
+                        },
+                        {
+                          "text": "Testing /student/applications...\n"
+                        },
+                        {
+                          "text": "Testing /student/certificates...\n"
+                        },
+                        {
+                          "text": "Testing /student/settings...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:37:35.191Z",
+                      "annotations": [],
+                      "attachments": []
+                    },
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 36692,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[student] Found 7 routes to test.\n"
+                        },
+                        {
+                          "text": "Testing /student/dashboard...\n"
+                        },
+                        {
+                          "text": "Testing /student/courses...\n"
+                        },
+                        {
+                          "text": "Testing /student/assignments...\n"
+                        },
+                        {
+                          "text": "Testing /student/internships...\n"
+                        },
+                        {
+                          "text": "Testing /student/applications...\n"
+                        },
+                        {
+                          "text": "Testing /student/certificates...\n"
+                        },
+                        {
+                          "text": "Testing /student/settings...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-09T08:41:11.770Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9a91e780d76d12452f21-e5ac10532bfe65011cf3",
+              "file": "qa-audit-crawler.spec.ts",
+              "line": 30,
+              "column": 5
+            },
+            {
+              "title": "Crawl Portal: admin",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "timedOut",
+                      "duration": 152198,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 120000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 120000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 120000ms exceeded.\u001b[39m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "[admin] Found 18 routes to test.\n"
+                        },
+                        {
+                          "text": "Testing /admin/dashboard...\n"
+                        },
+                        {
+                          "text": "Testing /admin/media...\n"
+                        },
+                        {
+                          "text": "Testing /admin/users...\n"
+                        },
+                        {
+                          "text": "Testing /admin/users/students...\n"
+                        },
+                        {
+                          "text": "Testing /admin/users/instructors...\n"
+                        },
+                        {
+                          "text": "Testing /admin/verifications...\n"
+                        },
+                        {
+                          "text": "Testing /admin/roles...\n"
+                        },
+                        {
+                          "text": "Testing /admin/internships...\n"
+                        },
+                        {
+                          "text": "Testing /admin/jobs/applications...\n"
+                        },
+                        {
+                          "text": "Testing /admin/internships/add...\n"
+                        },
+                        {
+                          "text": "Testing /admin/courses...\n"
+                        },
+                        {
+                          "text": "Testing /admin/education/certificate...\n"
+                        },
+                        {
+                          "text": "Testing /admin/cms...\n"
+                        },
+                        {
+                          "text": "Testing /admin/clients...\n"
+                        },
+                        {
+                          "text": "Testing /admin/settings...\n"
+                        },
+                        {
+                          "text": "Testing /admin/settings/sidebar...\n"
+                        },
+                        {
+                          "text": "Testing /admin/settings/utility...\n"
+                        },
+                        {
+                          "text": "Testing /admin/settings/backup...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:38:13.755Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\blueboxx\\blueboxx web\\test-results\\qa-audit-crawler-Automated-10931--Crawler-Crawl-Portal-admin-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\blueboxx\\blueboxx web\\test-results\\qa-audit-crawler-Automated-10931--Crawler-Crawl-Portal-admin-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\blueboxx\\blueboxx web\\test-results\\qa-audit-crawler-Automated-10931--Crawler-Crawl-Portal-admin-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "D:\\blueboxx\\blueboxx web\\test-results\\qa-audit-crawler-Automated-10931--Crawler-Crawl-Portal-admin-chromium\\trace.zip"
+                        }
+                      ]
+                    },
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 133169,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[admin] Found 18 routes to test.\n"
+                        },
+                        {
+                          "text": "Testing /admin/dashboard...\n"
+                        },
+                        {
+                          "text": "Testing /admin/media...\n"
+                        },
+                        {
+                          "text": "Testing /admin/users...\n"
+                        },
+                        {
+                          "text": "Testing /admin/users/students...\n"
+                        },
+                        {
+                          "text": "Testing /admin/users/instructors...\n"
+                        },
+                        {
+                          "text": "Testing /admin/verifications...\n"
+                        },
+                        {
+                          "text": "Testing /admin/roles...\n"
+                        },
+                        {
+                          "text": "Testing /admin/internships...\n"
+                        },
+                        {
+                          "text": "Testing /admin/jobs/applications...\n"
+                        },
+                        {
+                          "text": "Testing /admin/internships/add...\n"
+                        },
+                        {
+                          "text": "Testing /admin/courses...\n"
+                        },
+                        {
+                          "text": "Testing /admin/education/certificate...\n"
+                        },
+                        {
+                          "text": "Testing /admin/cms...\n"
+                        },
+                        {
+                          "text": "Testing /admin/clients...\n"
+                        },
+                        {
+                          "text": "Testing /admin/settings...\n"
+                        },
+                        {
+                          "text": "Testing /admin/settings/sidebar...\n"
+                        },
+                        {
+                          "text": "Testing /admin/settings/utility...\n"
+                        },
+                        {
+                          "text": "Testing /admin/settings/backup...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-09T08:41:50.734Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "flaky"
+                }
+              ],
+              "id": "9a91e780d76d12452f21-f9d39a4f6c75169256d9",
+              "file": "qa-audit-crawler.spec.ts",
+              "line": 30,
+              "column": 5
+            },
+            {
+              "title": "Crawl Portal: companies",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:41:04.411Z",
+                      "annotations": [],
+                      "attachments": []
+                    },
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 43642,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[companies] Found 9 routes to test.\n"
+                        },
+                        {
+                          "text": "Testing /company/dashboard...\n"
+                        },
+                        {
+                          "text": "Testing /company/jobs...\n"
+                        },
+                        {
+                          "text": "Testing /company/jobs/new...\n"
+                        },
+                        {
+                          "text": "Testing /company/applicants...\n"
+                        },
+                        {
+                          "text": "Testing /company/interviews...\n"
+                        },
+                        {
+                          "text": "Testing /company/profile...\n"
+                        },
+                        {
+                          "text": "Testing /company/analytics...\n"
+                        },
+                        {
+                          "text": "Testing /company/settings...\n"
+                        },
+                        {
+                          "text": "Testing /company/support...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-09T08:44:03.925Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9a91e780d76d12452f21-ef5e7bc5239ee7e224c3",
+              "file": "qa-audit-crawler.spec.ts",
+              "line": 30,
+              "column": 5
+            },
+            {
+              "title": "Crawl Portal: expert",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:41:04.478Z",
+                      "annotations": [],
+                      "attachments": []
+                    },
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 15979,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[expert] Found 6 routes to test.\n"
+                        },
+                        {
+                          "text": "Testing /expert/dashboard...\n"
+                        },
+                        {
+                          "text": "Testing /...\n"
+                        },
+                        {
+                          "text": "Testing /expert/schedule...\n"
+                        },
+                        {
+                          "text": "Testing /expert/mentees...\n"
+                        },
+                        {
+                          "text": "Testing /expert/earnings...\n"
+                        },
+                        {
+                          "text": "Testing /expert/settings...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-09T08:44:47.592Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9a91e780d76d12452f21-ac9410da75bfc1553379",
+              "file": "qa-audit-crawler.spec.ts",
+              "line": 30,
+              "column": 5
+            },
+            {
+              "title": "Crawl Portal: colleges",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:41:04.524Z",
+                      "annotations": [],
+                      "attachments": []
+                    },
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 20189,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[colleges] Found 8 routes to test.\n"
+                        },
+                        {
+                          "text": "Testing /college/dashboard...\n"
+                        },
+                        {
+                          "text": "Testing /college/students...\n"
+                        },
+                        {
+                          "text": "Testing /college/enrollment...\n"
+                        },
+                        {
+                          "text": "Testing /college/cohorts...\n"
+                        },
+                        {
+                          "text": "Testing /college/courses...\n"
+                        },
+                        {
+                          "text": "Testing /college/performance...\n"
+                        },
+                        {
+                          "text": "Testing /college/settings...\n"
+                        },
+                        {
+                          "text": "Testing /college/support...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-09T08:45:03.592Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9a91e780d76d12452f21-7e7b1361e0ee314f079c",
+              "file": "qa-audit-crawler.spec.ts",
+              "line": 30,
+              "column": 5
+            },
+            {
+              "title": "Crawl Portal: intern",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:41:04.576Z",
+                      "annotations": [],
+                      "attachments": []
+                    },
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 11081,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[intern] Found 5 routes to test.\n"
+                        },
+                        {
+                          "text": "Testing /intern/dashboard...\n"
+                        },
+                        {
+                          "text": "Testing /...\n"
+                        },
+                        {
+                          "text": "Testing /intern/applications...\n"
+                        },
+                        {
+                          "text": "Testing /intern/resume...\n"
+                        },
+                        {
+                          "text": "Testing /intern/settings...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-09T08:45:23.799Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9a91e780d76d12452f21-7a4052a9ee446660c396",
+              "file": "qa-audit-crawler.spec.ts",
+              "line": 30,
+              "column": 5
+            },
+            {
+              "title": "Crawl Portal: jobseeker",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:41:04.715Z",
+                      "annotations": [],
+                      "attachments": []
+                    },
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 10975,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[jobseeker] Found 5 routes to test.\n"
+                        },
+                        {
+                          "text": "Testing /jobseeker/dashboard...\n"
+                        },
+                        {
+                          "text": "Testing /...\n"
+                        },
+                        {
+                          "text": "Testing /jobseeker/applications...\n"
+                        },
+                        {
+                          "text": "Testing /jobseeker/profile...\n"
+                        },
+                        {
+                          "text": "Testing /jobseeker/settings...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-09T08:45:34.900Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9a91e780d76d12452f21-c46c670f5f195e9494f0",
+              "file": "qa-audit-crawler.spec.ts",
+              "line": 30,
+              "column": 5
+            },
+            {
+              "title": "Save QA Report Data",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:41:04.718Z",
+                      "annotations": [],
+                      "attachments": []
+                    },
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 2,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-09T08:45:45.898Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9a91e780d76d12452f21-9a2b96864961ef3b6357",
+              "file": "qa-audit-crawler.spec.ts",
+              "line": 144,
+              "column": 3
+            },
+            {
+              "title": "Crawl Portal: student",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 30276,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[student] Found 7 routes to test.\n"
+                        },
+                        {
+                          "text": "Testing /student/dashboard...\n"
+                        },
+                        {
+                          "text": "Testing /student/courses...\n"
+                        },
+                        {
+                          "text": "Testing /student/assignments...\n"
+                        },
+                        {
+                          "text": "Testing /student/internships...\n"
+                        },
+                        {
+                          "text": "Testing /student/applications...\n"
+                        },
+                        {
+                          "text": "Testing /student/certificates...\n"
+                        },
+                        {
+                          "text": "Testing /student/settings...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:44:19.471Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9a91e780d76d12452f21-f6adb4da32ead1215630",
+              "file": "qa-audit-crawler.spec.ts",
+              "line": 30,
+              "column": 5
+            },
+            {
+              "title": "Crawl Portal: admin",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 39307,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[admin] Found 18 routes to test.\n"
+                        },
+                        {
+                          "text": "Testing /admin/dashboard...\n"
+                        },
+                        {
+                          "text": "Testing /admin/media...\n"
+                        },
+                        {
+                          "text": "Testing /admin/users...\n"
+                        },
+                        {
+                          "text": "Testing /admin/users/students...\n"
+                        },
+                        {
+                          "text": "Testing /admin/users/instructors...\n"
+                        },
+                        {
+                          "text": "Testing /admin/verifications...\n"
+                        },
+                        {
+                          "text": "Testing /admin/roles...\n"
+                        },
+                        {
+                          "text": "Testing /admin/internships...\n"
+                        },
+                        {
+                          "text": "Testing /admin/jobs/applications...\n"
+                        },
+                        {
+                          "text": "Testing /admin/internships/add...\n"
+                        },
+                        {
+                          "text": "Testing /admin/courses...\n"
+                        },
+                        {
+                          "text": "Testing /admin/education/certificate...\n"
+                        },
+                        {
+                          "text": "Testing /admin/cms...\n"
+                        },
+                        {
+                          "text": "Testing /admin/clients...\n"
+                        },
+                        {
+                          "text": "Testing /admin/settings...\n"
+                        },
+                        {
+                          "text": "Testing /admin/settings/sidebar...\n"
+                        },
+                        {
+                          "text": "Testing /admin/settings/utility...\n"
+                        },
+                        {
+                          "text": "Testing /admin/settings/backup...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:44:49.773Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9a91e780d76d12452f21-24e68c254be8d3c516b0",
+              "file": "qa-audit-crawler.spec.ts",
+              "line": 30,
+              "column": 5
+            },
+            {
+              "title": "Crawl Portal: companies",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 14960,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[companies] Found 9 routes to test.\n"
+                        },
+                        {
+                          "text": "Testing /company/dashboard...\n"
+                        },
+                        {
+                          "text": "Testing /company/jobs...\n"
+                        },
+                        {
+                          "text": "Testing /company/jobs/new...\n"
+                        },
+                        {
+                          "text": "Testing /company/applicants...\n"
+                        },
+                        {
+                          "text": "Testing /company/interviews...\n"
+                        },
+                        {
+                          "text": "Testing /company/profile...\n"
+                        },
+                        {
+                          "text": "Testing /company/analytics...\n"
+                        },
+                        {
+                          "text": "Testing /company/settings...\n"
+                        },
+                        {
+                          "text": "Testing /company/support...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:45:29.099Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9a91e780d76d12452f21-9f8c3df04239e15951d7",
+              "file": "qa-audit-crawler.spec.ts",
+              "line": 30,
+              "column": 5
+            },
+            {
+              "title": "Crawl Portal: expert",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 12090,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[expert] Sidebar not found or dashboard doesn't exist.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:45:44.076Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9a91e780d76d12452f21-66b987b655ecb6a39b76",
+              "file": "qa-audit-crawler.spec.ts",
+              "line": 30,
+              "column": 5
+            },
+            {
+              "title": "Crawl Portal: colleges",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 9412,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[colleges] Found 8 routes to test.\n"
+                        },
+                        {
+                          "text": "Testing /college/dashboard...\n"
+                        },
+                        {
+                          "text": "Testing /college/students...\n"
+                        },
+                        {
+                          "text": "Testing /college/enrollment...\n"
+                        },
+                        {
+                          "text": "Testing /college/cohorts...\n"
+                        },
+                        {
+                          "text": "Testing /college/courses...\n"
+                        },
+                        {
+                          "text": "Testing /college/performance...\n"
+                        },
+                        {
+                          "text": "Testing /college/settings...\n"
+                        },
+                        {
+                          "text": "Testing /college/support...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:45:56.184Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9a91e780d76d12452f21-03be2d9a20f8b95a5fa7",
+              "file": "qa-audit-crawler.spec.ts",
+              "line": 30,
+              "column": 5
+            },
+            {
+              "title": "Crawl Portal: intern",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 6976,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[intern] Found 5 routes to test.\n"
+                        },
+                        {
+                          "text": "Testing /intern/dashboard...\n"
+                        },
+                        {
+                          "text": "Testing /...\n"
+                        },
+                        {
+                          "text": "Testing /intern/applications...\n"
+                        },
+                        {
+                          "text": "Testing /intern/resume...\n"
+                        },
+                        {
+                          "text": "Testing /intern/settings...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:46:05.605Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9a91e780d76d12452f21-af45536984202586f389",
+              "file": "qa-audit-crawler.spec.ts",
+              "line": 30,
+              "column": 5
+            },
+            {
+              "title": "Crawl Portal: jobseeker",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 6922,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[jobseeker] Found 5 routes to test.\n"
+                        },
+                        {
+                          "text": "Testing /jobseeker/dashboard...\n"
+                        },
+                        {
+                          "text": "Testing /...\n"
+                        },
+                        {
+                          "text": "Testing /jobseeker/applications...\n"
+                        },
+                        {
+                          "text": "Testing /jobseeker/profile...\n"
+                        },
+                        {
+                          "text": "Testing /jobseeker/settings...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:46:12.596Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9a91e780d76d12452f21-afd73d0d0c5d94336b02",
+              "file": "qa-audit-crawler.spec.ts",
+              "line": 30,
+              "column": 5
+            },
+            {
+              "title": "Save QA Report Data",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 2,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:46:19.528Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9a91e780d76d12452f21-0189fce4a26a1b8971dd",
+              "file": "qa-audit-crawler.spec.ts",
+              "line": 144,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "qa-mobile-crawler.spec.ts",
+      "file": "qa-mobile-crawler.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Automated Mobile Responsiveness QA",
+          "file": "qa-mobile-crawler.spec.ts",
+          "line": 28,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Mobile Crawl: student on iPhone 14 Pro",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 5621,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[student on iPhone 14 Pro] Found 1 routes to test.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:37:40.905Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "aecabc7e75de6fdd0de0-133b10bf73521bc3b439",
+              "file": "qa-mobile-crawler.spec.ts",
+              "line": 32,
+              "column": 7
+            },
+            {
+              "title": "Mobile Crawl: companies on iPhone 14 Pro",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 9932,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[companies on iPhone 14 Pro] Found 1 routes to test.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:37:46.555Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "aecabc7e75de6fdd0de0-e0de6fbcae17c9961f3b",
+              "file": "qa-mobile-crawler.spec.ts",
+              "line": 32,
+              "column": 7
+            },
+            {
+              "title": "Mobile Crawl: student on iPad Pro",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 15263,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[student on iPad Pro] Found 1 routes to test.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:37:56.507Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "aecabc7e75de6fdd0de0-c26f920e9342e82bc5a6",
+              "file": "qa-mobile-crawler.spec.ts",
+              "line": 32,
+              "column": 7
+            },
+            {
+              "title": "Mobile Crawl: companies on iPad Pro",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 6186,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[companies on iPad Pro] Found 1 routes to test.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:38:11.793Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "aecabc7e75de6fdd0de0-8121e185f10955d30c6f",
+              "file": "qa-mobile-crawler.spec.ts",
+              "line": 32,
+              "column": 7
+            },
+            {
+              "title": "Save Mobile QA Report Data",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 4,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:38:17.999Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "aecabc7e75de6fdd0de0-def0ab98c3fb262a63ed",
+              "file": "qa-mobile-crawler.spec.ts",
+              "line": 138,
+              "column": 3
+            },
+            {
+              "title": "Mobile Crawl: student on iPhone 14 Pro",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 14206,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[student on iPhone 14 Pro] Found 1 routes to test.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:44:20.415Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "aecabc7e75de6fdd0de0-c3db37bc801a1702131d",
+              "file": "qa-mobile-crawler.spec.ts",
+              "line": 32,
+              "column": 7
+            },
+            {
+              "title": "Mobile Crawl: companies on iPhone 14 Pro",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 5832,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[companies on iPhone 14 Pro] Found 1 routes to test.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:44:34.666Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "aecabc7e75de6fdd0de0-657a8458b202e33470dd",
+              "file": "qa-mobile-crawler.spec.ts",
+              "line": 32,
+              "column": 7
+            },
+            {
+              "title": "Mobile Crawl: student on iPad Pro",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 6880,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[student on iPad Pro] Found 1 routes to test.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:44:40.535Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "aecabc7e75de6fdd0de0-ddbea08f1955f5f02c96",
+              "file": "qa-mobile-crawler.spec.ts",
+              "line": 32,
+              "column": 7
+            },
+            {
+              "title": "Mobile Crawl: companies on iPad Pro",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 5061,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[companies on iPad Pro] Found 1 routes to test.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:44:47.436Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "aecabc7e75de6fdd0de0-c7f13d102eada43d90b3",
+              "file": "qa-mobile-crawler.spec.ts",
+              "line": 32,
+              "column": 7
+            },
+            {
+              "title": "Save Mobile QA Report Data",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 5,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-09T08:44:52.521Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "aecabc7e75de6fdd0de0-d8f7ebfb62511a84cb6f",
+              "file": "qa-mobile-crawler.spec.ts",
+              "line": 138,
+              "column": 3
+            }
+          ]
+        }
+      ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-07-09T05:48:14.261Z",
-    "duration": 555933.892,
-    "expected": 70,
+    "startTime": "2026-07-09T08:32:14.399Z",
+    "duration": 847634.83,
+    "expected": 121,
     "skipped": 0,
     "unexpected": 0,
-    "flaky": 0
+    "flaky": 1
   }
 }

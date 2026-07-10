@@ -107,13 +107,14 @@ export default function OnboardingPage() {
           <img src="/logoblue.png" alt="BlueBoxx" className="h-10 w-auto object-contain" />
         </Link>
         
-        {/* Progress Tracker */}
-        <div className="hidden md:flex gap-2">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className={`h-2 rounded-full transition-all duration-300 ${
-              step === i ? "w-8 bg-[#1B2A6B]" : step > i ? "w-2 bg-[#C9A227]" : "w-2 bg-slate-200"
-            }`} />
-          ))}
+        {/* Dynamic Progress Tracker */}
+        <div className="hidden md:block w-48 relative bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200">
+          <motion.div 
+            className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#1B2A6B] to-[#C9A227] rounded-full"
+            initial={{ width: '33%' }}
+            animate={{ width: `${(step / 3) * 100}%` }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+          />
         </div>
       </div>
 
@@ -188,19 +189,24 @@ export default function OnboardingPage() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {roles.map((r) => (
-                    <div 
+                    <motion.div 
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       key={r.id} 
                       onClick={() => setRole(r.id)}
                       className={`p-5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col items-center text-center gap-3 relative ${
                         role === r.id 
                           ? "border-[#1B2A6B] bg-blue-50/50 shadow-md" 
-                          : "border-slate-100 hover:border-[#1B2A6B]/30 hover:bg-slate-50"
+                          : "border-slate-100 hover:border-[#1B2A6B]/30 hover:bg-slate-50 shadow-sm"
                       }`}
                     >
                       {role === r.id && (
-                        <div className="absolute top-3 right-3 text-[#C9A227]">
+                        <motion.div 
+                          initial={{ scale: 0 }} animate={{ scale: 1 }}
+                          className="absolute top-3 right-3 text-[#C9A227]"
+                        >
                           <CheckCircle2 size={20} />
-                        </div>
+                        </motion.div>
                       )}
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
                         role === r.id ? "bg-[#1B2A6B] text-white" : "bg-white border border-slate-200 text-slate-400"
@@ -211,7 +217,7 @@ export default function OnboardingPage() {
                         <h3 className={`font-black mb-1 ${role === r.id ? "text-[#1B2A6B]" : "text-slate-800"}`}>{r.title}</h3>
                         <p className="text-[11px] font-semibold text-slate-500">{r.desc}</p>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Filter, ChevronDown, Check, Briefcase, GraduationCap, Clock, IndianRupee,
   BookOpen, Layers, MapPin, Cpu, Tag
@@ -77,11 +77,15 @@ function CoursesFilter() {
 }
 
 // ─── INTERNSHIPS FILTERS ──────────────────────────────────────────────────────
-function InternshipsFilter() {
+function InternshipsFilter({ onFilterChange }: { onFilterChange?: (f: any) => void }) {
   const [domain, setDomain] = useState("");
   const [duration, setDuration] = useState("");
   const [mode, setMode] = useState("");
   const [level, setLevel] = useState("");
+
+  useEffect(() => {
+    onFilterChange?.({ domain, duration, mode, level });
+  }, [domain, duration, mode, level]);
 
   return (
     <>
@@ -102,16 +106,16 @@ function InternshipsFilter() {
 }
 
 // ─── JOBS FILTERS ─────────────────────────────────────────────────────────────
-function JobsFilter() {
+function JobsFilter({ onFilterChange }: { onFilterChange?: (f: any) => void }) {
   const [role, setRole] = useState("");
   const [experience, setExperience] = useState("");
   const [salary, setSalary] = useState("");
   const [mode, setMode] = useState("");
   const [type, setType] = useState("");
 
-
-
-  return (
+  useEffect(() => {
+    onFilterChange?.({ role, experience, salary, mode, type });
+  }, [role, experience, salary, mode, type]);  return (
     <>
       <FilterSection title="Job Role" icon={Briefcase}
         options={["Software Engineer", "Data Scientist", "Product Manager", "UI/UX Designer", "DevOps Engineer", "Business Analyst", "Digital Marketer"]}
@@ -152,11 +156,12 @@ function ExpertsFilter() {
 }
 
 // ─── MAIN EXPORT ─────────────────────────────────────────────────────────────
-export function SidebarFilter({ type = "jobs" }: { type?: "courses" | "internships" | "jobs" | "experts" | string }) {
+export function SidebarFilter({ type = "jobs", onFilterChange }: { type?: "courses" | "internships" | "jobs" | "experts" | string, onFilterChange?: (filters: any) => void }) {
   const [resetKey, setResetKey] = useState(0);
 
   const handleClearAll = () => {
     setResetKey(prev => prev + 1);
+    onFilterChange?.({});
   };
 
   const titles: Record<string, string> = {
@@ -182,8 +187,8 @@ export function SidebarFilter({ type = "jobs" }: { type?: "courses" | "internshi
 
       <div key={resetKey}>
         {type === "courses" && <CoursesFilter />}
-        {type === "internships" && <InternshipsFilter />}
-        {type === "jobs" && <JobsFilter />}
+        {type === "internships" && <InternshipsFilter onFilterChange={onFilterChange} />}
+        {type === "jobs" && <JobsFilter onFilterChange={onFilterChange} />}
         {type === "experts" && <ExpertsFilter />}
       </div>
     </div>

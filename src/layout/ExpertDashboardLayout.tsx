@@ -40,7 +40,7 @@ export const ExpertDashboardLayout = ({ children }: { children: React.ReactNode 
       <aside className="hidden lg:flex flex-col w-64 bg-[#0d1635] text-white fixed h-full z-20">
         <div className="h-20 flex items-center px-6 border-b border-white/10">
           <Link href="/">
-            <img src="/logowhite.png" alt="BlueBoxx" className="h-8 object-contain" />
+            <img src="/logowhite.png" alt="BlueBoxx" className="h-12 object-contain" />
           </Link>
         </div>
 
@@ -95,7 +95,7 @@ export const ExpertDashboardLayout = ({ children }: { children: React.ReactNode 
               className="fixed top-0 left-0 h-full w-[280px] bg-[#0d1635] text-white z-40 flex flex-col shadow-2xl"
             >
               <div className="h-20 flex items-center justify-between px-6 border-b border-white/10">
-                <img src="/logowhite.png" alt="BlueBoxx" className="h-8 w-auto object-contain" />
+                <img src="/logowhite.png" alt="BlueBoxx" className="h-12 w-auto object-contain" />
                 <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-300">
                   <X size={24} />
                 </button>

@@ -89,7 +89,7 @@ export const CollegeDashboardLayout = ({ children }: { children: React.ReactNode
         {/* Logo */}
         <div className="h-16 flex items-center px-5 border-b border-white/10 justify-between lg:justify-start shrink-0">
           <Link href="/college/dashboard" className="flex items-center gap-3">
-            <img src="/logowhite.png" alt="BlueBoxx DA" className="h-8 w-auto object-contain" />
+            <img src="/logowhite.png" alt="BlueBoxx DA" className="h-12 w-auto object-contain" />
           </Link>
           <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-400 hover:text-white ml-auto">
             <X size={18} />

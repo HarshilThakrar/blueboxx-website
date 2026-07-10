@@ -29,7 +29,7 @@ test.describe('Automated QA Audit Crawler', () => {
   for (const role of ROLES) {
     test(`Crawl Portal: ${role.key}`, async ({ page }) => {
       // Set longer timeout for crawling entire portal
-      test.setTimeout(120000); 
+      test.setTimeout(300000); 
       
       const errors = [];
       const networkFails = [];

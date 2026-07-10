@@ -2,13 +2,15 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthContext";
-import { LayoutDashboard, Briefcase, FileText, Settings, LogOut, Menu, X, Bell, Search } from "lucide-react";
+import { LayoutDashboard, Briefcase, FileText, Settings, LogOut, Menu, X, Bell, Search, Trophy, Users } from "lucide-react";
 import { MOCK_USER } from "../data/mockData";
 import { motion, AnimatePresence } from "framer-motion";
 
 const SIDEBAR_LINKS = [
   { name: "Dashboard", href: "/intern/dashboard", icon: LayoutDashboard },
   { name: "My Applications", href: "/intern/applications", icon: Briefcase },
+  { name: "Scholarships", href: "/intern/scholarships", icon: Trophy },
+  { name: "Expert Sessions", href: "/intern/mentor-sessions", icon: Users },
   { name: "Resume & Portfolio", href: "/intern/resume", icon: FileText },
   { name: "Settings", href: "/intern/settings", icon: Settings },
 ];
@@ -44,7 +46,7 @@ export const InternDashboardLayout = ({ children }: { children: React.ReactNode 
       >
         <div className="h-20 flex items-center px-6 border-b border-white/10 justify-between lg:justify-start">
           <Link href="/">
-            <img src="/logowhite.png" alt="BlueBoxx" className="h-8 object-contain" />
+            <img src="/logowhite.png" alt="BlueBoxx" className="h-12 object-contain" />
           </Link>
           <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-400 hover:text-white">
             <X size={20} />

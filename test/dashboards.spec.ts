@@ -2,17 +2,24 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Dashboards', () => {
 
-  test('Admin Dashboard Overview', async ({ page }) => {
+  test('Admin Dashboard Overview', async ({ page, isMobile }) => {
     // Assuming the page is accessible directly without complex mock auth state, 
     // or the mock auth passes locally without context.
     await page.goto('/admin/dashboard');
+    
+    if (isMobile) {
+      // On mobile, the sidebar is hidden by default. Click the menu button to open it.
+      await page.locator('button').filter({ has: page.locator('svg.lucide-menu') }).click();
+    }
     
     // Check Sidebar
     await expect(page.locator('text=Admin Profile')).toBeVisible();
     await expect(page.getByRole('link', { name: 'User Directory' }).or(page.getByRole('link', { name: 'Dashboard' }))).toBeVisible();
     
-    // Check Top Nav
-    await expect(page.getByPlaceholder('Global search')).toBeVisible();
+    // Check Top Nav (only visible on desktop)
+    if (!isMobile) {
+      await expect(page.getByPlaceholder('Global search')).toBeVisible();
+    }
     
     // Check Dashboard Stats
     await expect(page.locator('text=Active Users').first()).toBeVisible();

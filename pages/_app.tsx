@@ -6,6 +6,7 @@ import { MockDataProvider } from "../src/context/MockDataContext";
 import { ConfirmProvider } from "../src/context/ConfirmContext";
 import { TourProvider } from "../src/context/TourContext";
 import { OnboardingTour } from "../src/components/ui/OnboardingTour";
+import { ScholarshipPopup } from "../src/components/ScholarshipPopup";
 import "../src/index.css";
 import { LoadingScreen } from "../src/components/LoadingScreen";
 import { AnimatePresence, motion } from "framer-motion";
@@ -29,6 +30,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             <MockDataProvider>
               <Toaster position="bottom-right" />
               <OnboardingTour />
+              <ScholarshipPopup />
               {isLoading ? (
                 <LoadingScreen onComplete={() => setIsLoading(false)} />
               ) : (

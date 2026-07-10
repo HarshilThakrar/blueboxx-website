@@ -1,9 +1,15 @@
 {
-  "totalPages": 66,
-  "passedPages": 66,
-  "failedPages": 0,
+  "totalPages": 52,
+  "passedPages": 52,
+  "failedPages": 1,
   "consoleErrors": [],
-  "networkErrors": [],
+  "networkErrors": [
+    {
+      "role": "admin",
+      "status": 404,
+      "url": "http://localhost:3000/logoblack.png"
+    }
+  ],
   "pages": [
     {
       "url": "/student/dashboard",
@@ -12,11 +18,6 @@
     },
     {
       "url": "/student/courses",
-      "status": "Passed",
-      "role": "student"
-    },
-    {
-      "url": "/student/classes",
       "status": "Passed",
       "role": "student"
     },
@@ -36,27 +37,12 @@
       "role": "student"
     },
     {
-      "url": "/student/placements",
-      "status": "Passed",
-      "role": "student"
-    },
-    {
-      "url": "/student/resume-builder",
-      "status": "Passed",
-      "role": "student"
-    },
-    {
       "url": "/student/certificates",
       "status": "Passed",
       "role": "student"
     },
     {
       "url": "/student/settings",
-      "status": "Passed",
-      "role": "student"
-    },
-    {
-      "url": "/student/support",
       "status": "Passed",
       "role": "student"
     },
@@ -141,26 +127,6 @@
       "role": "admin"
     },
     {
-      "url": "/admin/settings/appearance",
-      "status": "Passed",
-      "role": "admin"
-    },
-    {
-      "url": "/admin/settings/newsletter",
-      "status": "Passed",
-      "role": "admin"
-    },
-    {
-      "url": "/admin/settings/notification",
-      "status": "Passed",
-      "role": "admin"
-    },
-    {
-      "url": "/admin/settings/push",
-      "status": "Passed",
-      "role": "admin"
-    },
-    {
       "url": "/admin/settings/utility",
       "status": "Passed",
       "role": "admin"
@@ -217,32 +183,7 @@
     },
     {
       "url": "/expert/dashboard",
-      "status": "Passed",
-      "role": "expert"
-    },
-    {
-      "url": "/",
-      "status": "Passed",
-      "role": "expert"
-    },
-    {
-      "url": "/expert/schedule",
-      "status": "Passed",
-      "role": "expert"
-    },
-    {
-      "url": "/expert/mentees",
-      "status": "Passed",
-      "role": "expert"
-    },
-    {
-      "url": "/expert/earnings",
-      "status": "Passed",
-      "role": "expert"
-    },
-    {
-      "url": "/expert/settings",
-      "status": "Passed",
+      "status": "Failed - No Sidebar",
       "role": "expert"
     },
     {

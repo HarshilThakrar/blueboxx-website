@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { MainLayout } from "../../src/layout/MainLayout";
 import { dummyMentors } from "../../src/data/mentors";
 import { motion, AnimatePresence } from "framer-motion";
@@ -79,10 +80,12 @@ export default function BookSessionPage() {
                   </div>
                   
                   <div className="grid md:grid-cols-2 gap-8">
-                    {/* Calendar UI Mock */}
+                    {/* Calendar UI */}
                     <div className="border border-slate-200 rounded-2xl p-6">
                       <div className="flex items-center justify-between mb-6">
-                        <h3 className="font-bold text-slate-800">October 2026</h3>
+                        <h3 className="font-bold text-slate-800">
+                          {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
+                        </h3>
                         <div className="flex gap-2">
                           <button className="p-1 rounded bg-slate-100 hover:bg-slate-200"><ChevronLeft size={16}/></button>
                           <button className="p-1 rounded bg-slate-100 hover:bg-slate-200"><ChevronRight size={16}/></button>
@@ -92,9 +95,11 @@ export default function BookSessionPage() {
                         <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
                       </div>
                       <div className="grid grid-cols-7 gap-2">
-                        {Array.from({ length: 31 }).map((_, i) => {
+                        {Array.from({ length: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() }).map((_, i) => {
                           const date = i + 1;
-                          const isAvailable = [24, 25, 27, 29].includes(date);
+                          // Mock availability: 3 random days ahead are available
+                          const today = new Date().getDate();
+                          const isAvailable = date > today && (date % 3 === 0 || date % 4 === 0);
                           const isSelected = selectedDate === date;
                           return (
                             <button 
@@ -184,7 +189,12 @@ export default function BookSessionPage() {
                           <p className="text-xs text-slate-500">Mentors can give better advice if they see your profile.</p>
                         </div>
                       </div>
-                      <Button variant="outline" type="button" size="sm" className="font-bold bg-white">Upload PDF</Button>
+                      <input type="file" id="resume-upload" className="hidden" accept=".pdf" onChange={(e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          toast.success(`Attached ${e.target.files[0].name}`);
+                        }
+                      }} />
+                      <Button variant="outline" type="button" size="sm" className="font-bold bg-white" onClick={() => document.getElementById('resume-upload')?.click()}>Upload PDF</Button>
                     </div>
                   </div>
 
@@ -246,7 +256,7 @@ export default function BookSessionPage() {
                             <CalendarIcon size={24} />
                           </div>
                           <div>
-                            <div className="font-bold text-slate-800 text-sm">October {selectedDate}, 2026</div>
+                            <div className="font-bold text-slate-800 text-sm">{new Date().toLocaleString('default', { month: 'short' })} {selectedDate}, {new Date().getFullYear()}</div>
                             <div className="text-slate-500 text-xs font-medium">{selectedTime} • 45 Mins</div>
                           </div>
                         </div>

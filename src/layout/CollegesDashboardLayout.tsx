@@ -44,7 +44,7 @@ export const CollegesDashboardLayout = ({ children }: { children: React.ReactNod
       >
         <div className="h-20 flex items-center px-6 border-b border-white/10 justify-between lg:justify-start">
           <Link href="/">
-            <img src="/logowhite.png" alt="BlueBoxx" className="h-8 object-contain" />
+            <img src="/logowhite.png" alt="BlueBoxx" className="h-12 object-contain" />
           </Link>
           <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-400 hover:text-white">
             <X size={20} />

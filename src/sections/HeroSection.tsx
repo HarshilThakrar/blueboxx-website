@@ -235,8 +235,8 @@ export const HeroSection = () => {
                   className="flex flex-col items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-xl text-center shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
                   style={{ width: HUB_SIZE, height: HUB_SIZE }}
                 >
-                  <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 border border-white/10">
-                    <img src="/Boxx Logo.png" alt="BlueBoxx logo" className="h-10 w-10 object-contain" />
+                  <div className="mb-3 flex items-center justify-center">
+                    <img src="/Boxx Logo.png" alt="BlueBoxx logo" className="h-20 w-20 object-contain drop-shadow-xl" />
                   </div>
                   <p className="text-base font-bold text-white font-sora">Career Ecosystem</p>
                   <p className="mt-1.5 max-w-[150px] text-[11px] leading-4 text-slate-300 font-semibold">
