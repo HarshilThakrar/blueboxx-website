@@ -9,10 +9,12 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import toast from "react-hot-toast";
+import api from "../src/lib/axios";
 
 const bookingSchema = z.object({
   fullName: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
+  phone: z.string().min(10, { message: "Please enter a valid 10-digit phone number" }),
   courseInterest: z.string().min(1, { message: "Please select a course" }),
 });
 type BookingFormValues = z.infer<typeof bookingSchema>;
@@ -30,9 +32,19 @@ export default function BookConsultationPage() {
   });
 
   const onSubmit = async (data: BookingFormValues) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    toast.success(`Consultation booked successfully for ${selectedDate.toDateString()} at ${selectedTime}! We will email you the meeting link.`);
-    reset();
+    try {
+      await api.post("/consultations", {
+        name: data.fullName,
+        email: data.email,
+        phone: data.phone,
+        query: `Interested in: ${data.courseInterest}. Preferred Time: ${selectedTime}`,
+        preferred_date: selectedDate.toISOString().split('T')[0]
+      });
+      toast.success(`Consultation booked successfully for ${selectedDate.toDateString()} at ${selectedTime}! We will email you the meeting link.`);
+      reset();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to book consultation. Please try again.");
+    }
   };
 
   const today = new Date();
@@ -218,6 +230,17 @@ export default function BookConsultationPage() {
                             />
                             {errors.email && <p className="text-red-500 text-xs font-semibold">{errors.email.message}</p>}
                           </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Phone Number</label>
+                          <Input 
+                            type="tel" 
+                            placeholder="+91 98765 43210" 
+                            {...register("phone")}
+                            className={errors.phone ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500' : ''}
+                          />
+                          {errors.phone && <p className="text-red-500 text-xs font-semibold">{errors.phone.message}</p>}
                         </div>
 
                         <div className="space-y-2">

@@ -4,28 +4,28 @@ import { AnimatedContent } from "../../../src/components/reactbits/AnimatedConte
 import { BarChart } from "../../../src/components/ui/BarChart";
 import { OnboardingTour } from "../../../src/components/ui/OnboardingTour";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { ChatModal } from "../../../src/components/ChatModal";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function ExpertDashboard() {
   const [activeModal, setActiveModal] = useState(false);
   const [chatUser, setChatUser] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState(false);
-  const [requests, setRequests] = useState([
-    { id: 1, name: "Sneha Reddy", reqType: "Requested a 1-on-1" },
-    { id: 2, name: "Vikram Singh", reqType: "Requested Code Review" }
-  ]);
+  const { data: metricsRes, isLoading: isLoadingMetrics } = useSWR("/expert/metrics", fetcher);
+  const { data: sessionsRes, isLoading: isLoadingSessions } = useSWR("/expert/sessions/upcoming", fetcher);
+  const { data: chartRes, isLoading: isLoadingChart } = useSWR("/expert/earnings/chart", fetcher);
+  const { data: requestsRes, mutate: mutateRequests } = useSWR("/expert/mentees/requests", fetcher);
 
-  const earningsData = [
-    { label: "Jan", value: 320 },
-    { label: "Feb", value: 450 },
-    { label: "Mar", value: 280 },
-    { label: "Apr", value: 650 },
-    { label: "May", value: 800 },
-    { label: "Jun", value: 1200 },
-  ];
+  const metrics = metricsRes?.data || { active_mentees: 0, hours_mentored: 0, pending_payout: 0, average_rating: 0 };
+  const upcomingSessions = sessionsRes?.data || [];
+  const earningsData = chartRes?.data || [];
+  const menteeRequests = requestsRes?.data || [];
 
   const handleJoinSession = () => {
     setIsJoining(true);
@@ -37,12 +37,21 @@ export default function ExpertDashboard() {
     }, 2000);
   };
 
-  const handleRequestAction = (id: number, action: "accept" | "decline") => {
-    setRequests(prev => prev.filter(r => r.id !== id));
-    if (action === "accept") {
-      toast.success("Mentee request accepted!");
-    } else {
-      toast.error("Mentee request declined");
+  const handleRequestAction = async (id: number, action: "accept" | "decline") => {
+    // Optimistic update
+    mutateRequests({ ...requestsRes, data: menteeRequests.filter((r: any) => r.id !== id) }, false);
+    
+    try {
+      // In real life, call API: await api.post(`/expert/mentees/requests/${id}/${action}`);
+      if (action === "accept") {
+        toast.success("Mentee request accepted!");
+      } else {
+        toast.error("Mentee request declined");
+      }
+      mutateRequests();
+    } catch (e) {
+      toast.error("Failed to perform action");
+      mutateRequests();
     }
   };
 
@@ -62,10 +71,10 @@ export default function ExpertDashboard() {
 
       <div id="tour-stats" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {[
-          { label: "Active Mentees", value: "14", icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
-          { label: "Hours Mentored", value: "128", icon: Clock, color: "text-indigo-600", bg: "bg-indigo-50" },
-          { label: "Pending Payout", value: "$450", icon: DollarSign, color: "text-emerald-600", bg: "bg-emerald-50" },
-          { label: "Average Rating", value: "4.9", icon: Star, color: "text-amber-500", bg: "bg-amber-50" },
+          { label: "Active Mentees", value: isLoadingMetrics ? "-" : metrics.active_mentees.toString(), icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
+          { label: "Hours Mentored", value: isLoadingMetrics ? "-" : metrics.hours_mentored.toString(), icon: Clock, color: "text-indigo-600", bg: "bg-indigo-50" },
+          { label: "Pending Payout", value: isLoadingMetrics ? "-" : `$${metrics.pending_payout}`, icon: DollarSign, color: "text-emerald-600", bg: "bg-emerald-50" },
+          { label: "Average Rating", value: isLoadingMetrics ? "-" : metrics.average_rating.toString(), icon: Star, color: "text-amber-500", bg: "bg-amber-50" },
         ].map((stat, i) => (
           <AnimatedContent key={i} direction="up" delay={i * 0.1} className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
             <div className={`w-14 h-14 rounded-full flex items-center justify-center ${stat.bg} ${stat.color} shrink-0`}>
@@ -89,31 +98,33 @@ export default function ExpertDashboard() {
               </h2>
             </div>
             <div className="divide-y divide-slate-100">
-              {[
-                { id: 1, mentee: "Rahul Sharma", time: "Today, 4:00 PM", topic: "React Architecture Review" },
-                { id: 2, mentee: "Priya Patel", time: "Tomorrow, 11:30 AM", topic: "Mock Interview (Frontend)" },
-                { id: 3, mentee: "Amit Kumar", time: "Oct 12, 5:00 PM", topic: "Career Guidance" },
-              ].map((session, i) => (
-                <div key={session.id} className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-black text-sm border border-indigo-100">
-                      {session.mentee.charAt(0)}
+              {isLoadingSessions ? (
+                <div className="p-8 text-center text-slate-400">Loading sessions...</div>
+              ) : upcomingSessions.length === 0 ? (
+                <div className="p-8 text-center text-slate-400">No upcoming sessions.</div>
+              ) : (
+                upcomingSessions.map((session: any) => (
+                  <div key={session.id} className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-black text-sm border border-indigo-100">
+                        {session.mentee.charAt(0)}
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-[#0d1635] mb-1">{session.mentee}</h3>
+                        <p className="text-xs text-slate-500 font-semibold">{session.topic} &bull; <span className="text-[#1B2A6B]">{session.time}</span></p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-[#0d1635] mb-1">{session.mentee}</h3>
-                      <p className="text-xs text-slate-500 font-semibold">{session.topic} &bull; <span className="text-[#1B2A6B]">{session.time}</span></p>
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <button onClick={() => setChatUser(session.mentee)} className="flex-1 sm:flex-none p-2.5 bg-white border border-slate-200 text-slate-500 hover:text-[#1B2A6B] hover:bg-slate-50 rounded-xl transition-colors text-center flex justify-center">
+                        <MessageSquare size={16} />
+                      </button>
+                      <button onClick={() => setActiveModal(true)} className="flex-1 sm:flex-none px-5 py-2.5 bg-[#C9A227] text-[#0d1635] text-xs font-bold rounded-xl shadow-sm hover:bg-[#b08d22] transition-colors flex justify-center items-center gap-2">
+                        <Play size={14} /> Join Session
+                      </button>
                     </div>
                   </div>
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    <button onClick={() => setChatUser(session.mentee)} className="flex-1 sm:flex-none p-2.5 bg-white border border-slate-200 text-slate-500 hover:text-[#1B2A6B] hover:bg-slate-50 rounded-xl transition-colors text-center flex justify-center">
-                      <MessageSquare size={16} />
-                    </button>
-                    <button onClick={() => setActiveModal(true)} className="flex-1 sm:flex-none px-5 py-2.5 bg-[#C9A227] text-[#0d1635] text-xs font-bold rounded-xl shadow-sm hover:bg-[#b08d22] transition-colors flex justify-center items-center gap-2">
-                      <Play size={14} /> Join Session
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </AnimatedContent>
 
@@ -121,11 +132,15 @@ export default function ExpertDashboard() {
             <h2 className="text-lg font-black text-[#0d1635] flex items-center gap-2 mb-6">
               <DollarSign size={18} className="text-emerald-600" /> Earnings Overview (6 Months)
             </h2>
-            <BarChart 
-              data={earningsData} 
-              color="#059669" // emerald-600
-              prefix="$" 
-            />
+            {isLoadingChart ? (
+              <div className="h-48 flex items-center justify-center text-slate-400">Loading chart...</div>
+            ) : (
+              <BarChart 
+                data={earningsData} 
+                color="#059669" // emerald-600
+                prefix="$" 
+              />
+            )}
           </AnimatedContent>
         </div>
 
@@ -139,12 +154,14 @@ export default function ExpertDashboard() {
             </div>
             <div className="p-6 space-y-4 flex-1">
               <AnimatePresence>
-                {requests.length === 0 ? (
+                {!requestsRes ? (
+                  <div className="text-center py-8 text-slate-400">Loading requests...</div>
+                ) : menteeRequests.length === 0 ? (
                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-8">
                      <p className="text-slate-400 text-sm font-semibold">No new requests.</p>
                    </motion.div>
                 ) : (
-                  requests.map(req => (
+                  menteeRequests.map((req: any) => (
                     <motion.div key={req.id} initial={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9, height: 0, marginBottom: 0 }} className="p-4 border border-slate-200 rounded-xl bg-slate-50">
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 font-black text-xs flex items-center justify-center">{req.name.charAt(0)}</div>

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import { useConfirm } from "../../../src/context/ConfirmContext";
 
 interface MediaItem {
   id: string;
@@ -25,6 +26,7 @@ export default function AdminMediaLibrary() {
   const [previewImage, setPreviewImage] = useState<MediaItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const confirmAction = useConfirm();
 
   const fetchMedia = async () => {
     try {
@@ -64,7 +66,7 @@ export default function AdminMediaLibrary() {
   };
 
   const handleDeleteSelected = async () => {
-    if (confirm(`Are you sure you want to delete ${selectedItems.length} items permanently?`)) {
+    if (await confirmAction({ title: "Delete Multiple Items", description: `Are you sure you want to delete ${selectedItems.length} items permanently?`, isDestructive: true })) {
       const toastId = toast.loading(`Deleting ${selectedItems.length} files...`);
       let successCount = 0;
       for (const id of selectedItems) {
@@ -82,7 +84,7 @@ export default function AdminMediaLibrary() {
   };
 
   const handleSingleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this file permanently?")) {
+    if (await confirmAction({ title: "Delete File", description: "Are you sure you want to delete this file permanently?", isDestructive: true })) {
       const toastId = toast.loading("Deleting file...");
       try {
         const res = await fetch(`/api/media?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
@@ -270,7 +272,7 @@ export default function AdminMediaLibrary() {
               >
                 {/* Selection Check */}
                 <div className={`absolute top-3 left-3 z-10 w-5 h-5 rounded-full flex items-center justify-center transition-all ${
-                  selectedItems.includes(item.id) ? 'bg-[#1B2A6B] border-none text-white' : 'bg-white/50 border border-slate-400 opacity-0 group-hover:opacity-100'
+                  selectedItems.includes(item.id) ? 'bg-[#1B2A6B] border-none text-white' : 'bg-white border border-slate-400 opacity-0 group-hover:opacity-100'
                 }`}>
                   {selectedItems.includes(item.id) && <CheckCircle2 size={14} />}
                 </div>
@@ -279,7 +281,7 @@ export default function AdminMediaLibrary() {
                 <div className="absolute top-3 right-3 z-10 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button 
                     onClick={(e) => { e.stopPropagation(); setPreviewImage(item); }}
-                    className="w-8 h-8 rounded-full bg-white/90 shadow-sm flex items-center justify-center text-slate-700 hover:text-[#1B2A6B] transition-colors"
+                    className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-700 hover:text-[#1B2A6B] transition-colors"
                   >
                     <ExternalLink size={14} />
                   </button>

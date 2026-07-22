@@ -9,6 +9,16 @@ import {
   ArrowLeft, Lock, Check, Info, BookOpen
 } from "lucide-react";
 import { useStore } from "../src/store/useStore";
+import { useAuth } from "../src/contexts/AuthContext";
+import api from "../src/lib/axios";
+import { useEffect } from "react";
+
+// Declare Razorpay on window
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 const UPI_APPS = [
   { id: "gpay", name: "Google Pay", icon: "https://logo.clearbit.com/pay.google.com", color: "#4285F4" },
@@ -44,6 +54,7 @@ const CartItemImage = ({ thumbnail, title }: { thumbnail: string; title: string 
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const { cart: cartItems, clearCart } = useStore();
   const [paymentMethod, setPaymentMethod] = useState("upi");
   const [selectedUpi, setSelectedUpi] = useState("gpay");
@@ -51,27 +62,90 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState(0);
 
+  useEffect(() => {
+    if (user === null) {
+      router.push('/login?redirect=/checkout');
+    }
+  }, [user, router]);
+
   const subtotal = cartItems.reduce((acc, item) => acc + item.price, 0);
   const tax = Math.round(subtotal * 0.18);
   const discount = subtotal > 0 ? Math.min(5000, Math.round(subtotal * 0.1)) : 0;
   const total = subtotal + tax - discount;
 
-  const handlePay = () => {
+  const handlePay = async () => {
     if (cartItems.length === 0) return;
     setIsProcessing(true);
-    setProcessingStep(0);
-    
-    // Simulate premium payment processing steps
-    setTimeout(() => {
-      setProcessingStep(1); // Bank authorization
-      setTimeout(() => {
-        setProcessingStep(2); // Finalizing enrollment
-        setTimeout(() => {
-          clearCart(); // Clear state
-          router.push('/payment-success');
-        }, 1200);
-      }, 1200);
-    }, 1200);
+    setProcessingStep(0); // Initializing
+
+    try {
+      // 1. Load Razorpay script if not loaded
+      if (!window.Razorpay) {
+        await new Promise((resolve) => {
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.onload = resolve;
+          document.body.appendChild(script);
+        });
+      }
+
+      setProcessingStep(1); // Authorizing transaction with bank
+
+      // 2. Create order on backend
+      const courseIds = cartItems.map((item) => item.id);
+      const { data } = await api.post("/checkout/create-order", { course_ids: courseIds });
+      
+      const options = {
+        key: data.key, // Your Razorpay Key ID
+        amount: data.amount * 100, // Amount in paise
+        currency: "INR",
+        name: "Blueboxx DA",
+        description: "Course Enrollment",
+        order_id: data.razorpay_order_id,
+        handler: async function (response: any) {
+          setProcessingStep(2); // Completing enrollment
+          
+          try {
+            // 3. Verify payment on backend
+            await api.post("/checkout/verify", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+
+            clearCart();
+            router.push('/payment-success');
+          } catch (err) {
+            console.error("Payment verification failed", err);
+            router.push('/payment-failed');
+          }
+        },
+        prefill: {
+          name: "Student", // Could pull from AuthContext
+          email: "student@example.com",
+        },
+        theme: {
+          color: "#0d1635",
+        },
+        modal: {
+          ondismiss: function() {
+            setIsProcessing(false);
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response: any){
+        setIsProcessing(false);
+        router.push('/payment-failed');
+      });
+      rzp.open();
+
+    } catch (err) {
+      console.error("Checkout failed:", err);
+      setIsProcessing(false);
+      alert("Failed to initiate checkout. Is your cart synced with the server?");
+    }
   };
 
   return (

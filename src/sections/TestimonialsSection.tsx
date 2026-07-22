@@ -8,6 +8,9 @@ import {
   Send, 
   Heart
 } from "lucide-react";
+import useSWR from "swr";
+import api from "../lib/axios";
+import Image from "next/image";
 
 interface TestimonialType {
   id: number;
@@ -250,22 +253,27 @@ export const TestimonialsSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   useInView(containerRef, { once: true, margin: "-100px" });
 
+  const fetcher = (url: string) => api.get(url).then(res => res.data.data);
+  const { data: testimonialsData } = useSWR('/public/testimonials-cms', fetcher, { revalidateOnFocus: false });
+
+  const currentTestimonials = testimonialsData?.length ? testimonialsData : testimonials;
+
   useEffect(() => {
-    if (!isAutoPlaying) return;
+    if (!isAutoPlaying || !currentTestimonials.length) return;
     const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % testimonials.length);
+      setCurrent((prev) => (prev + 1) % currentTestimonials.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, [isAutoPlaying]);
+  }, [isAutoPlaying, currentTestimonials]);
 
   const prev = () => { 
     setIsAutoPlaying(false); 
-    setCurrent((c) => (c - 1 + testimonials.length) % testimonials.length); 
+    setCurrent((c) => (c - 1 + currentTestimonials.length) % currentTestimonials.length); 
   };
   
   const next = () => { 
     setIsAutoPlaying(false); 
-    setCurrent((c) => (c + 1) % testimonials.length); 
+    setCurrent((c) => (c + 1) % currentTestimonials.length); 
   };
 
   return (
@@ -355,6 +363,7 @@ export const TestimonialsSection = () => {
 
 
             <div className="relative min-h-[200px] flex items-center z-10">
+              {currentTestimonials.length > 0 && (
               <AnimatePresence mode="wait">
                 <motion.div
                   key={current}
@@ -366,40 +375,53 @@ export const TestimonialsSection = () => {
                 >
                   {/* Rating Stars */}
                   <div className="flex items-center gap-1 mb-5">
-                    {Array.from({ length: testimonials[current].rating }).map((_, i) => (
+                    {Array.from({ length: currentTestimonials[current].rating || 5 }).map((_, i) => (
                       <Star key={i} size={15} className="fill-[#C9A227] text-[#C9A227]" />
                     ))}
                   </div>
 
                   {/* Quote Paragraph */}
                   <p className="text-white/90 text-lg md:text-xl font-medium leading-relaxed mb-8 font-inter">
-                    "{renderContent(testimonials[current].content, testimonials[current].highlightedText)}"
+                    "{renderContent(currentTestimonials[current].content, currentTestimonials[current].highlightedText || '')}"
                   </p>
 
                   {/* Profile Block */}
                   <div className="flex items-center gap-4">
+                    {currentTestimonials[current].avatar && (
+                      <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20">
+                        <Image src={currentTestimonials[current].avatar} alt={currentTestimonials[current].name} fill className="object-cover" sizes="48px" />
+                      </div>
+                    )}
                     <div>
-                      <div className="font-extrabold text-white text-base leading-tight font-sora">{testimonials[current].name}</div>
+                      <div className="font-extrabold text-white text-base leading-tight font-sora">{currentTestimonials[current].name}</div>
                       <div className="flex flex-wrap items-center gap-1.5 text-xs text-white/55 mt-1 font-inter">
-                        <span>{testimonials[current].role}</span>
-                        <span>•</span>
-                        <span>{testimonials[current].year}</span>
-                        <span>•</span>
-                        {/* Company logo tag */}
-                        <div className="inline-flex shrink-0 transform scale-[0.8] origin-left align-middle select-none">
-                          <CompanyMiniLogo name={testimonials[current].company} />
-                        </div>
+                        <span>{currentTestimonials[current].role}</span>
+                        {currentTestimonials[current].year && (
+                          <>
+                            <span>•</span>
+                            <span>{currentTestimonials[current].year}</span>
+                          </>
+                        )}
+                        {currentTestimonials[current].company && (
+                          <>
+                            <span>•</span>
+                            <div className="inline-flex shrink-0 transform scale-[0.8] origin-left align-middle select-none">
+                              <CompanyMiniLogo name={currentTestimonials[current].company} />
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
                 </motion.div>
               </AnimatePresence>
+              )}
             </div>
           </div>
 
           {/* Dots Navigation */}
           <div className="flex items-center justify-center gap-2 mt-8">
-            {testimonials.map((_, i) => (
+            {currentTestimonials.map((_, i) => (
               <button
                 key={i}
                 onClick={() => { setIsAutoPlaying(false); setCurrent(i); }}

@@ -34,7 +34,7 @@ export default function AdminEnquiriesPage() {
         </AnimatedContent>
 
         <AnimatedContent direction="up" delay={0.2} className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50">
+          <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50">
              <div className="relative w-full sm:w-80">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input type="text" placeholder="Search by college or contact name..." className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1B2A6B]" />
@@ -55,7 +55,7 @@ export default function AdminEnquiriesPage() {
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {enquiries.map((enq) => (
-                  <tr key={enq.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <tr key={enq.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-6 py-4">
                        <p className="font-bold text-slate-900 text-sm flex items-center gap-2">
                           <Building size={14} className="text-slate-400" /> {enq.college}

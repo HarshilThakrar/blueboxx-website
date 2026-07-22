@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { staggerContainer, staggerItem } from "../animations/variants";
 import { Star, Clock, Users, ArrowRight, Code, PenTool, BarChart } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { TiltCard } from "../components/ui/TiltCard";
 
 const courses = [
@@ -119,10 +120,12 @@ export const CoursesSection = () => {
                 <div className="group card-premium overflow-hidden flex flex-col h-full bg-white rounded-2xl shadow-sm border border-slate-200">
                   {/* Course Image Banner */}
                   <Link href={`/courses/${course.slug}`} className="relative h-44 overflow-hidden block">
-                    <img
+                    <Image
                       src={course.image}
                       alt={course.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     {/* Gradient overlay */}
                     <div

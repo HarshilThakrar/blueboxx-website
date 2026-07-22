@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus, ArrowRight } from "lucide-react";
 import { staggerContainer, staggerItem, EASE_OUT_EXPO } from "../animations/variants";
 import Link from "next/link";
+import useSWR from "swr";
+import api from "../lib/axios";
 
 const faqs = [
   { q: "Do you provide placement guarantee?", a: "We provide best-in-class placement assistance with 120+ hiring partners. Our curriculum ensures you're 100% industry-ready with a strong portfolio and interview preparation." },
@@ -15,6 +17,13 @@ const faqs = [
 
 export const FAQSection = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+
+  const fetcher = (url: string) => api.get(url).then(res => res.data.data);
+  const { data: faqsData } = useSWR('/public/faqs-cms', fetcher, { revalidateOnFocus: false });
+
+  const currentFaqs = faqsData?.length 
+    ? faqsData.map((f: any) => ({ q: f.question, a: f.answer })) 
+    : faqs;
 
   return (
     <section className="py-24 relative overflow-hidden" style={{ background: "linear-gradient(160deg,#fffdf7 0%,#fffbf2 50%,#fff8ee 100%)" }}>
@@ -46,7 +55,7 @@ export const FAQSection = () => {
         </motion.div>
 
         <div className="space-y-2">
-          {faqs.map((faq, index) => {
+          {currentFaqs.map((faq: any, index: number) => {
             const isOpen = openIndex === index;
             return (
               <motion.div

@@ -52,7 +52,7 @@ export function AuthBranding() {
 
 
 
-      <div className="relative z-10 p-12 flex flex-col justify-center h-full w-full max-w-2xl mx-auto">
+      <div className="relative z-10 p-12 flex flex-col justify-center h-full w-full max-w-2xl mx-auto pb-32">
 
         {/* Top Badge */}
         <motion.div
@@ -149,8 +149,8 @@ export function AuthBranding() {
             >
               <div className="flex items-center gap-16">
                 {[
-                  "Framestore", "Weta Digital", "Method Studios", 
-                  "Vistaprint", "Anibrain", "Basilic Fly", 
+                  "Framestore", "Weta Digital", "Method Studios",
+                  "Vistaprint", "Anibrain", "Basilic Fly",
                   "Lakshya Digital", "Tau Films"
                 ].map((name, i) => (
                   <div key={`a-${i}`} className="flex items-center justify-center h-8">
@@ -161,8 +161,8 @@ export function AuthBranding() {
               {/* Duplicate for infinite seamless scroll */}
               <div className="flex items-center gap-16">
                 {[
-                  "Framestore", "Weta Digital", "Method Studios", 
-                  "Vistaprint", "Anibrain", "Basilic Fly", 
+                  "Framestore", "Weta Digital", "Method Studios",
+                  "Vistaprint", "Anibrain", "Basilic Fly",
                   "Lakshya Digital", "Tau Films"
                 ].map((name, i) => (
                   <div key={`b-${i}`} className="flex items-center justify-center h-8">

@@ -88,7 +88,7 @@ export default function AdminVerificationsPage() {
 
           <div className="divide-y divide-slate-100">
             {filteredApps.map((app) => (
-              <div key={app.id} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
+              <div key={app.id} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                     app.role === "expert" ? "bg-purple-50 text-purple-600" :

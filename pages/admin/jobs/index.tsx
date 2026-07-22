@@ -1,370 +1,320 @@
-import { AdminDashboardLayout } from "../../../src/layout/AdminDashboardLayout";
-import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
-import { Card, CardContent } from "../../../src/components/ui/Card";
-import { MapPin, Building2, CheckCircle2, XCircle, Plus, X, Briefcase, GraduationCap, Trash2 } from "lucide-react";
-import { Button } from "../../../src/components/ui/Button";
-import { useState } from "react";
-import { useJobStore } from "../../../src/store/useJobStore";
+import React, { useState } from 'react';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
+import { AdminDashboardLayout } from '../../../src/layout/AdminDashboardLayout';
+import {
+  Briefcase, Plus, Users, Trash2, StopCircle,
+  CheckCircle, XCircle, Clock, AlertCircle, Search,
+  Download, ChevronLeft, ChevronRight, RefreshCw
+} from 'lucide-react';
+import toast from 'react-hot-toast';
+import { JobService } from '../../../src/lib/api/admin/JobService';
 
-export default function AdminJobsPage() {
-  const jobs = useJobStore((s) => s.jobs);
-  const updateJobStatus = useJobStore((s) => s.updateJobStatus);
-  const addJob = useJobStore((s) => s.addJob);
-  const [activeFilter, setActiveFilter] = useState("Pending");
+type JobStatus = 'draft' | 'pending_approval' | 'active' | 'expired' | 'closed' | 'rejected';
 
-  // Modal states
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [viewJobModal, setViewJobModal] = useState<any>(null);
-  const [newJob, setNewJob] = useState({
-    category: "Job" as "Job" | "Internship",
-    title: "",
-    company: "BlueBoxx (Internal)",
-    type: "Full-time",
-    location: "",
-    logo: "",
-    tags: "",
-    salary: "",
-    experience: ""
+const STATUS_COLORS: Record<string, string> = {
+  draft:            'bg-gray-100 text-gray-700',
+  pending_approval: 'bg-yellow-100 text-yellow-800',
+  active:           'bg-emerald-100 text-emerald-800',
+  closed:           'bg-red-100 text-red-800',
+  expired:          'bg-orange-100 text-orange-800',
+  rejected:         'bg-red-100 text-red-800',
+};
+
+function LoadingRows({ cols = 5 }: { cols?: number }) {
+  return (
+    <>
+      {[1, 2, 3, 4, 5].map(i => (
+        <tr key={i} className="animate-pulse">
+          {Array.from({ length: cols }).map((_, j) => (
+            <td key={j} className="px-6 py-4">
+              <div className="h-4 bg-slate-100 rounded w-full" />
+            </td>
+          ))}
+        </tr>
+      ))}
+    </>
+  );
+}
+
+export default function JobsManager() {
+  const router = useRouter();
+
+  const [search, setSearch]       = useState('');
+  const [status, setStatus]       = useState('');
+  const [page, setPage]           = useState(1);
+
+  const { data: jobs, meta, isLoading, mutate } = JobService.useJobs({
+    search: search || undefined,
+    status: status || undefined,
+    page,
+    per_page: 15,
   });
 
-  const handleInputChange = (field: string, value: string) => {
-    setNewJob(prev => ({ ...prev, [field]: value }));
-  };
+  const { data: metrics, mutate: mutateMetrics } = JobService.useDashboardMetrics();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const handleApprove = (id: string) => {
-    updateJobStatus(id, "Active");
-  };
-
-  const handleReject = (id: string) => {
-    updateJobStatus(id, "Rejected");
-  };
-
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to permanently close this listing?")) {
-      updateJobStatus(id, "Closed");
+  // ─── Actions ─────────────────────────────────────────────────────────────────
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([mutate(), mutateMetrics()]);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
-  const handleCreateJob = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newJob.title && newJob.location) {
-      addJob({
-        title: newJob.title,
-        company: newJob.company,
-        category: newJob.category,
-        type: newJob.type,
-        locationType: newJob.location === "Remote" ? "Remote" : "On-site",
-        location: newJob.location,
-        salary: newJob.salary || "Not Specified",
-        description: `${newJob.title} at ${newJob.company}. Skills: ${newJob.tags}`,
-        skills: newJob.tags ? newJob.tags.split(",").map(t => t.trim()).filter(Boolean) : [],
-        postedBy: newJob.company,
-      });
-      // Admin-created jobs are auto-approved
-      const latestJobs = useJobStore.getState().jobs;
-      if (latestJobs.length > 0) {
-        updateJobStatus(latestJobs[0].id, "Active");
-      }
-
-      setActiveFilter("Active");
-      setNewJob({
-        category: "Job",
-        title: "",
-        company: "BlueBoxx (Internal)",
-        type: "Full-time",
-        location: "",
-        logo: "",
-        tags: "",
-        salary: "",
-        experience: ""
-      });
-      setIsAddModalOpen(false);
+  const updateStatus = async (id: number, newStatus: string) => {
+    try {
+      await JobService.updateJob(id, { status: newStatus });
+      toast.success(`Job marked as ${newStatus}`);
+      mutate();
+      mutateMetrics();
+    } catch {
+      toast.error('Failed to update status');
     }
   };
 
-  // Map store statuses to admin filter tabs
-  const getFilterStatus = (filter: string) => {
-    if (filter === "Pending") return "Pending";
-    if (filter === "Active") return "Active";
-    if (filter === "Rejected") return "Rejected";
-    return filter;
+  const deleteJob = async (id: number) => {
+    if (!confirm('Delete this job permanently?')) return;
+    try {
+      await JobService.deleteJob(id);
+      toast.success('Job deleted');
+      mutate();
+      mutateMetrics();
+    } catch {
+      toast.error('Failed to delete job');
+    }
   };
 
-  const filteredJobs = jobs.filter(job => {
-    if (activeFilter === "Active") return job.status === "Active";
-    if (activeFilter === "Pending") return job.status === "Pending";
-    if (activeFilter === "Rejected") return job.status === "Rejected" || job.status === "Closed";
-    return true;
-  });
+  const handleExport = () => {
+    JobService.exportCSV();
+    toast.success('Downloading CSV…');
+  };
 
-  const pendingCount = jobs.filter(j => j.status === "Pending").length;
-  const activeCount = jobs.filter(j => j.status === "Active").length;
-  const rejectedCount = jobs.filter(j => j.status === "Rejected" || j.status === "Closed").length;
+  // ─── Pagination helpers ───────────────────────────────────────────────────────
+  const totalPages  = meta?.last_page ?? 1;
+  const totalCount  = meta?.total ?? 0;
 
   return (
     <AdminDashboardLayout>
-      <div className="space-y-6">
-        
-        <AnimatedContent direction="up" delay={0.1} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">Job & Internship Board</h1>
-            <p className="text-slate-500 text-sm">Review company submissions, approve or reject postings.</p>
-          </div>
-          <Button onClick={() => setIsAddModalOpen(true)} variant="primary" className="shadow-md gap-2">
-            <Plus size={18}/> Post Listing
-          </Button>
-        </AnimatedContent>
+      <Head><title>Jobs Management | BlueBoxx DA</title></Head>
 
-        <AnimatedContent direction="up" delay={0.2} className="flex gap-2 border-b border-slate-200 pb-4">
-          <button 
-            onClick={() => setActiveFilter("Pending")}
-            className={`px-4 py-1.5 text-sm font-bold rounded-md transition-colors ${
-              activeFilter === "Pending" ? "bg-[#1B2A6B] text-white" : "text-slate-600 hover:bg-slate-100"
-            }`}
-          >
-            Pending Review ({pendingCount})
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-black text-[#0d1635] flex items-center gap-2">
+            <Briefcase size={28} className="text-[#C9A227]"/> Jobs Management
+          </h1>
+          <p className="text-gray-500 text-sm mt-1 font-semibold">
+            Review company postings, approve jobs, and manage candidate pipelines.
+          </p>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <button onClick={handleExport}
+            className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 px-4 py-2 rounded-lg font-bold text-sm transition-colors">
+            <Download size={15}/> Export CSV
           </button>
-          <button 
-            onClick={() => setActiveFilter("Active")}
-            className={`px-4 py-1.5 text-sm font-bold rounded-md transition-colors ${
-              activeFilter === "Active" ? "bg-[#1B2A6B] text-white" : "text-slate-600 hover:bg-slate-100"
-            }`}
-          >
-            Approved & Active ({activeCount})
+          <button onClick={handleRefresh} disabled={isRefreshing}
+            className="flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-bold text-sm transition-colors disabled:opacity-50">
+            <RefreshCw size={14} className={isRefreshing ? "animate-spin text-blue-500" : ""}/> Refresh
           </button>
-          <button 
-            onClick={() => setActiveFilter("Rejected")}
-            className={`px-4 py-1.5 text-sm font-bold rounded-md transition-colors ${
-              activeFilter === "Rejected" ? "bg-[#1B2A6B] text-white" : "text-slate-600 hover:bg-slate-100"
-            }`}
-          >
-            Rejected ({rejectedCount})
+          <button onClick={() => router.push('/admin/jobs/add')}
+            className="flex items-center gap-2 bg-[#1B2A6B] hover:bg-[#121c47] text-white px-4 py-2 rounded-lg font-bold text-sm shadow-md transition-colors">
+            <Plus size={16}/> Post New Job
           </button>
-        </AnimatedContent>
-
-        <AnimatedContent direction="up" delay={0.3} className="space-y-4">
-          {filteredJobs.length === 0 ? (
-            <div className="text-center text-slate-400 font-medium py-12">No listings in this category.</div>
-          ) : (
-            filteredJobs.map((job) => (
-              <Card key={job.id} className="border border-slate-200 shadow-sm overflow-hidden bg-white relative">
-                <button onClick={() => handleDelete(job.id)} className="absolute top-4 right-4 p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors z-10" title="Delete Listing">
-                   <Trash2 size={18} />
-                </button>
-                <CardContent className="p-6">
-                  <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <div className="w-16 h-16 rounded-xl border border-slate-200 flex items-center justify-center bg-gradient-to-br from-[#1B2A6B]/10 to-[#2E45A3]/10 p-2 shrink-0">
-                        <Building2 size={24} className="text-[#1B2A6B]" />
-                      </div>
-                      <div className="pr-8">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <h3 className="font-bold text-lg text-slate-900">{job.title}</h3>
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                            job.status === 'Pending' ? 'bg-amber-100 text-amber-700' :
-                            job.status === 'Active' ? 'bg-emerald-100 text-emerald-700' :
-                            'bg-red-100 text-red-700'
-                          }`}>
-                            {job.status}
-                          </span>
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                            job.category === 'Internship' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
-                          }`}>
-                            {job.category}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500 font-medium mb-3">
-                          <span className="flex items-center gap-1.5 text-slate-700"><Building2 size={14}/> {job.company}</span>
-                          <span className="flex items-center gap-1.5"><MapPin size={14}/> {job.locationType === "Remote" ? "Remote" : job.location || "Remote"}</span>
-                          <span className="px-2 py-0.5 bg-slate-100 rounded-md text-xs font-bold text-[#1B2A6B]">{job.type}</span>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2 mb-3">
-                           {job.skills.map((tag, i) => (
-                              <span key={i} className="px-3 py-1 bg-slate-50 border border-slate-200 rounded-full text-xs font-semibold text-slate-600">{tag}</span>
-                           ))}
-                        </div>
-                        <div className="flex items-center gap-4 text-xs font-bold">
-                           <span className="text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">{job.salary}</span>
-                           <span className="text-slate-600 bg-slate-100 px-2 py-1 rounded-md">{job.applicants} Applicants</span>
-                        </div>
-                        <div className="text-xs text-slate-400 font-medium mt-3 border-t border-slate-100 pt-3">
-                          Posted by <span className="text-blue-600">{job.postedBy}</span> • {job.postedAt}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-2 w-full sm:w-auto mt-4 sm:mt-0 flex-shrink-0">
-                      {job.status === 'Pending' ? (
-                        <>
-                          <Button onClick={() => handleReject(job.id)} variant="outline" className="flex-1 sm:flex-none text-red-600 border-red-200 hover:bg-red-50 gap-2"><XCircle size={16}/> Reject</Button>
-                          <Button onClick={() => handleApprove(job.id)} variant="primary" className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 border-emerald-600 shadow-md gap-2"><CheckCircle2 size={16}/> Approve</Button>
-                        </>
-                      ) : job.status === 'Active' ? (
-                        <>
-                          <Button onClick={() => updateJobStatus(job.id, "Pending")} variant="outline" className="flex-1 sm:flex-none text-sm bg-white shadow-sm border-slate-200">Revoke</Button>
-                          <Button onClick={() => setViewJobModal(job)} variant="outline" className="flex-1 sm:flex-none text-sm bg-white shadow-sm border-slate-200 text-[#1B2A6B]">View</Button>
-                        </>
-                      ) : (
-                        <>
-                          <Button onClick={() => updateJobStatus(job.id, "Active")} variant="outline" className="flex-1 sm:flex-none text-sm bg-white shadow-sm border-slate-200 text-emerald-600">Re-Approve</Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </AnimatedContent>
-
+        </div>
       </div>
 
-      {/* View Job Modal */}
-      {viewJobModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setViewJobModal(null)} />
-          <div className="bg-white rounded-3xl border border-slate-200 w-full max-w-lg shadow-2xl z-50 p-6 space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-black text-slate-800">{viewJobModal.title}</h2>
-              <button onClick={() => setViewJobModal(null)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl"><X size={20}/></button>
+      {/* ── Metric Cards ────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {[
+          { label: 'Pending Review', value: metrics?.pending_jobs ?? 0,       icon: Clock,        bg: 'bg-yellow-50', text: 'text-yellow-500' },
+          { label: 'Active Jobs',    value: metrics?.active_jobs ?? 0,         icon: CheckCircle,  bg: 'bg-emerald-50',text: 'text-emerald-500' },
+          { label: 'Total Apps',     value: metrics?.total_applications ?? 0,  icon: Users,        bg: 'bg-blue-50',   text: 'text-blue-500' },
+          { label: 'Expired',        value: metrics?.expired_jobs ?? 0,        icon: AlertCircle,  bg: 'bg-red-50',    text: 'text-red-500' },
+        ].map(c => (
+          <div key={c.label} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex items-center gap-4">
+            <div className={`w-10 h-10 ${c.bg} ${c.text} rounded-lg flex items-center justify-center shrink-0`}>
+              <c.icon size={20}/>
             </div>
-            <p className="text-sm text-slate-600">{viewJobModal.description}</p>
-            <div className="flex flex-wrap gap-2">
-              {viewJobModal.skills.map((s: string, i: number) => (
-                <span key={i} className="px-3 py-1 bg-slate-100 rounded-full text-xs font-bold text-slate-700">{s}</span>
+            <div>
+              <p className="text-xs font-black text-gray-400 uppercase tracking-widest">{c.label}</p>
+              <h2 className="text-xl font-black text-gray-800">{c.value}</h2>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Search & Filter ─────────────────────────────────────────────────── */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm mb-4 px-4 py-3 flex flex-wrap gap-3 items-center">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/>
+          <input type="text" placeholder="Search jobs or company…" value={search}
+            onChange={e => { setSearch(e.target.value); setPage(1); }}
+            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1B2A6B] outline-none"/>
+        </div>
+        <select value={status} onChange={e => { setStatus(e.target.value); setPage(1); }}
+          className="py-2 px-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1B2A6B] outline-none text-gray-700 font-semibold bg-white">
+          <option value="">All Statuses</option>
+          <option value="active">Active</option>
+          <option value="pending_approval">Pending Approval</option>
+          <option value="draft">Draft</option>
+          <option value="closed">Closed</option>
+          <option value="expired">Expired</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+
+      {/* ── Table ───────────────────────────────────────────────────────────── */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                {['Job Role', 'Company & Details', 'Performance', 'Status', 'Actions'].map(h => (
+                  <th key={h} className="px-6 py-3.5 text-[11px] font-black text-gray-400 uppercase tracking-widest">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {isLoading ? (
+                <LoadingRows cols={5}/>
+              ) : !jobs || jobs.length === 0 ? (
+                <tr>
+                  <td colSpan={5}>
+                    <div className="flex flex-col items-center justify-center py-20">
+                      <Briefcase size={48} className="text-gray-200 mb-4"/>
+                      <p className="text-gray-500 font-semibold text-sm">
+                        {search || status ? 'No jobs match your filters.' : 'No jobs posted yet.'}
+                      </p>
+                      {!search && !status && (
+                        <button onClick={() => router.push('/admin/jobs/add')}
+                          className="mt-4 flex items-center gap-2 bg-[#1B2A6B] text-white px-4 py-2 rounded-lg font-bold text-sm">
+                          <Plus size={14}/> Post First Job
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ) : jobs.map((job: any) => (
+                <tr key={job.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4">
+                    <p className="font-bold text-[#1B2A6B]">{job.title}</p>
+                    <p className="text-xs font-semibold text-gray-400 mt-0.5">{job.job_id_prefix}</p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <p className="font-bold text-gray-800 text-sm">{job.company?.name || 'BlueBoxx'}</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
+                      {job.employment_type} • {job.location || 'Remote'}
+                    </p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex gap-4">
+                      <div className="text-center">
+                        <div className="font-black text-gray-800 text-lg leading-none">{job.applications_count || 0}</div>
+                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Apps</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-black text-gray-800 text-lg leading-none">{job.views_count || 0}</div>
+                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Views</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2.5 py-1 rounded-full text-[11px] font-black uppercase ${STATUS_COLORS[job.status] || 'bg-gray-100 text-gray-700'}`}>
+                      {job.status?.replace('_', ' ')}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex gap-2">
+                      <button onClick={() => router.push(`/admin/jobs/applications?jobId=${job.id}`)}
+                        className="group relative p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors">
+                        <Users size={16}/>
+                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded whitespace-nowrap z-10 shadow-lg after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-gray-900">
+                          View Applicants
+                        </span>
+                      </button>
+
+                      {job.status === 'draft' && (
+                        <button onClick={() => updateStatus(job.id, 'active')}
+                          className="group relative p-1.5 text-emerald-600 hover:bg-emerald-50 rounded transition-colors">
+                          <CheckCircle size={16}/>
+                          <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded whitespace-nowrap z-10 shadow-lg after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-gray-900">
+                            Publish Job
+                          </span>
+                        </button>
+                      )}
+
+                      {job.status === 'pending_approval' && (
+                        <>
+                          <button onClick={() => updateStatus(job.id, 'active')}
+                            className="group relative p-1.5 text-emerald-600 hover:bg-emerald-50 rounded transition-colors">
+                            <CheckCircle size={16}/>
+                            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded whitespace-nowrap z-10 shadow-lg after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-gray-900">
+                              Approve
+                            </span>
+                          </button>
+                          <button onClick={() => updateStatus(job.id, 'rejected')}
+                            className="group relative p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors">
+                            <XCircle size={16}/>
+                            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded whitespace-nowrap z-10 shadow-lg after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-gray-900">
+                              Reject
+                            </span>
+                          </button>
+                        </>
+                      )}
+
+                      {job.status === 'active' && (
+                        <button onClick={() => updateStatus(job.id, 'closed')}
+                          className="group relative p-1.5 text-orange-600 hover:bg-orange-50 rounded transition-colors">
+                          <StopCircle size={16}/>
+                          <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded whitespace-nowrap z-10 shadow-lg after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-gray-900">
+                            Close Job
+                          </span>
+                        </button>
+                      )}
+
+                      <button onClick={() => deleteJob(job.id)}
+                        className="group relative p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors">
+                        <Trash2 size={16}/>
+                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded whitespace-nowrap z-10 shadow-lg after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-gray-900">
+                          Delete
+                        </span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
               ))}
-            </div>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div><span className="font-bold text-slate-400 text-xs uppercase">Company</span><p className="font-bold text-slate-800">{viewJobModal.company}</p></div>
-              <div><span className="font-bold text-slate-400 text-xs uppercase">Type</span><p className="font-bold text-slate-800">{viewJobModal.type}</p></div>
-              <div><span className="font-bold text-slate-400 text-xs uppercase">Salary</span><p className="font-bold text-slate-800">{viewJobModal.salary}</p></div>
-              <div><span className="font-bold text-slate-400 text-xs uppercase">Location</span><p className="font-bold text-slate-800">{viewJobModal.locationType === "Remote" ? "Remote" : viewJobModal.location}</p></div>
-            </div>
-          </div>
+            </tbody>
+          </table>
         </div>
-      )}
 
-      {/* Create Job/Internship Modal */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsAddModalOpen(false)} />
-          <div className="bg-white rounded-3xl border border-slate-200 w-full max-w-2xl shadow-2xl z-50 flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50 shrink-0">
-              <div>
-                 <h2 className="text-xl font-black text-slate-800">Post Listing</h2>
-                 <p className="text-xs font-semibold text-slate-500 mt-1">Admin-created listings are auto-approved and go live immediately.</p>
-              </div>
-              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-slate-800 bg-white shadow-sm border border-slate-200 p-2 rounded-xl transition-colors"><X size={20} /></button>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
-               <form id="create-job-form" onSubmit={handleCreateJob} className="space-y-6">
-                 
-                 <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <h3 className="text-sm font-black text-[#1B2A6B] uppercase tracking-widest border-b border-slate-100 pb-3 flex items-center gap-2">
-                      <Briefcase size={16}/> Primary Information
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                       <div className="space-y-1.5 md:col-span-2">
-                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Listing Category</label>
-                         <div className="flex gap-4 p-1 bg-slate-50 border border-slate-200 rounded-xl">
-                            <button 
-                              type="button"
-                              onClick={() => handleInputChange('category', 'Job')}
-                              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${newJob.category === 'Job' ? 'bg-white shadow-sm text-[#1B2A6B]' : 'text-slate-500 hover:text-slate-700'}`}
-                            >
-                              Job
-                            </button>
-                            <button 
-                              type="button"
-                              onClick={() => handleInputChange('category', 'Internship')}
-                              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${newJob.category === 'Internship' ? 'bg-white shadow-sm text-[#1B2A6B]' : 'text-slate-500 hover:text-slate-700'}`}
-                            >
-                              Internship
-                            </button>
-                         </div>
-                       </div>
-                       <div className="space-y-1.5 md:col-span-2">
-                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Title</label>
-                         <input 
-                           type="text" required placeholder={newJob.category === 'Internship' ? "e.g. Frontend Developer Intern" : "e.g. Senior Frontend Developer"}
-                           value={newJob.title} onChange={(e) => handleInputChange('title', e.target.value)}
-                           className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none transition-all"
-                         />
-                       </div>
-                       <div className="space-y-1.5">
-                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Company Name</label>
-                         <input 
-                           type="text" required placeholder="e.g. TechNova Solutions"
-                           value={newJob.company} onChange={(e) => handleInputChange('company', e.target.value)}
-                           className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none"
-                         />
-                       </div>
-                       <div className="space-y-1.5">
-                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Employment Type</label>
-                         <select 
-                           value={newJob.type} onChange={(e) => handleInputChange('type', e.target.value)}
-                           className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:bg-white focus:ring-2 focus:ring-[#1B2A6B]"
-                         >
-                           <option value="Full-time">Full-time</option>
-                           <option value="Part-time">Part-time</option>
-                           <option value="Contract">Contract</option>
-                         </select>
-                       </div>
-                    </div>
-                 </div>
-
-                 <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <h3 className="text-sm font-black text-[#1B2A6B] uppercase tracking-widest border-b border-slate-100 pb-3 flex items-center gap-2">
-                      <GraduationCap size={16}/> Details & Requirements
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                       <div className="space-y-1.5">
-                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Location</label>
-                         <input 
-                           type="text" required placeholder="e.g. Remote or Bangalore"
-                           value={newJob.location} onChange={(e) => handleInputChange('location', e.target.value)}
-                           className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none"
-                         />
-                       </div>
-                       <div className="space-y-1.5">
-                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{newJob.category === 'Internship' ? 'Stipend' : 'Salary'}</label>
-                         <input 
-                           type="text" placeholder={newJob.category === 'Internship' ? "e.g. ₹15,000 /mo" : "e.g. ₹6-8 LPA"}
-                           value={newJob.salary} onChange={(e) => handleInputChange('salary', e.target.value)}
-                           className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none"
-                         />
-                       </div>
-                       <div className="space-y-1.5 md:col-span-2">
-                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tags / Tech Stack (Comma separated)</label>
-                         <input 
-                           type="text" placeholder="e.g. React, Node.js, MongoDB"
-                           value={newJob.tags} onChange={(e) => handleInputChange('tags', e.target.value)}
-                           className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none"
-                         />
-                       </div>
-                    </div>
-                 </div>
-               </form>
-            </div>
-            
-            <div className="p-4 border-t border-slate-100 bg-white shrink-0 flex gap-4 justify-end">
-              <button 
-                type="button" onClick={() => setIsAddModalOpen(false)}
-                className="px-6 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-bold rounded-xl transition-all"
-              >
-                Cancel
+        {/* ── Pagination ────────────────────────────────────────────────────── */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-3 bg-white border-t border-gray-200">
+            <span className="text-gray-500 font-medium text-sm">
+              {totalCount} jobs total
+            </span>
+            <div className="flex gap-1">
+              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}
+                className="p-2 rounded hover:bg-gray-100 disabled:opacity-40 text-gray-600">
+                <ChevronLeft size={16}/>
               </button>
-              <button 
-                type="submit" form="create-job-form"
-                className="px-8 py-2.5 bg-[#1B2A6B] hover:bg-[#0d1635] text-white text-sm font-bold rounded-xl shadow-md transition-all flex items-center gap-2"
-              >
-                <Plus size={16} /> Post Listing
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(p => (
+                <button key={p} onClick={() => setPage(p)}
+                  className={`w-8 h-8 rounded text-sm font-bold transition-colors ${p === page ? 'bg-[#1B2A6B] text-white' : 'hover:bg-gray-100 text-gray-600'}`}>
+                  {p}
+                </button>
+              ))}
+              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}
+                className="p-2 rounded hover:bg-gray-100 disabled:opacity-40 text-gray-600">
+                <ChevronRight size={16}/>
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </AdminDashboardLayout>
   );
 }

@@ -10,10 +10,14 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
+import useSWR from "swr";
+import api from "../lib/axios";
+import Image from "next/image";
 
 interface CompanyType {
+  id?: number;
   name: string;
-  logoUrl?: string;
+  logo?: string;
 }
 
 const ROW1_COMPANIES: CompanyType[] = [
@@ -46,10 +50,10 @@ const stats = [
 ];
 
 const AnimatedCount = ({ end, suffix }: { end: number; suffix: string }) => {
-  const { count, ref } = useCountUp(end, 1800);
+  const { ref } = useCountUp(end, 1000);
   return (
     <>
-      <span ref={ref}>{count.toLocaleString("en-IN")}</span>
+      <span ref={ref}>0</span>
       {suffix}
     </>
   );
@@ -69,14 +73,18 @@ const GrowthCurve = () => (
 
 
 
-const CompanyLogo = ({ name, logoUrl }: { name: string; logoUrl?: string }) => {
-  if (logoUrl) {
+const CompanyLogo = ({ name, logo }: { name: string; logo?: string }) => {
+  if (logo) {
     return (
-      <img
-        src={logoUrl}
-        alt={name}
-        className="h-9 max-w-[130px] object-contain filter grayscale hover:grayscale-0 opacity-60 hover:opacity-100 transition-all duration-300"
-      />
+      <div className="relative h-9 w-[130px]">
+        <Image
+          src={logo}
+          alt={name}
+          fill
+          className="object-contain filter grayscale hover:grayscale-0 opacity-60 hover:opacity-100 transition-all duration-300"
+          sizes="130px"
+        />
+      </div>
     );
   }
   return <span className="font-bold text-slate-700 text-sm tracking-tight">{name}</span>;
@@ -105,13 +113,13 @@ const CustomMarquee = ({ companies, speed = 35, reverse = false }: { companies: 
     >
       <div ref={innerRef} className="flex will-change-transform gap-4 w-max items-center py-1">
         {companies.map((c, i) => (
-          <div key={`a-${c.name}-${i}`} className="h-16 w-[170px] rounded-xl bg-white border border-[#E5E7EB] shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-center shrink-0 hover:scale-[1.05] hover:border-[#1B2A6B]/20 hover:shadow-[0_8px_20px_rgba(27,42,107,0.06)] transition-all duration-300 cursor-pointer group">
-            <CompanyLogo name={c.name} logoUrl={c.logoUrl} />
+          <div key={`a-${c.name}-${i}`} className="h-16 w-[170px] rounded-xl bg-white border border-[#E5E7EB] shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-center shrink-0 hover:scale-[1.05] hover:border-[#1B2A6B]/20 hover:shadow-[0_8px_20px_rgba(27,42,107,0.06)] transition-all duration-300 cursor-pointer group overflow-hidden">
+            <CompanyLogo name={c.name} logo={c.logo} />
           </div>
         ))}
         {companies.map((c, i) => (
-          <div key={`b-${c.name}-${i}`} className="h-16 w-[170px] rounded-xl bg-white border border-[#E5E7EB] shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-center shrink-0 hover:scale-[1.05] hover:border-[#1B2A6B]/20 hover:shadow-[0_8px_20px_rgba(27,42,107,0.06)] transition-all duration-300 cursor-pointer group">
-            <CompanyLogo name={c.name} logoUrl={c.logoUrl} />
+          <div key={`b-${c.name}-${i}`} className="h-16 w-[170px] rounded-xl bg-white border border-[#E5E7EB] shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-center shrink-0 hover:scale-[1.05] hover:border-[#1B2A6B]/20 hover:shadow-[0_8px_20px_rgba(27,42,107,0.06)] transition-all duration-300 cursor-pointer group overflow-hidden">
+            <CompanyLogo name={c.name} logo={c.logo} />
           </div>
         ))}
       </div>
@@ -132,6 +140,28 @@ export const ClientsSection = ({
 }: ClientsSectionProps = {}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
+
+  const fetcher = (url: string) => api.get(url).then(res => res.data.data);
+  const { data: partnersData } = useSWR('/public/partners', fetcher, { revalidateOnFocus: false });
+  const { data: statsData } = useSWR('/public/stats', fetcher, { revalidateOnFocus: false });
+
+  const partners = partnersData?.length ? partnersData : [
+    { name: "Framestore" },
+    { name: "Weta Digital" },
+    { name: "Method Studios" },
+    { name: "Vistaprint" },
+    { name: "Anibrain" },
+    { name: "Basilic Fly Studio" },
+    { name: "Lakshya Digital" },
+    { name: "Tau Films" },
+  ];
+
+  const currentStats = [
+    { value: statsData?.students || 2500, suffix: "+", label: "Students", icon: GraduationCap },
+    { value: statsData?.partners || 120, suffix: "+", label: "Partners", icon: Users },
+    { value: statsData?.projects || 850, suffix: "+", label: "Projects", icon: Briefcase },
+    { value: 94, suffix: "%", label: "Placement Rate", icon: Star },
+  ];
 
   const containerVariants = {
     hidden: {},
@@ -232,7 +262,7 @@ export const ClientsSection = ({
           animate={isInView ? "visible" : "hidden"}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-[1100px] mx-auto mb-16"
         >
-          {stats.map((stat) => (
+          {currentStats.map((stat) => (
             <motion.div
               key={stat.label}
               variants={itemVariants}
@@ -276,7 +306,7 @@ export const ClientsSection = ({
           </div>
 
           <div className="flex flex-col gap-4">
-            <CustomMarquee companies={[...ROW1_COMPANIES, ...ROW2_COMPANIES]} speed={36} />
+            <CustomMarquee companies={partners} speed={36} />
           </div>
         </motion.div>
 

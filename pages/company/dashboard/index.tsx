@@ -1,16 +1,20 @@
 import Link from "next/link";
 import { CompanyDashboardLayout } from "../../../src/layout/CompanyDashboardLayout";
-import { Users, Briefcase, Clock, Activity, ChevronRight, BarChart3, Calendar as CalendarIcon, ChevronLeft } from "lucide-react";
+import { Users, Briefcase, Clock, Activity, ChevronRight, BarChart3, Calendar as CalendarIcon, ChevronLeft, Loader2 } from "lucide-react";
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
-import { useJobStore } from "../../../src/store/useJobStore";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function CompanyDashboardPage() {
-  const jobs = useJobStore((s) => s.jobs);
-  const companyJobs = jobs.filter((j) => j.postedBy === "Acme Corp");
-  const activeJobs = companyJobs.filter((j) => j.status === "Active" || j.status === "Pending");
-  const totalApplicants = companyJobs.reduce((a, j) => a + j.applicants, 0);
+  const { data, isLoading } = useSWR("/company/dashboard", fetcher);
+  
+  const stats = data?.data?.stats || { active_jobs: 0, total_applicants: 0, pending_jobs: 0, hired: 0 };
+  const activeJobs = data?.data?.active_jobs_list || [];
+  const todayInterviews = data?.data?.today_interviews || [];
 
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -26,7 +30,7 @@ export default function CompanyDashboardPage() {
     }
     for (let i = 1; i <= daysInMonth; i++) {
       const isToday = i === new Date().getDate() && currentDate.getMonth() === new Date().getMonth();
-      const hasInterview = i === 14 || i === 22 || i === 28; // Mock dates with interviews
+      const hasInterview = false; // Would be populated from an API in reality
       days.push(
         <div key={i} className={`h-8 w-8 mx-auto flex items-center justify-center rounded-full text-xs font-bold cursor-pointer transition-colors ${isToday ? 'bg-[#1B2A6B] text-white shadow-md' : hasInterview ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'text-slate-600 hover:bg-slate-100'}`}>
           {i}
@@ -55,10 +59,10 @@ export default function CompanyDashboardPage() {
           {/* Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Active Jobs", value: companyJobs.filter(j => j.status === "Active").length, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50" },
-              { label: "Total Applicants", value: totalApplicants, icon: Users, color: "text-indigo-600", bg: "bg-indigo-50" },
-              { label: "Pending", value: companyJobs.filter(j => j.status === "Pending").length, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
-              { label: "Hired", value: "8", icon: Activity, color: "text-emerald-600", bg: "bg-emerald-50" }
+              { label: "Active Jobs", value: stats.active_jobs, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50" },
+              { label: "Total Applicants", value: stats.total_applicants, icon: Users, color: "text-indigo-600", bg: "bg-indigo-50" },
+              { label: "Pending", value: stats.pending_jobs, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
+              { label: "Hired", value: stats.hired, icon: Activity, color: "text-emerald-600", bg: "bg-emerald-50" }
             ].map((stat, i) => (
               <AnimatedContent key={i} direction="up" delay={i * 0.1} className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col items-center text-center">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${stat.bg} ${stat.color} mb-3`}>
@@ -80,7 +84,11 @@ export default function CompanyDashboardPage() {
             </div>
             
             <div className="divide-y divide-slate-100">
-              {activeJobs.length === 0 ? (
+              {isLoading ? (
+                <div className="p-8 text-center flex justify-center items-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#1B2A6B]" />
+                </div>
+              ) : activeJobs.length === 0 ? (
                 <div className="p-8 text-center text-slate-400 font-medium text-sm">
                   No active postings yet. <Link href="/company/jobs/new" className="text-[#1B2A6B] font-bold hover:underline">Post your first job</Link>.
                 </div>
@@ -131,27 +139,30 @@ export default function CompanyDashboardPage() {
             </div>
             
             <div className="p-5 space-y-4">
-              {[
-                { name: "Alex Johnson", role: "Frontend Developer", time: "10:30 AM", type: "Technical" },
-                { name: "Sarah Smith", role: "UI/UX Designer", time: "2:00 PM", type: "Portfolio Review" },
-              ].map((interview, i) => (
-                <div key={i} className="p-4 border border-slate-200 rounded-xl relative overflow-hidden group">
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400"></div>
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-800">{interview.name}</h4>
-                      <p className="text-[10px] font-semibold text-slate-500">{interview.role}</p>
+              {isLoading ? (
+                <div className="py-4 text-center text-slate-400 text-sm">Loading interviews...</div>
+              ) : todayInterviews.length === 0 ? (
+                <div className="text-center text-slate-400 text-sm">No interviews scheduled for today.</div>
+              ) : (
+                todayInterviews.map((interview: any, i: number) => (
+                  <div key={i} className="p-4 border border-slate-200 rounded-xl relative overflow-hidden group">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400"></div>
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-800">{interview.name}</h4>
+                        <p className="text-[10px] font-semibold text-slate-500">{interview.role}</p>
+                      </div>
+                      <span className="text-xs font-black text-slate-800 bg-slate-100 px-2 py-1 rounded-md">{interview.time}</span>
                     </div>
-                    <span className="text-xs font-black text-slate-800 bg-slate-100 px-2 py-1 rounded-md">{interview.time}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{interview.type}</span>
+                      <button onClick={() => toast.success("Joining Interview Call...")} className="text-[10px] font-bold text-white bg-[#0d1635] px-3 py-1.5 rounded hover:bg-[#1B2A6B] transition-colors">
+                        Join Call
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{interview.type}</span>
-                    <button onClick={() => toast.success("Joining Interview Call...")} className="text-[10px] font-bold text-white bg-[#0d1635] px-3 py-1.5 rounded hover:bg-[#1B2A6B] transition-colors">
-                      Join Call
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
               <Link href="/company/interviews" className="block w-full py-3 border-2 border-dashed border-[#1B2A6B]/20 rounded-xl text-xs font-bold text-[#1B2A6B] text-center hover:bg-blue-50 transition-colors">
                 View Full Pipeline
               </Link>

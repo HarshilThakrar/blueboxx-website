@@ -1,24 +1,44 @@
 import { ExpertDashboardLayout } from "../../../src/layout/ExpertDashboardLayout";
 import { User, Mail, Lock, Save, DollarSign, Briefcase, Upload, X } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
 import { AnimatePresence, motion } from "framer-motion";
 import toast from "react-hot-toast";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function ExpertSettings() {
+  const { data, mutate } = useSWR("/profile", fetcher);
   const [avatar, setAvatar] = useState("https://i.pravatar.cc/150?u=ankit");
   const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form states
-  const [profileData, setProfileData] = useState({ name: 'Ankit Sharma', title: 'Senior Frontend Engineer', bio: 'Passionate frontend engineer with 8+ years of experience building scalable web applications. Mentoring students and junior devs.' });
+  const [profileData, setProfileData] = useState({ name: '', title: '', bio: '' });
   const [securityData, setSecurityData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
-  const [ratesData, setRatesData] = useState({ hourlyRate: '50', expertise: 'React, Next.js, Node.js' });
+  const [ratesData, setRatesData] = useState({ hourlyRate: '0', expertise: '' });
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (data?.data) {
+      setProfileData({
+        name: data.data.name || '',
+        title: data.profile?.designation || '',
+        bio: data.profile?.bio || ''
+      });
+      setRatesData({
+        hourlyRate: data.profile?.hourly_rate || '0',
+        expertise: Array.isArray(data.profile?.expertise) ? data.profile.expertise.join(', ') : (data.profile?.expertise || '')
+      });
+    }
+  }, [data]);
 
   // Error states
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: any = {};
     if (!profileData.name || profileData.name.length < 3) newErrors.name = "Name must be at least 3 characters";
@@ -31,10 +51,23 @@ export default function ExpertSettings() {
     }
     
     setErrors({});
-    toast.success("Profile settings saved successfully!");
+    setIsSaving(true);
+    try {
+      await api.put('/profile', {
+        name: profileData.name,
+        designation: profileData.title,
+        bio: profileData.bio
+      });
+      toast.success("Profile settings saved successfully!");
+      mutate();
+    } catch (error) {
+      toast.error("Failed to save profile.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleSaveSecurity = (e: React.FormEvent) => {
+  const handleSaveSecurity = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: any = {};
     if (!securityData.currentPassword) newErrors.currentPassword = "Required";
@@ -48,11 +81,23 @@ export default function ExpertSettings() {
     }
 
     setErrors({});
-    setSecurityData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    toast.success("Password updated successfully!");
+    setIsSaving(true);
+    try {
+      await api.put('/profile/password', {
+        current_password: securityData.currentPassword,
+        password: securityData.newPassword,
+        password_confirmation: securityData.confirmPassword
+      });
+      setSecurityData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      toast.success("Password updated successfully!");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to update password.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleSaveRates = (e: React.FormEvent) => {
+  const handleSaveRates = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: any = {};
     if (!ratesData.hourlyRate || parseInt(ratesData.hourlyRate) <= 0) newErrors.hourlyRate = "Must be a valid rate";
@@ -64,7 +109,20 @@ export default function ExpertSettings() {
     }
 
     setErrors({});
-    toast.success("Rates and expertise updated!");
+    setIsSaving(true);
+    try {
+      const expertiseArray = ratesData.expertise.split(',').map(s => s.trim()).filter(s => s);
+      await api.put('/profile', {
+        hourly_rate: ratesData.hourlyRate,
+        expertise: expertiseArray
+      });
+      toast.success("Rates and expertise updated!");
+      mutate();
+    } catch (error) {
+      toast.error("Failed to save rates.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,8 +182,8 @@ export default function ExpertSettings() {
                 </div>
               </div>
               <div className="pt-4 border-t border-slate-100 flex justify-end">
-                <button type="submit" className="px-6 py-2.5 bg-[#1B2A6B] text-white text-sm font-bold rounded-xl shadow-md hover:bg-[#0d1635] transition-colors flex items-center gap-2">
-                  <Save size={16} /> Save Profile
+                <button type="submit" disabled={isSaving} className="px-6 py-2.5 bg-[#1B2A6B] text-white text-sm font-bold rounded-xl shadow-md hover:bg-[#0d1635] transition-colors flex items-center gap-2 disabled:opacity-70">
+                  <Save size={16} /> {isSaving ? "Saving..." : "Save Profile"}
                 </button>
               </div>
             </form>
@@ -162,8 +220,8 @@ export default function ExpertSettings() {
                 </div>
               </div>
               <div className="pt-4 flex justify-end">
-                <button type="submit" className="px-6 py-2.5 bg-[#C9A227] text-[#0d1635] text-sm font-bold rounded-xl shadow-sm hover:bg-[#b08d22] transition-colors">
-                  Update Password
+                <button type="submit" disabled={isSaving} className="px-6 py-2.5 bg-[#C9A227] text-[#0d1635] text-sm font-bold rounded-xl shadow-sm hover:bg-[#b08d22] transition-colors disabled:opacity-70">
+                  {isSaving ? "Updating..." : "Update Password"}
                 </button>
               </div>
             </form>
@@ -190,8 +248,8 @@ export default function ExpertSettings() {
                   {errors.expertise && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-[10px] font-bold text-rose-500 mt-1">{errors.expertise}</motion.p>}
                 </AnimatePresence>
               </div>
-              <button type="submit" className="w-full py-2.5 bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-100 transition-colors shadow-sm">
-                Save Preferences
+              <button type="submit" disabled={isSaving} className="w-full py-2.5 bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-100 transition-colors shadow-sm disabled:opacity-70">
+                {isSaving ? "Saving..." : "Save Preferences"}
               </button>
             </form>
           </AnimatedContent>

@@ -5,6 +5,8 @@ import { Button } from "../../../src/components/ui/Button";
 import { Badge } from "../../../src/components/ui/Badge";
 import { Card, CardContent } from "../../../src/components/ui/Card";
 import { useState } from "react";
+import toast from "react-hot-toast";
+import { useConfirm } from "../../../src/context/ConfirmContext";
 
 const INITIAL_CONTESTS = [
   { id: 1, title: "Global CodeFest 2026", type: "Hackathon", company: "Google", participants: 1250, date: "Nov 15, 2026", duration: "48 Hours", status: "Upcoming", prize: "₹5,00,000" },
@@ -15,10 +17,12 @@ const INITIAL_CONTESTS = [
 export default function AdminContestPage() {
   const [contests, setContests] = useState(INITIAL_CONTESTS);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const confirmAction = useConfirm();
 
-  const handleDelete = (id: number) => {
-    if (confirm("Delete this contest?")) {
+  const handleDelete = async (id: number) => {
+    if (await confirmAction({ title: "Delete Contest", description: "Delete this contest?", isDestructive: true })) {
       setContests(prev => prev.filter(c => c.id !== id));
+      toast.success("Contest deleted");
     }
   };
 

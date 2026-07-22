@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { MainLayout } from "../../src/layout/MainLayout";
 import { Button } from "../../src/components/ui/Button";
 import { Card, CardContent } from "../../src/components/ui/Card";
-import { Star, Clock, Video, FileText, ChevronRight, ChevronLeft, MapPin, CheckCircle2, Award, Users, Share2, MessageSquare } from "lucide-react";
-import { dummyMentors } from "../../src/data/mentors";
+import { Star, Clock, Video, FileText, ChevronRight, ChevronLeft, MapPin, CheckCircle2, Award, Users, Share2, MessageSquare, Loader2 } from "lucide-react";
 import { useStore } from "../../src/store/useStore";
+import api from "../../src/lib/axios";
 
 export default function ExpertProfilePage() {
   const router = useRouter();
@@ -15,38 +15,70 @@ export default function ExpertProfilePage() {
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
-  // Find the mentor dynamically based on URL id
-  const mentorData = dummyMentors.find(m => m.id === id);
+  const [expertRaw, setExpertRaw] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const expert = mentorData ? {
-    name: mentorData.name,
-    role: mentorData.designation,
-    company: mentorData.company,
+  useEffect(() => {
+    if (id) {
+      const fetchExpert = async () => {
+        try {
+          setIsLoading(true);
+          const res = await api.get(`/public/experts/${id}`);
+          if (res.data.success) {
+            setExpertRaw(res.data.data);
+          }
+        } catch (error) {
+          console.error("Failed to fetch expert details", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchExpert();
+    }
+  }, [id]);
+
+  const expert = expertRaw ? {
+    id: expertRaw.id,
+    name: expertRaw.name,
+    role: expertRaw.designation,
+    company: expertRaw.company,
     location: "Online",
-    rating: mentorData.rating || 4.9,
-    reviews: 124,
-    sessions: mentorData.sessions || 450,
-    about: mentorData.about || "Software Engineer at Google specializing in large-scale systems. Let's work together to crack your next technical interview and optimize your resume.",
-    expertise: mentorData.skills || ["System Design", "React.js", "Node.js", "Interview Prep"],
-    avatar: mentorData.avatar || `https://ui-avatars.com/api/?name=${mentorData.name.replace(' ', '+')}&background=1B2A6B&color=fff`
+    rating: Number(expertRaw.average_rating).toFixed(1) || "0.0",
+    reviews: expertRaw.total_reviews || 0,
+    sessionsCount: 0,
+    about: expertRaw.bio || "No bio available.",
+    expertise: expertRaw.specialization ? expertRaw.specialization.split(',').map((s: string) => s.trim()) : [],
+    avatar: expertRaw.avatar || `https://ui-avatars.com/api/?name=${expertRaw.name.replace(' ', '+')}&background=1B2A6B&color=fff`,
+    sessions: expertRaw.sessions || []
   } : {
+    id: "",
     name: "Loading...",
     role: "Expert",
     company: "BlueBoxx",
     location: "India",
-    rating: 5.0,
+    rating: "5.0",
     reviews: 0,
-    sessions: 0,
+    sessionsCount: 0,
     about: "Expert profile loading...",
     expertise: [],
-    avatar: ""
+    avatar: "",
+    sessions: []
   };
 
-  const services = [
-    { id: 1, title: "1:1 Career Guidance", duration: "30 mins", price: "₹999", icon: Video, description: "Get personalized advice on your career path, tech stack choices, or general mentorship." },
-    { id: 2, title: "Mock Technical Interview", duration: "60 mins", price: "₹1,999", icon: MessageSquare, description: "A complete DSA or Frontend mock interview followed by detailed feedback." },
-    { id: 3, title: "Resume & Portfolio Review", duration: "45 mins", price: "₹1,499", icon: FileText, description: "I'll review your resume line-by-line and help you optimize it for ATS and recruiters." }
-  ];
+  const services = expert.sessions && expert.sessions.length > 0 
+    ? expert.sessions.map((s: any) => ({
+        id: s.id,
+        title: s.title,
+        duration: `${s.duration_minutes} mins`,
+        price: `₹${s.price}`,
+        icon: Video,
+        description: s.description || ""
+      }))
+    : [
+        { id: 1, title: "1:1 Career Guidance", duration: "30 mins", price: "₹999", icon: Video, description: "Get personalized advice on your career path, tech stack choices, or general mentorship." },
+        { id: 2, title: "Mock Technical Interview", duration: "60 mins", price: "₹1,999", icon: MessageSquare, description: "A complete DSA or Frontend mock interview followed by detailed feedback." },
+        { id: 3, title: "Resume & Portfolio Review", duration: "45 mins", price: "₹1,499", icon: FileText, description: "I'll review your resume line-by-line and help you optimize it for ATS and recruiters." }
+      ];
 
   const dates = [
     { day: "Thu", date: 28, available: true },
@@ -69,6 +101,11 @@ export default function ExpertProfilePage() {
             {/* Left Column (Profile Details) */}
             <div className="flex-1 lg:max-w-3xl space-y-8">
               
+              {isLoading ? (
+                <div className="flex justify-center py-32"><Loader2 className="animate-spin w-12 h-12 text-[#1B2A6B]" /></div>
+              ) : (
+                <>
+              
               {/* Profile Header Card */}
               <Card className="bg-white border border-slate-100 shadow-sm rounded-3xl overflow-hidden">
                 <div className="h-32 bg-gradient-to-r from-[#0d1635] to-[#1B2A6B]"></div>
@@ -89,7 +126,7 @@ export default function ExpertProfilePage() {
                       <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-500">
                         <span className="flex items-center gap-1.5"><MapPin size={14} className="text-slate-400"/> {expert.location}</span>
                         <span className="flex items-center gap-1.5 text-amber-500 font-bold"><Star size={14} className="fill-amber-500"/> {expert.rating} ({expert.reviews} Reviews)</span>
-                        <span className="flex items-center gap-1.5"><Users size={14} className="text-slate-400"/> {expert.sessions} Sessions</span>
+                        <span className="flex items-center gap-1.5"><Users size={14} className="text-slate-400"/> {expert.sessionsCount} Sessions</span>
                       </div>
                     </div>
 
@@ -114,7 +151,7 @@ export default function ExpertProfilePage() {
                   <div className="border-t border-slate-100 pt-6">
                     <h2 className="text-lg font-black text-slate-800 mb-3">About Me</h2>
                     <p className="text-sm text-slate-600 leading-relaxed font-medium mb-6">
-                      Software Engineer at Google specializing in large-scale systems. Let's work together to crack your next technical interview and optimize your resume.
+                      {expert.about}
                     </p>
 
                     <h3 className="text-sm font-extrabold text-slate-800 mb-3">Top Expertise</h3>
@@ -165,6 +202,8 @@ export default function ExpertProfilePage() {
                   </Button>
                 </CardContent>
               </Card>
+              </>
+              )}
 
             </div>
 

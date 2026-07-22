@@ -1,7 +1,7 @@
 import { AdminDashboardLayout } from "../../../src/layout/AdminDashboardLayout";
 import { Tags, Plus, Search, MoreHorizontal, Trash, X } from "lucide-react";
 import { Badge } from "../../../src/components/ui/Badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const INITIAL_COUPONS = [
   { id: 1, code: "FESTIVE30", discount: "30%", type: "Percentage", expiry: "Dec 31, 2025", status: "Active" },
@@ -10,7 +10,17 @@ const INITIAL_COUPONS = [
 ];
 
 export default function AdminCouponsPage() {
-  const [coupons, setCoupons] = useState(INITIAL_COUPONS);
+  const [coupons, setCoupons] = useState<any[]>([]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('bb_coupons');
+    if (stored) {
+      setCoupons(JSON.parse(stored));
+    } else {
+      setCoupons(INITIAL_COUPONS);
+      localStorage.setItem('bb_coupons', JSON.stringify(INITIAL_COUPONS));
+    }
+  }, []);
   
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -29,7 +39,9 @@ export default function AdminCouponsPage() {
         expiry: new Date(newCouponExpiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         status: new Date(newCouponExpiry) > new Date() ? "Active" : "Expired"
       };
-      setCoupons(prev => [newCoupon, ...prev]);
+      const updated = [newCoupon, ...coupons];
+      setCoupons(updated);
+      localStorage.setItem('bb_coupons', JSON.stringify(updated));
       
       // Reset & close
       setNewCouponCode("");
@@ -41,7 +53,9 @@ export default function AdminCouponsPage() {
 
   const handleDeleteCoupon = (id: number) => {
     if (confirm("Are you sure you want to delete this coupon?")) {
-      setCoupons(prev => prev.filter(c => c.id !== id));
+      const updated = coupons.filter(c => c.id !== id);
+      setCoupons(updated);
+      localStorage.setItem('bb_coupons', JSON.stringify(updated));
     }
   };
 
@@ -64,7 +78,7 @@ export default function AdminCouponsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50">
+              <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="py-4 px-6 text-[11px] font-black text-slate-500 uppercase tracking-wider">Coupon Code</th>
                 <th className="py-4 px-6 text-[11px] font-black text-slate-500 uppercase tracking-wider">Discount Rate</th>
                 <th className="py-4 px-6 text-[11px] font-black text-slate-500 uppercase tracking-wider">Type</th>
@@ -75,7 +89,7 @@ export default function AdminCouponsPage() {
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
               {coupons.map((coupon) => (
-                <tr key={coupon.id} className="hover:bg-slate-50/50 transition-colors group font-mono text-xs">
+                <tr key={coupon.id} className="hover:bg-slate-50 transition-colors group font-mono text-xs">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2 font-sans font-black text-slate-800 text-sm">
                       <Tags size={16} className="text-[#C9A227]" /> {coupon.code}

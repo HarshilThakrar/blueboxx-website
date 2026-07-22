@@ -65,7 +65,7 @@ export default function AdminCommentsPage() {
                 </div>
              ) : (
                filteredComments.map((comment) => (
-                 <div key={comment.id} className="p-6 hover:bg-slate-50/50 transition-colors flex gap-4 items-start">
+                 <div key={comment.id} className="p-6 hover:bg-slate-50 transition-colors flex gap-4 items-start">
                     <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold shrink-0">
                       {comment.author.charAt(0)}
                     </div>

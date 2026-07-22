@@ -3,6 +3,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, BookOpen, CheckCircle2, GraduationCap, Star, Target } from "lucide-react";
 import { useCountUp } from "../hooks/useAnimations";
 import Link from "next/link";
+import { useGlobalSettings } from "../contexts/SettingsContext";
+import useSWR from "swr";
+import api from "../lib/axios";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 const WORDS = ["Skills.", "Projects.", "Careers.", "Internships.", "Placement.", "Futures."];
@@ -20,11 +23,11 @@ const ORBIT_CARDS = [
 ] as const;
 
 const StatBlock = ({ end, suffix, label }: { end: number; suffix: string; label: string }) => {
-  const { count, ref } = useCountUp(end, 2200);
+  const { ref } = useCountUp(end, 1000);
   return (
     <div>
       <p className="text-2xl font-bold leading-tight text-white font-sora">
-        <span ref={ref}>{count.toLocaleString("en-IN")}</span>
+        <span ref={ref}>0</span>
         {suffix}
       </p>
       <p className="mt-0.5 text-xs text-slate-400 font-bold uppercase tracking-wider">{label}</p>
@@ -97,6 +100,18 @@ const OrbitRing = () => {
 
 export const HeroSection = () => {
   const [wordIndex, setWordIndex] = useState(0);
+  const { settings } = useGlobalSettings();
+
+  const fetcher = (url: string) => api.get(url).then(res => res.data.data);
+  const { data: stats } = useSWR('/public/stats', fetcher, {
+    revalidateOnFocus: false,
+    fallbackData: {
+      students: 2500,
+      placed: 1200,
+      projects: 850,
+      partners: 120
+    }
+  });
 
   useEffect(() => {
     const id = setInterval(() => setWordIndex((p) => (p + 1) % WORDS.length), WORD_ROTATE_MS);
@@ -139,9 +154,15 @@ export const HeroSection = () => {
               transition={{ duration: 0.6, ease: EASE }}
               className="mb-4 overflow-visible text-[2.25rem] font-extrabold leading-[1.1] tracking-tight text-white sm:text-4xl md:text-[2.85rem] lg:text-5xl font-sora"
             >
-              <span className="block">Build your future</span>
-              <span className="block">with</span>
-              <span className="block">industry-aligned</span>
+              {settings.hero_title ? (
+                <span className="block mb-2">{settings.hero_title}</span>
+              ) : (
+                <>
+                  <span className="block">Build your future</span>
+                  <span className="block">with</span>
+                  <span className="block mb-2">industry-aligned</span>
+                </>
+              )}
               <span className="inline-grid overflow-visible">
                 <span
                   className="invisible col-start-1 row-start-1 whitespace-nowrap text-[#C9A227] select-none pb-2"
@@ -168,7 +189,7 @@ export const HeroSection = () => {
             </motion.h1>
 
             <p className="mb-5 max-w-[480px] text-[15px] leading-relaxed text-slate-300 sm:text-base sm:leading-[1.75]">
-              Master high-demand skills through expert-led programs, hands-on live projects, and guaranteed internship opportunities tailored for the modern workforce.
+              {settings.hero_subtitle || 'Master high-demand skills through expert-led programs, hands-on live projects, and guaranteed internship opportunities tailored for the modern workforce.'}
             </p>
 
             <div className="mb-6 flex gap-2 sm:gap-3 w-full max-w-md">
@@ -185,10 +206,10 @@ export const HeroSection = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-4 sm:grid-cols-4">
-              <StatBlock end={2500} suffix="+" label="Students" />
-              <StatBlock end={1200} suffix="+" label="Placed" />
-              <StatBlock end={850} suffix="+" label="Projects" />
-              <StatBlock end={120} suffix="+" label="Partners" />
+              <StatBlock end={stats.students} suffix="+" label="Students" />
+              <StatBlock end={stats.placed} suffix="+" label="Placed" />
+              <StatBlock end={stats.projects} suffix="+" label="Projects" />
+              <StatBlock end={stats.partners} suffix="+" label="Partners" />
             </div>
           </motion.div>
 

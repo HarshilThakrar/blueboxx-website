@@ -1,194 +1,174 @@
+import React, { useState } from "react";
 import { AdminDashboardLayout } from "../../../src/layout/AdminDashboardLayout";
-import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
-import { Mail, Plus, Settings2, Users, FileText, Send, Trash2, X, Save } from "lucide-react";
-import { Button } from "../../../src/components/ui/Button";
-import { Badge } from "../../../src/components/ui/Badge";
-import { useState } from "react";
+import { Mail, Users, Settings, Plus, Trash2, Send } from "lucide-react";
+import toast from "react-hot-toast";
+import { useRouter } from "next/router";
 
-const INITIAL_CAMPAIGNS = [
-  { id: 1, title: "November Tech Roundup", status: "Draft", recipients: "-", sentDate: "-", openRate: "-" },
-  { id: 2, title: "New AI Courses Released!", status: "Sent", recipients: "14,500", sentDate: "Oct 25, 2026", openRate: "42.5%" },
-  { id: 3, title: "Welcome to BlueBoxx Fall Semester", status: "Sent", recipients: "22,100", sentDate: "Sep 01, 2026", openRate: "58.2%" },
+const TABS = [
+  { id: "setting", label: "Setting" },
+  { id: "mailchimp", label: "Mailchimp Setting" },
+  { id: "getresponse", label: "Get Response Setting" },
+  { id: "acelle", label: "Acelle" },
+  { id: "subscribers", label: "Subscriber" },
+];
+
+const MOCK_SUBSCRIBERS = [
+  { id: 1, email: "ankit.sharma@gmail.com", date: "Oct 12, 2025", status: "Active" },
+  { id: 2, email: "priya.patel@company.in", date: "Oct 15, 2025", status: "Active" },
+  { id: 3, email: "rahul.verma@startup.io", date: "Oct 18, 2025", status: "Unsubscribed" },
+  { id: 4, email: "meera.singh@ngo.org", date: "Oct 22, 2025", status: "Active" },
 ];
 
 export default function AdminNewsletterPage() {
-  const [campaigns, setCampaigns] = useState(INITIAL_CAMPAIGNS);
-  const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
-  const [isSMTPModalOpen, setIsSMTPModalOpen] = useState(false);
-  const [newCampaignTitle, setNewCampaignTitle] = useState("");
-
-  const handleDelete = (id: number) => {
-    setCampaigns(prev => prev.filter(c => c.id !== id));
-  };
-
-  const handleAddCampaign = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCampaignTitle.trim()) return;
-    
-    setCampaigns([
-      { id: Date.now(), title: newCampaignTitle, status: "Draft", recipients: "-", sentDate: "-", openRate: "-" },
-      ...campaigns
-    ]);
-    setNewCampaignTitle("");
-    setIsCampaignModalOpen(false);
-  };
+  const router = useRouter();
+  const activeTab = (router.query.tab as string) || "setting";
+  const [subscribers, setSubscribers] = useState(MOCK_SUBSCRIBERS);
+  const [provider, setProvider] = useState("default");
+  const [apiKey, setApiKey] = useState("");
 
   return (
     <AdminDashboardLayout>
-      <div className="space-y-6">
-        <AnimatedContent direction="up" delay={0.1} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">Newsletter Campaigns</h1>
-            <p className="text-slate-500 text-sm">Design emails and manage subscriber lists for marketing campaigns.</p>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-1">Newsletter</h1>
+            <p className="text-slate-500 text-sm font-medium">Manage email subscriptions and mailing list integrations.</p>
           </div>
-          <div className="flex gap-3">
-             <Button variant="outline" className="gap-2 bg-white text-slate-700 border-slate-200" onClick={() => setIsSMTPModalOpen(true)}>
-               <Settings2 size={16}/> SMTP Settings
-             </Button>
-             <Button variant="primary" className="shadow-md gap-2" onClick={() => setIsCampaignModalOpen(true)}>
-               <Plus size={18}/> New Campaign
-             </Button>
-          </div>
-        </AnimatedContent>
+        </div>
 
-        <AnimatedContent direction="up" delay={0.2} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex items-center gap-4">
-             <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center shrink-0"><Users size={24}/></div>
-             <div>
-               <p className="text-2xl font-black text-slate-800">42,850</p>
-               <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-0.5">Total Subscribers</p>
-             </div>
-          </div>
-          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex items-center gap-4">
-             <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center shrink-0"><Send size={24}/></div>
-             <div>
-               <p className="text-2xl font-black text-slate-800">125K</p>
-               <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-0.5">Emails Sent (YTD)</p>
-             </div>
-          </div>
-          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex items-center gap-4">
-             <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center shrink-0"><Mail size={24}/></div>
-             <div>
-               <p className="text-2xl font-black text-slate-800">48.5%</p>
-               <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-0.5">Avg. Open Rate</p>
-             </div>
-          </div>
-        </AnimatedContent>
+        {/* Tabs */}
+        <div className="flex border-b border-slate-200 gap-6 text-sm font-bold text-slate-400 overflow-x-auto">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => router.push(`/admin/settings/newsletter?tab=${tab.id}`)}
+              className={`pb-3 whitespace-nowrap transition-all ${
+                activeTab === tab.id || (activeTab === "setting" && tab.id === "setting")
+                  ? "border-b-2 border-[#1B2A6B] text-[#1B2A6B] font-extrabold"
+                  : "hover:text-slate-700"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-        <AnimatedContent direction="up" delay={0.3} className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-             <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
-                <FileText size={18} className="text-[#1B2A6B]" /> Recent Campaigns
-             </h2>
-          </div>
-          
-          <div className="overflow-x-auto">
-             <table className="w-full text-left">
-               <thead className="bg-white border-b border-slate-100 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
-                 <tr>
-                   <th className="px-6 py-4">Campaign Title</th>
-                   <th className="px-6 py-4">Status</th>
-                   <th className="px-6 py-4">Recipients</th>
-                   <th className="px-6 py-4">Sent Date</th>
-                   <th className="px-6 py-4">Open Rate</th>
-                   <th className="px-6 py-4 text-right">Actions</th>
-                 </tr>
-               </thead>
-               <tbody className="divide-y divide-slate-50 text-sm">
-                 {campaigns.map((camp) => (
-                   <tr key={camp.id} className="hover:bg-slate-50/50 transition-colors">
-                     <td className="px-6 py-4 font-bold text-slate-900">{camp.title}</td>
-                     <td className="px-6 py-4">
-                        <Badge variant={camp.status === 'Sent' ? 'success' : 'secondary'}>{camp.status}</Badge>
-                     </td>
-                     <td className="px-6 py-4 font-semibold text-slate-600">{camp.recipients}</td>
-                     <td className="px-6 py-4 text-slate-500">{camp.sentDate}</td>
-                     <td className="px-6 py-4 font-bold text-[#1B2A6B]">{camp.openRate}</td>
-                     <td className="px-6 py-4 text-right">
-                        <Button variant="outline" onClick={() => handleDelete(camp.id)} className="h-8 text-xs font-bold gap-1.5 bg-white hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200"><Trash2 size={14}/> Delete</Button>
-                     </td>
-                   </tr>
-                 ))}
-               </tbody>
-             </table>
-          </div>
-        </AnimatedContent>
-      </div>
-
-      {isCampaignModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <AnimatedContent direction="up" className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden relative">
-            <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-blue-50/50">
-              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2"><Plus size={20} className="text-[#1B2A6B]" /> Create Campaign</h2>
-              <button onClick={() => setIsCampaignModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                <X size={24} />
-              </button>
-            </div>
-            
-            <form onSubmit={handleAddCampaign} className="p-6 space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Campaign Title</label>
-                <input 
-                  required
-                  type="text" 
-                  value={newCampaignTitle}
-                  onChange={(e) => setNewCampaignTitle(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none" 
-                  placeholder="e.g. End of Year Sale" 
+        {/* Setting Tab */}
+        {(activeTab === "setting" || !activeTab) && (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <h2 className="text-base font-black text-slate-800 flex items-center gap-2">
+              <Settings size={18} className="text-[#1B2A6B]" /> Newsletter Configuration
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-black text-slate-500 uppercase tracking-wider">Active Provider</label>
+                <select
+                  value={provider}
+                  onChange={(e) => setProvider(e.target.value)}
+                  className="mt-1.5 w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#1B2A6B]"
+                >
+                  <option value="default">Default (Platform Email)</option>
+                  <option value="mailchimp">Mailchimp</option>
+                  <option value="getresponse">Get Response</option>
+                  <option value="acelle">Acelle</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-black text-slate-500 uppercase tracking-wider">API Key</label>
+                <input
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="Enter your newsletter API key..."
+                  className="mt-1.5 w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-[#1B2A6B]"
                 />
               </div>
-
-              <div className="pt-4 flex gap-3">
-                <Button type="button" variant="outline" className="flex-1" onClick={() => setIsCampaignModalOpen(false)}>Cancel</Button>
-                <Button type="submit" variant="primary" className="flex-1 shadow-md gap-2"><Send size={16}/> Draft Campaign</Button>
-              </div>
-            </form>
-          </AnimatedContent>
-        </div>
-      )}
-
-      {isSMTPModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <AnimatedContent direction="up" className="bg-white rounded-3xl shadow-xl w-full max-w-lg overflow-hidden relative">
-            <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50/50">
-              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2"><Settings2 size={20} className="text-[#1B2A6B]" /> SMTP Settings</h2>
-              <button onClick={() => setIsSMTPModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                <X size={24} />
+            </div>
+            <div className="pt-4 flex justify-end border-t border-slate-100">
+              <button
+                onClick={() => toast.success("Newsletter settings saved!")}
+                className="px-6 py-2.5 bg-[#1B2A6B] hover:bg-[#1B2A6B]/90 text-white text-sm font-black rounded-xl shadow-sm transition-all"
+              >
+                Save Settings
               </button>
             </div>
-            
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Host</label>
-                  <input type="text" defaultValue="smtp.sendgrid.net" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Port</label>
-                  <input type="text" defaultValue="587" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none" />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Username</label>
-                <input type="text" defaultValue="apikey" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Password</label>
-                <input type="password" defaultValue="************************" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">From Email</label>
-                <input type="email" defaultValue="hello@blueboxx.in" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none" />
-              </div>
+          </div>
+        )}
 
-              <div className="pt-4 flex gap-3">
-                <Button variant="outline" className="flex-1" onClick={() => setIsSMTPModalOpen(false)}>Cancel</Button>
-                <Button variant="primary" className="flex-1 shadow-md gap-2" onClick={() => setIsSMTPModalOpen(false)}><Save size={16}/> Save Settings</Button>
+        {/* Subscribers Tab */}
+        {activeTab === "subscribers" && (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 bg-slate-50">
+              <h2 className="text-base font-black text-slate-800 flex items-center gap-2">
+                <Users size={18} className="text-[#1B2A6B]" /> All Subscribers
+              </h2>
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                <span className="px-2 py-1 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100">
+                  {subscribers.filter(s => s.status === "Active").length} Active
+                </span>
               </div>
             </div>
-          </AnimatedContent>
-        </div>
-      )}
+            <table className="w-full text-left">
+              <thead className="bg-slate-50 border-b border-slate-100">
+                <tr>
+                  <th className="py-3 px-6 text-[11px] font-black text-slate-400 uppercase tracking-wider">Email</th>
+                  <th className="py-3 px-6 text-[11px] font-black text-slate-400 uppercase tracking-wider">Date</th>
+                  <th className="py-3 px-6 text-[11px] font-black text-slate-400 uppercase tracking-wider">Status</th>
+                  <th className="py-3 px-6 text-[11px] font-black text-slate-400 uppercase tracking-wider text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {subscribers.map(sub => (
+                  <tr key={sub.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-3 px-6 text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      <Mail size={14} className="text-slate-400" /> {sub.email}
+                    </td>
+                    <td className="py-3 px-6 text-xs font-semibold text-slate-500">{sub.date}</td>
+                    <td className="py-3 px-6">
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
+                        sub.status === "Active"
+                          ? "text-emerald-700 bg-emerald-50 border-emerald-100"
+                          : "text-slate-500 bg-slate-50 border-slate-100"
+                      }`}>{sub.status}</span>
+                    </td>
+                    <td className="py-3 px-6 text-right">
+                      <button
+                        onClick={() => { setSubscribers(prev => prev.filter(s => s.id !== sub.id)); toast.success("Removed subscriber"); }}
+                        className="text-slate-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Other Tabs – Placeholder */}
+        {activeTab !== "setting" && activeTab !== "subscribers" && (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-[#1B2A6B]/5 flex items-center justify-center mx-auto mb-4">
+              <Mail size={28} className="text-[#1B2A6B]" />
+            </div>
+            <h3 className="text-lg font-black text-slate-800 mb-2 capitalize">{activeTab} Integration</h3>
+            <p className="text-slate-500 text-sm mb-6">Enter your API credentials to connect this newsletter provider.</p>
+            <div className="max-w-sm mx-auto space-y-3 text-left">
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase">API Key</label>
+                <input placeholder="Enter API key..." className="mt-1 w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1B2A6B]" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase">List ID</label>
+                <input placeholder="Enter list ID..." className="mt-1 w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1B2A6B]" />
+              </div>
+              <button onClick={() => toast.success("Integration settings saved!")} className="w-full py-2.5 bg-[#1B2A6B] text-white text-sm font-black rounded-xl">
+                Save Integration
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </AdminDashboardLayout>
   );
 }

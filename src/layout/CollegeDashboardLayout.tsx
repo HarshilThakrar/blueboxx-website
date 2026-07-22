@@ -42,7 +42,7 @@ const SIDEBAR_CATEGORIES = [
 
 export const CollegeDashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const { logout } = useAuth();
+  const { logout, isAuthenticated, isAuthReady } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [, setIsSearchOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -56,6 +56,14 @@ export const CollegeDashboardLayout = ({ children }: { children: React.ReactNode
     logout();
     router.push("/login");
   };
+
+  // Auth guard — redirect unauthenticated users to login
+  useEffect(() => {
+    if (!isAuthReady) return;
+    if (!isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, isAuthReady, router]);
 
   const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   const unreadCount = notifications.filter(n => !n.read).length;

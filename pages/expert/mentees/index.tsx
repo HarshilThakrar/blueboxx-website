@@ -5,14 +5,18 @@ import { AnimatedContent } from "../../../src/components/reactbits/AnimatedConte
 import { AnimatePresence, motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { ChatModal } from "../../../src/components/ChatModal";
-import { useMockData } from "../../../src/context/MockDataContext";
 import { EmptyState } from "../../../src/components/ui/EmptyState";
 import { SearchX, Users } from "lucide-react";
-
 import { AdvancedFilterPanel, FilterCategory } from "../../../src/components/ui/AdvancedFilterPanel";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function ExpertMentees() {
-  const { mentees, setMentees } = useMockData();
+  const { data, isLoading, mutate } = useSWR("/expert/mentees", fetcher);
+  const mentees = data?.data || [];
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [chatUser, setChatUser] = useState(null as string | null);
   const [activeMenuId, setActiveMenuId] = useState(null as number | null);
@@ -78,6 +82,15 @@ export default function ExpertMentees() {
     return matchesSearch && matchesRole && matchesStatus && matchesRating;
   });
 
+  const handleRemoveMentee = async (menteeId: number) => {
+    // Optimistic UI update
+    const updated = mentees.filter((m: any) => m.id !== menteeId);
+    mutate({ ...data, data: updated }, false);
+    toast.success("Mentee removed");
+    // API Call would go here: await api.delete(`/expert/mentees/${menteeId}`);
+    mutate();
+  };
+
   return (
     <ExpertDashboardLayout>
       <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
@@ -107,7 +120,9 @@ export default function ExpertMentees() {
           />
         </div>
         
-        {filteredMentees.length === 0 ? (
+        {isLoading ? (
+          <div className="p-12 text-center text-slate-400">Loading mentees...</div>
+        ) : filteredMentees.length === 0 ? (
           <div className="p-8">
             <EmptyState 
               icon={mentees.length === 0 ? Users : SearchX} 
@@ -180,7 +195,7 @@ export default function ExpertMentees() {
                           <button onClick={() => { setActiveMenuId(null); toast.success("Viewed Profile"); }} className="w-full px-4 py-2 text-left text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2"><User size={14}/> View Profile</button>
                           <button onClick={() => { setActiveMenuId(null); toast.success("Marked as Completed"); }} className="w-full px-4 py-2 text-left text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2"><CheckSquare size={14}/> Complete</button>
                           <div className="border-t border-slate-100 my-1"></div>
-                          <button onClick={() => { setActiveMenuId(null); setMentees(prev => prev.filter(m => m.id !== mentee.id)); toast.success("Mentee removed"); }} className="w-full px-4 py-2 text-left text-sm font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2"><XSquare size={14}/> Remove</button>
+                          <button onClick={() => { setActiveMenuId(null); handleRemoveMentee(mentee.id); }} className="w-full px-4 py-2 text-left text-sm font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2"><XSquare size={14}/> Remove</button>
                         </motion.div>
                       )}
                     </AnimatePresence>

@@ -8,41 +8,16 @@ import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-const INITIAL_SESSIONS = [
-  {
-    id: 1,
-    mentor: "Ankit Sharma",
-    title: "System Design Mock Interview",
-    date: "Oct 24, 2026",
-    time: "10:00 AM - 10:45 AM",
-    status: "Upcoming",
-    link: "https://zoom.us/j/123456789",
-    avatar: "https://i.pravatar.cc/150?u=ankit"
-  },
-  {
-    id: 2,
-    mentor: "Priya Desai",
-    title: "UI/UX Portfolio Review",
-    date: "Oct 28, 2026",
-    time: "11:00 AM - 11:30 AM",
-    status: "Upcoming",
-    link: "https://zoom.us/j/987654321",
-    avatar: "https://i.pravatar.cc/150?u=priya"
-  },
-  {
-    id: 3,
-    mentor: "Rohan Gupta",
-    title: "Mock Interview - Data Structures",
-    date: "Oct 15, 2026",
-    time: "5:00 PM - 6:00 PM",
-    status: "Completed",
-    link: null,
-    avatar: "https://i.pravatar.cc/150?u=rohan"
-  }
-];
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+import { EmptyState } from "../../../src/components/ui/EmptyState";
+import { Users } from "lucide-react";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function InternMentorSessionsPage() {
-  const [sessions, setSessions] = useState(INITIAL_SESSIONS);
+  const { data, isLoading } = useSWR("/intern/mentor-sessions", fetcher);
+  const sessions = data?.data || [];
   const [activeTab, setActiveTab] = useState("Upcoming");
 
   const filteredSessions = sessions.filter(session => session.status === activeTab);
@@ -87,11 +62,19 @@ export default function InternMentorSessionsPage() {
         </AnimatedContent>
 
         <AnimatedContent direction="up" delay={0.3}>
-          {filteredSessions.length === 0 ? (
-            <div className="text-center text-slate-400 font-semibold py-12">No mentorship sessions in this category.</div>
+          {isLoading ? (
+            <div className="text-center text-slate-500 py-12">Loading sessions...</div>
+          ) : filteredSessions.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title={`No ${activeTab.toLowerCase()} sessions`}
+              message="You haven't booked any mentorship sessions yet."
+              actionLabel="Find a Mentor"
+              onAction={() => window.location.href = "/experts"}
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredSessions.map((session, i) => (
+              {filteredSessions.map((session: any, i: number) => (
                 <Card key={i} className={`hover:border-slate-300 bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden transition-colors ${session.status === 'Completed' ? 'opacity-70 grayscale-[20%]' : ''}`}>
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-4">

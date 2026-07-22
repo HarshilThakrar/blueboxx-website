@@ -3,36 +3,81 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { MainLayout } from "../../src/layout/MainLayout";
-import { dummyMentors } from "../../src/data/mentors";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, 
   CheckCircle2, CreditCard, Lock, AlertCircle, FileText
 } from "lucide-react";
 import { Button } from "../../src/components/ui/Button";
+import useSWR from "swr";
+import api from "../../src/lib/axios";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data.data);
 
 export default function BookSessionPage() {
   const router = useRouter();
-  const { slug } = router.query;
+  const { slug } = router.query; // slug is the expert ID here
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState<number | null>(25);
   const [selectedTime, setSelectedTime] = useState<string | null>("10:00 AM");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [goal, setGoal] = useState("");
+  const [notes, setNotes] = useState("");
   
-  const mentor = dummyMentors.find(m => m.slug === slug) || dummyMentors[0];
+  const { data: mentor, error, isLoading } = useSWR(slug ? `/public/experts/${slug}` : null, fetcher);
 
-  if (!mentor) return <div>Loading...</div>;
+  if (isLoading) return <MainLayout><div className="min-h-screen flex items-center justify-center pt-28">Loading...</div></MainLayout>;
+  if (error || !mentor) return <MainLayout><div className="min-h-screen flex items-center justify-center pt-28">Expert not found</div></MainLayout>;
 
   const handleNext = () => setStep(prev => Math.min(prev + 1, 3));
   const handlePrev = () => setStep(prev => Math.max(prev - 1, 1));
 
-  const handlePayment = (e: React.FormEvent) => {
+  const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
-    setTimeout(() => {
+    try {
+      // Create date format YYYY-MM-DD
+      const dateStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
+      
+      // Parse time (e.g. 10:00 AM to 10:00)
+      const timeMatch = selectedTime?.match(/(\d+):(\d+)\s(AM|PM)/);
+      let startTime = "10:00";
+      if (timeMatch) {
+          let hours = parseInt(timeMatch[1]);
+          const mins = timeMatch[2];
+          if (timeMatch[3] === 'PM' && hours < 12) hours += 12;
+          if (timeMatch[3] === 'AM' && hours === 12) hours = 0;
+          startTime = `${String(hours).padStart(2, '0')}:${mins}`;
+      }
+      
+      // Calculate end time (45 mins later)
+      const [sh, sm] = startTime.split(':').map(Number);
+      const endMins = (sm + 45) % 60;
+      const endHours = sh + Math.floor((sm + 45) / 60);
+      const endTime = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+      
+      // In a real flow we'd select a specific session from mentor.sessions
+      // Here we assume the first active session for this mockup
+      const sessionId = mentor.sessions?.[0]?.id || 1;
+
+      const res = await api.post(`/experts/sessions/${sessionId}/book`, {
+          booking_date: dateStr,
+          start_time: startTime,
+          end_time: endTime,
+          notes: `${goal} - ${notes}`
+      });
+      
+      if (res.data.success) {
+          // If Razorpay flow was fully integrated on frontend, we'd open the Razorpay modal here
+          // Since it's a mockup, we'll just simulate success
+          toast.success("Booking confirmed!");
+          setStep(4);
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to book session. Are you logged in?");
+    } finally {
       setIsProcessing(false);
-      setStep(4);
-    }, 2500);
+    }
   };
 
   return (
@@ -171,12 +216,12 @@ export default function BookSessionPage() {
                   <div className="space-y-6">
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-500 uppercase">What's the main goal of this session?</label>
-                      <input type="text" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1B2A6B] outline-none" placeholder="e.g. Mock interview for SDE role, Resume review..." />
+                      <input type="text" value={goal} onChange={e => setGoal(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1B2A6B] outline-none" placeholder="e.g. Mock interview for SDE role, Resume review..." />
                     </div>
                     
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-500 uppercase">Provide some background (Optional)</label>
-                      <textarea rows={4} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1B2A6B] outline-none resize-none" placeholder="I have 2 years of experience and I'm currently interviewing at..."></textarea>
+                      <textarea rows={4} value={notes} onChange={e => setNotes(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1B2A6B] outline-none resize-none" placeholder="I have 2 years of experience and I'm currently interviewing at..."></textarea>
                     </div>
 
                     <div className="border border-slate-200 rounded-2xl p-6 flex items-center justify-between bg-slate-50">

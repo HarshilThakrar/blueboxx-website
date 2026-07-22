@@ -1,27 +1,26 @@
 import React, { useState } from "react";
 import { CompanyDashboardLayout } from "../../../src/layout/CompanyDashboardLayout";
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
-import { Search, Filter, Mail, Phone, ExternalLink, Calendar, ChevronRight, ChevronLeft, Briefcase, X, Clock } from "lucide-react";
-import { useApplicantStore, type AppStage, type Applicant } from "../../../src/store/useApplicantStore";
-import { useInterviewStore } from "../../../src/store/useInterviewStore";
+import { Search, Filter, Mail, Phone, ExternalLink, Calendar, ChevronRight, ChevronLeft, Briefcase, X, Clock, Loader2 } from "lucide-react";
+import { type AppStage, type Applicant } from "../../../src/store/useApplicantStore";
 import { useCompanyStore } from "../../../src/store/useCompanyStore";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+import toast from "react-hot-toast";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 import Link from "next/link";
 
 const STAGES: AppStage[] = ["Applied", "In Review", "Interview", "Offer"];
 
 export default function ApplicantsPage() {
   const companyProfile = useCompanyStore((s) => s.profile);
-  const allApplicants = useApplicantStore((s) => s.applicants);
-  const updateStage = useApplicantStore((s) => s.updateStage);
-  const addInterview = useInterviewStore((s) => s.addInterview);
+  
+  const { data, isLoading, mutate } = useSWR("/company/applicants", fetcher);
+  const allApplicants = data?.data || [];
 
-  // Show applicants for "this" company (matches profile name) + seeded demo data
-  const applicants = allApplicants.filter(
-    (a) =>
-      a.company.toLowerCase() === companyProfile.name.toLowerCase() ||
-      a.company.toLowerCase() === "google" ||
-      a.company.toLowerCase() === "acme corp"
-  );
+  // Assuming backend returns applicants specific to the company, but we can filter here for safety if needed
+  const applicants = allApplicants;
 
   const [selectedJob, setSelectedJob] = useState("All Roles");
   const [search, setSearch] = useState("");
@@ -41,34 +40,55 @@ export default function ApplicantsPage() {
       a.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const moveApplicant = (id: string, direction: "next" | "prev") => {
-    const app = applicants.find((a) => a.id === id);
+  const moveApplicant = async (id: string, direction: "next" | "prev") => {
+    const app = applicants.find((a: any) => a.id === id);
     if (!app) return;
-    const currentIndex = STAGES.indexOf(app.stage);
+    
+    // In our backend we mapped 'New' to 'Applied', 'Shortlisted' to 'In Review', 'Interview', 'Hired' to 'Offer', 'Rejected'
+    const currentIndex = STAGES.indexOf(app.status === 'New' ? 'Applied' : app.status === 'Shortlisted' ? 'In Review' : app.status === 'Hired' ? 'Offer' : app.status);
+    if (currentIndex === -1) return;
+    
     const newIndex =
       direction === "next"
         ? Math.min(currentIndex + 1, STAGES.length - 1)
         : Math.max(currentIndex - 1, 0);
-    updateStage(id, STAGES[newIndex]);
+        
+    const newStage = STAGES[newIndex];
+    let newStatus = 'New';
+    if (newStage === 'In Review') newStatus = 'Shortlisted';
+    if (newStage === 'Interview') newStatus = 'Interview';
+    if (newStage === 'Offer') newStatus = 'Hired';
+
+    try {
+      await api.put(`/company/applicants/${id}/status`, { status: newStatus });
+      mutate();
+      toast.success(`Applicant moved to ${newStage}`);
+    } catch (err) {
+      toast.error("Failed to move applicant");
+    }
   };
 
-  const handleScheduleInterview = (e: React.FormEvent) => {
+  const handleScheduleInterview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!scheduleModal) return;
-    addInterview({
-      name: scheduleModal.name,
-      role: scheduleModal.role,
-      date: scheduleForm.date || "Tomorrow",
-      time: scheduleForm.time || "10:00 AM",
-      type: scheduleForm.type,
-      match: scheduleModal.match,
-      applicantId: scheduleModal.id,
-    });
-    // Move to Interview stage
-    updateStage(scheduleModal.id, "Interview");
-    setScheduleModal(null);
-    setScheduleSuccess(true);
-    setTimeout(() => setScheduleSuccess(false), 4000);
+    
+    try {
+      // Create Interview
+      await api.post("/company/interviews", {
+        applicantId: scheduleModal.id,
+        date: scheduleForm.date || "Tomorrow",
+        time: scheduleForm.time || "10:00 AM",
+        type: scheduleForm.type,
+      });
+      // Move to Interview stage
+      await api.put(`/company/applicants/${scheduleModal.id}/status`, { status: 'Interview' });
+      mutate();
+      setScheduleModal(null);
+      setScheduleSuccess(true);
+      setTimeout(() => setScheduleSuccess(false), 4000);
+    } catch (err) {
+      toast.error("Failed to schedule interview");
+    }
   };
 
   return (
@@ -143,12 +163,28 @@ export default function ApplicantsPage() {
             <div className="flex items-center justify-between mb-4 px-2">
               <h3 className="font-black text-slate-700 text-sm">{stage}</h3>
               <span className="px-2 py-0.5 bg-white border border-slate-200 rounded-full text-[10px] font-black text-slate-500">
-                {filtered.filter((a) => a.stage === stage).length}
+                {filtered.filter((a: any) => {
+                  let normalized = a.status;
+                  if (a.status === 'New') normalized = 'Applied';
+                  if (a.status === 'Shortlisted') normalized = 'In Review';
+                  if (a.status === 'Hired') normalized = 'Offer';
+                  return normalized === stage;
+                }).length}
               </span>
             </div>
 
             <div className="flex-1 space-y-3">
-              {filtered.filter((a) => a.stage === stage).map((app, i) => (
+              {isLoading ? (
+                <div className="py-8 flex justify-center text-[#1B2A6B]">
+                  <Loader2 className="animate-spin w-5 h-5" />
+                </div>
+              ) : filtered.filter((a: any) => {
+                  let normalized = a.status;
+                  if (a.status === 'New') normalized = 'Applied';
+                  if (a.status === 'Shortlisted') normalized = 'In Review';
+                  if (a.status === 'Hired') normalized = 'Offer';
+                  return normalized === stage;
+              }).map((app: any, i: number) => (
                 <AnimatedContent
                   key={app.id}
                   direction="up"
@@ -162,20 +198,20 @@ export default function ApplicantsPage() {
                         {app.name.split(" ").map((n) => n[0]).join("")}
                       </div>
                       <div>
-                        <h4 className="text-sm font-black text-slate-800 leading-tight">{app.name}</h4>
-                        <p className="text-[10px] font-bold text-slate-400">{app.appliedDate}</p>
+                        <h4 className="text-sm font-black text-slate-800 leading-tight">{app.applicantName || app.name}</h4>
+                        <p className="text-[10px] font-bold text-slate-400">{app.appliedAt || app.appliedDate}</p>
                       </div>
                     </div>
-                    <span className={`px-2 py-0.5 text-[9px] font-black rounded-sm ${app.match >= 90 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
-                      {app.match}% Match
+                    <span className={`px-2 py-0.5 text-[9px] font-black rounded-sm ${app.match >= 90 || app.match === 'Very High' || app.match === 'High' ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                      {app.score || app.match}% Match
                     </span>
                   </div>
 
                   <div className="mb-3">
                     <p className="text-xs font-semibold text-slate-600 mb-0.5 flex items-center gap-1.5">
-                      <Briefcase size={12} className="text-slate-400" /> {app.role}
+                      <Briefcase size={12} className="text-slate-400" /> {app.jobTitle || app.role}
                     </p>
-                    <p className="text-[10px] font-semibold text-slate-400 ml-4">{app.exp} Experience</p>
+                    <p className="text-[10px] font-semibold text-slate-400 ml-4">{app.exp || "1 Year"} Experience</p>
                   </div>
 
                   <div className="flex gap-1 border-t border-slate-100 pt-3" onClick={(e) => e.stopPropagation()}>
@@ -212,8 +248,8 @@ export default function ApplicantsPage() {
                   {selectedApplicant.name.split(" ").map((n) => n[0]).join("")}
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-slate-800 mb-1">{selectedApplicant.name}</h2>
-                  <p className="text-sm font-semibold text-slate-500 mb-2">{selectedApplicant.role}</p>
+                  <h2 className="text-xl font-black text-slate-800 mb-1">{selectedApplicant.applicantName || selectedApplicant.name}</h2>
+                  <p className="text-sm font-semibold text-slate-500 mb-2">{selectedApplicant.jobTitle || selectedApplicant.role}</p>
                   <div className="flex gap-2">
                     <a href={`mailto:${selectedApplicant.email}`} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600 hover:bg-slate-50">
                       <Mail size={12} /> {selectedApplicant.email}
@@ -238,15 +274,15 @@ export default function ApplicantsPage() {
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="p-3 bg-slate-50 rounded-xl">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Status</p>
-                  <p className="text-sm font-bold text-slate-800">{selectedApplicant.stage}</p>
+                  <p className="text-sm font-bold text-slate-800">{selectedApplicant.status || selectedApplicant.stage}</p>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">AI Match</p>
-                  <p className={`text-sm font-black ${selectedApplicant.match >= 90 ? "text-emerald-600" : "text-amber-600"}`}>{selectedApplicant.match}%</p>
+                  <p className={`text-sm font-black ${(selectedApplicant.score || selectedApplicant.match) >= 90 ? "text-emerald-600" : "text-amber-600"}`}>{(selectedApplicant.score || selectedApplicant.match)}%</p>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Experience</p>
-                  <p className="text-sm font-bold text-slate-800">{selectedApplicant.exp}</p>
+                  <p className="text-sm font-bold text-slate-800">{selectedApplicant.exp || "1 Year"}</p>
                 </div>
               </div>
 
@@ -262,8 +298,14 @@ export default function ApplicantsPage() {
 
             <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center gap-4">
               <button
-                onClick={() => {
-                  updateStage(selectedApplicant.id, "Rejected" as AppStage);
+                onClick={async () => {
+                  try {
+                    await api.put(`/company/applicants/${selectedApplicant.id}/status`, { status: "Rejected" });
+                    mutate();
+                    toast.success("Applicant rejected");
+                  } catch(e) {
+                    toast.error("Failed to reject applicant");
+                  }
                   setSelectedApplicant(null);
                 }}
                 className="px-6 py-2.5 text-red-600 font-bold text-sm hover:bg-red-50 rounded-xl transition-colors"
@@ -292,7 +334,7 @@ export default function ApplicantsPage() {
             <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
               <div>
                 <h2 className="text-lg font-black text-slate-800">Schedule Interview</h2>
-                <p className="text-xs text-slate-500 font-medium">with {scheduleModal.name} for {scheduleModal.role}</p>
+                <p className="text-xs text-slate-500 font-medium">with {scheduleModal.applicantName || scheduleModal.name} for {scheduleModal.jobTitle || scheduleModal.role}</p>
               </div>
               <button onClick={() => setScheduleModal(null)} className="text-slate-400 hover:text-slate-800"><X size={20} /></button>
             </div>

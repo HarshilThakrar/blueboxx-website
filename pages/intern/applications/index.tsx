@@ -4,12 +4,16 @@ import { Badge } from "../../../src/components/ui/Badge";
 import toast from "react-hot-toast";
 import Link from "next/link";
 
-const mockInternships = [
-  { id: 1, role: "Software Engineering Intern", company: "Amazon", location: "Bengaluru", status: "In Progress", type: "Summer 2026", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" },
-  { id: 2, role: "Data Science Intern", company: "Microsoft", location: "Hyderabad", status: "Under Review", type: "6 Months", logo: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" },
-];
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+import { EmptyState } from "../../../src/components/ui/EmptyState";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function InternApplicationsPage() {
+  const { data, isLoading } = useSWR("/intern/applications", fetcher);
+  const applications = data?.data || [];
+
   return (
     <InternDashboardLayout>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -33,7 +37,20 @@ export default function InternApplicationsPage() {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {mockInternships.map(app => (
+        {isLoading ? (
+          <div className="col-span-full py-12 text-center text-slate-500 font-medium">Loading applications...</div>
+        ) : applications.length === 0 ? (
+          <div className="col-span-full">
+            <EmptyState
+              icon={Briefcase}
+              title="No applications yet"
+              message="You haven't applied to any internships yet. Start applying to opportunities!"
+              actionLabel="Find Internships"
+              onAction={() => window.location.href = "/internships"}
+            />
+          </div>
+        ) : (
+        applications.map((app: any) => (
           <div key={app.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden group hover:border-[#1B2A6B]/30 hover:shadow-md transition-all">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
@@ -60,7 +77,7 @@ export default function InternApplicationsPage() {
               </div>
             </div>
           </div>
-        ))}
+        )))}
       </div>
     </InternDashboardLayout>
   );

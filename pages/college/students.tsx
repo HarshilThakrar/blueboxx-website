@@ -3,23 +3,21 @@ import { CollegeDashboardLayout } from "../../src/layout/CollegeDashboardLayout"
 import { AnimatedContent } from "../../src/components/reactbits/AnimatedContent";
 import { Users, GraduationCap, TrendingUp, Building2, Search, Filter, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
+import useSWR from "swr";
+import api from "../../src/lib/axios";
 
-const STUDENTS = [
-  { id: "STU-2026-001", name: "Rahul Sharma", course: "B.Tech Computer Science", cgpa: 8.9, status: "placed", company: "Google", package: "24 LPA" },
-  { id: "STU-2026-042", name: "Priya Patel", course: "MCA", cgpa: 9.2, status: "placed", company: "Microsoft", package: "18 LPA" },
-  { id: "STU-2026-112", name: "Amit Kumar", course: "B.Tech IT", cgpa: 7.8, status: "unplaced", interviews: 2 },
-  { id: "STU-2026-189", name: "Sneha Reddy", course: "B.Tech Computer Science", cgpa: 8.5, status: "unplaced", interviews: 4 },
-  { id: "STU-2026-201", name: "Karthik N.", course: "B.Tech ECE", cgpa: 8.1, status: "placed", company: "Amazon", package: "14 LPA" },
-  { id: "STU-2026-245", name: "Divya Reddy", course: "MBA", cgpa: 7.6, status: "placed", company: "Deloitte", package: "12 LPA" },
-  { id: "STU-2026-310", name: "Rohan Mehta", course: "B.Tech Mechanical", cgpa: 6.9, status: "unplaced", interviews: 1 },
-  { id: "STU-2026-355", name: "Ananya Singh", course: "B.Com", cgpa: 8.8, status: "placed", company: "KPMG", package: "9 LPA" },
-];
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function CollegeStudentsPage() {
   const [activeTab, setActiveTab] = useState<"all" | "placed" | "unplaced">("all");
   const [search, setSearch] = useState("");
+  
+  const { data, isLoading } = useSWR("/college/students", fetcher);
+  
+  const students = data?.data?.students || [];
+  const stats = data?.data?.stats || { total_students: 0, placed: 0, in_process: 0, unplaced: 0 };
 
-  const filtered = STUDENTS.filter(s => {
+  const filtered = students.filter((s: any) => {
     const matchesTab = activeTab === "all" || s.status === activeTab;
     const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) || s.id.toLowerCase().includes(search.toLowerCase());
     return matchesTab && matchesSearch;
@@ -54,10 +52,10 @@ export default function CollegeStudentsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Total Students", value: "420", icon: Users, color: "text-[#1B2A6B] bg-blue-50" },
-          { label: "Placed", value: "342", icon: GraduationCap, color: "text-emerald-600 bg-emerald-50" },
-          { label: "In Process", value: "45", icon: TrendingUp, color: "text-amber-600 bg-amber-50" },
-          { label: "Unplaced", value: "33", icon: Building2, color: "text-slate-600 bg-slate-100" },
+          { label: "Total Students", value: stats.total_students, icon: Users, color: "text-[#1B2A6B] bg-blue-50" },
+          { label: "Placed", value: stats.placed, icon: GraduationCap, color: "text-emerald-600 bg-emerald-50" },
+          { label: "In Process", value: stats.in_process, icon: TrendingUp, color: "text-amber-600 bg-amber-50" },
+          { label: "Unplaced", value: stats.unplaced, icon: Building2, color: "text-slate-600 bg-slate-100" },
         ].map((s, i) => (
           <AnimatedContent key={i} direction="up" delay={i * 0.07} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex items-center gap-4">
             <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${s.color} shrink-0`}>
@@ -163,9 +161,15 @@ export default function CollegeStudentsPage() {
               ))}
             </tbody>
           </table>
+          {isLoading && (
+            <div className="py-12 text-center text-slate-400">Loading students...</div>
+          )}
+          {!isLoading && filtered.length === 0 && (
+            <div className="py-12 text-center text-slate-400">No students found.</div>
+          )}
         </div>
         <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
-          <p className="text-[11px] font-bold text-slate-400">Showing {filtered.length} of 420 students</p>
+          <p className="text-[11px] font-bold text-slate-400">Showing {filtered.length} of {stats.total_students} students</p>
           <div className="flex gap-1.5">
             <button className="h-8 w-8 rounded-lg border border-slate-200 text-slate-400 flex items-center justify-center" disabled><ChevronLeft size={15} /></button>
             <button className="h-8 w-8 rounded-lg bg-[#1B2A6B] text-white text-xs font-black">1</button>

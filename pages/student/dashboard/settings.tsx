@@ -2,9 +2,47 @@ import { DashboardLayout } from "../../../src/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../src/components/ui/Card";
 import { Button } from "../../../src/components/ui/Button";
 import { Input } from "../../../src/components/ui/Input";
-import { User, Lock, Bell, Eye, Trash2, Mail, Phone, Shield } from "lucide-react";
+import { User, Lock, Bell, Eye, Trash2, Mail, Phone, Shield, Loader2 } from "lucide-react";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+import { useState, useEffect } from "react";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function SettingsPage() {
+  const { data, isLoading, mutate } = useSWR("/profile", fetcher);
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    first_name: "",
+    last_name: "",
+  });
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (data) {
+      setFormData({
+        name: data.user?.name || "",
+        phone: data.user?.phone || data.profile?.phone || "",
+        first_name: data.profile?.first_name || "",
+        last_name: data.profile?.last_name || "",
+      });
+    }
+  }, [data]);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await api.put("/profile", formData);
+      mutate(); // revalidate
+      alert("Profile updated successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to update profile.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -55,27 +93,37 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
+                {isLoading ? (
+                  <div className="py-12 text-center text-slate-400">Loading your information...</div>
+                ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700">First Name</label>
-                    <Input icon={<User size={16}/>} defaultValue="Student" />
+                    <Input icon={<User size={16}/>} value={formData.first_name} onChange={(e) => setFormData({...formData, first_name: e.target.value})} placeholder="First Name" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700">Last Name</label>
-                    <Input icon={<User size={16}/>} defaultValue="User" />
+                    <Input icon={<User size={16}/>} value={formData.last_name} onChange={(e) => setFormData({...formData, last_name: e.target.value})} placeholder="Last Name" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-700">Full Name</label>
+                    <Input icon={<User size={16}/>} value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Full Name" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700">Email Address</label>
-                    <Input icon={<Mail size={16}/>} defaultValue="student@blueboxx.in" />
+                    <Input icon={<Mail size={16}/>} value={data?.user?.email || ""} disabled className="bg-slate-50 opacity-70" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700">Phone Number</label>
-                    <Input icon={<Phone size={16}/>} defaultValue="+91 9876543210" />
+                    <Input icon={<Phone size={16}/>} value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} placeholder="Phone Number" />
                   </div>
                 </div>
+                )}
                 
                 <div className="flex justify-end pt-4 border-t border-slate-100 mt-6">
-                  <Button variant="primary">Save Changes</Button>
+                  <Button variant="primary" onClick={handleSave} disabled={isSaving || isLoading}>
+                    {isSaving ? <><Loader2 size={16} className="animate-spin mr-2"/> Saving...</> : "Save Changes"}
+                  </Button>
                 </div>
               </CardContent>
             </Card>

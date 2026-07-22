@@ -314,12 +314,10 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid sm:grid-cols-2 max-w-3xl mx-auto gap-8">
               {[
-                { name: "Ankush Dubey", role: "Founder & CEO", desc: "Visionary leader driving the Learn-Work-Earn model.", img: "https://i.pravatar.cc/300?u=ankush" },
-                { name: "Sarah Jenkins", role: "Co-Founder", desc: "Ensuring scalable growth and strategic partnerships.", img: "https://i.pravatar.cc/300?u=sarah" },
-                { name: "Raj Patel", role: "Lead Developer", desc: "Architecting robust platforms for seamless learning.", img: "https://i.pravatar.cc/300?u=raj" },
-                { name: "Priya Sharma", role: "Head of Marketing", desc: "Expanding our community reach and brand impact.", img: "https://i.pravatar.cc/300?u=priya" }
+                { name: "Ankush Dubey", role: "Founder & CEO", desc: "Visionary leader driving the Learn-Work-Earn model.", img: "/ankush.jpeg" },
+                { name: "Nirav Purandare", role: "Co-Founder", desc: "Ensuring scalable growth and strategic partnerships.", img: "/nirav.jpeg" }
               ].map((member, i) => (
                 <motion.div
                   key={i}
@@ -328,11 +326,11 @@ export default function AboutPage() {
                   viewport={{ once: true, margin: "-50px" }}
                   transition={{ type: "spring", stiffness: 100, delay: i * 0.1 }}
                   whileHover={{ y: -12, scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-2xl transition-all duration-300 group relative overflow-hidden text-center z-10"
+                  className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-2xl transition-all duration-300 group relative overflow-hidden text-center z-10 w-full max-w-xs"
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 pointer-events-none" />
                   <div className="w-28 h-28 mx-auto rounded-full overflow-hidden mb-6 bg-slate-200 border-4 border-white shadow-lg group-hover:shadow-indigo-200 transition-all duration-500 relative z-10">
-                    <img src={member.img} alt={member.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" />
+                    <img src={member.img} alt={member.name} className={`w-full h-full object-cover transition-all duration-700 ${(member as any).imgClassName || "group-hover:scale-110"}`} />
                   </div>
                   <h4 className="text-xl font-bold text-slate-900 mb-1 relative z-10">{member.name}</h4>
                   <p className="text-sm font-black text-[#C9A227] uppercase tracking-wider mb-4 relative z-10">{member.role}</p>

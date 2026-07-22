@@ -1,56 +1,100 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { MainLayout } from "../../../src/layout/MainLayout";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, Upload, FileText, Briefcase, MapPin } from "lucide-react";
+import { ArrowRight, CheckCircle2, Upload, FileText, Briefcase, MapPin, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../../../src/components/ui/Button";
-import { useApplicantStore } from "../../../src/store/useApplicantStore";
-import { useJobStore } from "../../../src/store/useJobStore";
+
+import api from "../../../src/lib/axios";
+import toast from "react-hot-toast";
 
 export default function ApplicationFlowPage() {
   const router = useRouter();
-  const { type, slug } = router.query;
+  const { type, slug: id } = router.query;
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const addApplication = useApplicantStore((s) => s.addApplication);
-  const jobs = useJobStore((s) => s.jobs);
+  const [job, setJob] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id || !type) return;
+    const fetchData = async () => {
+      try {
+        const endpoint = type === 'internship' ? `/public/internships/${id}` : `/public/jobs/${id}`;
+        const res = await api.get(endpoint);
+        if (res.data.success) {
+          setJob(res.data.data);
+        }
+      } catch (err) {
+        toast.error("Failed to load details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id, type]);
 
   // Form data captured across steps
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', email: '', phone: '', portfolio: ''
   });
 
-  // Find the matching job posting for company name and role
-  const matchedJob = jobs.find(
-    (j) => j.id === slug || j.title.toLowerCase().replace(/\s+/g, '-') === String(slug)
-  );
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (step < 3) {
       setStep(step + 1);
     } else {
       setIsSubmitting(true);
-      setTimeout(() => {
-        // Push real application to global store
-        addApplication({
-          name: `${formData.firstName} ${formData.lastName}`.trim() || 'Applicant',
-          email: formData.email || 'student@example.com',
-          phone: formData.phone || 'N/A',
-          role: matchedJob?.title || String(slug || '').replace(/-/g, ' '),
-          company: matchedJob?.company || matchedJob?.postedBy || 'Acme Corp',
-          jobId: String(slug || `job-${Date.now()}`),
-          exp: 'Fresher',
-          portfolio: formData.portfolio,
+      try {
+        const isInternship = type === "internship";
+        const endpoint = isInternship ? `/public/internships/${id}/apply` : `/public/jobs/${id}/apply`;
+        
+        // We simulate sending a file via FormData to match the backend expectation
+        const data = new FormData();
+        data.append('cover_letter', `Portfolio: ${formData.portfolio}`);
+        // Backend expects 'resume' as file, since we don't have a real file input in this mockup UI, 
+        // we'll send it without for now. It might throw validation error if backend requires it.
+        // But backend says: 'resume' => 'nullable|file' so it's fine!
+        if (isInternship) {
+          data.append('portfolio_url', formData.portfolio);
+        }
+
+        await api.post(endpoint, data, {
+          headers: { 'Content-Type': 'multipart/form-data' }
         });
+
         setIsSubmitting(false);
         setStep(4);
-      }, 2000);
+        toast.success("Application submitted successfully!");
+      } catch (err: any) {
+        toast.error(err.response?.data?.message || "Failed to submit application. Make sure you are logged in.");
+        setIsSubmitting(false);
+      }
     }
   };
 
-  const jobTitle = String(slug || "Loading...").replace(/-/g, " ");
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen flex items-center justify-center bg-transparent pt-28">
+          <Loader2 className="w-10 h-10 animate-spin text-[#1B2A6B]" />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (!job) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen flex items-center justify-center bg-transparent pt-28">
+          <h2 className="text-xl font-bold text-slate-800">Job/Internship not found.</h2>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  const jobTitle = job.title;
 
   return (
     <MainLayout>
@@ -195,7 +239,7 @@ export default function ApplicationFlowPage() {
                       </div>
                       <div>
                         <span className="text-slate-500">Role Applied</span>
-                        <div className="font-semibold text-slate-800 capitalize">{matchedJob?.title || String(slug || '').replace(/-/g, ' ')}</div>
+                        <div className="font-semibold text-slate-800 capitalize">{jobTitle}</div>
                       </div>
                     </div>
                   </div>

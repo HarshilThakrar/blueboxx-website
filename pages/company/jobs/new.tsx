@@ -3,11 +3,13 @@ import { useRouter } from "next/router";
 import { CompanyDashboardLayout } from "../../../src/layout/CompanyDashboardLayout";
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
 import { Briefcase, MapPin, Building, Target, X, ArrowRight } from "lucide-react";
-import { useJobStore, JobCategory } from "../../../src/store/useJobStore";
+import toast from "react-hot-toast";
+import api from "../../../src/lib/axios";
+
+type JobCategory = "Job" | "Internship";
 
 export default function PostJobPage() {
   const router = useRouter();
-  const addJob = useJobStore((s) => s.addJob);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [skills, setSkills] = useState<string[]>(["React", "TypeScript"]);
@@ -37,27 +39,29 @@ export default function PostJobPage() {
     setSkills(skills.filter((s) => s !== skill));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim() || !form.description.trim()) return;
     setSubmitting(true);
 
-    setTimeout(() => {
-      addJob({
+    try {
+      await api.post("/company/jobs", {
         title: form.title,
-        company: "Acme Corp",
         category,
         type: category === "Internship" ? "Internship" : form.type,
         locationType: form.locationType,
-        location: form.locationType === "Remote" ? "" : form.location,
+        location: form.locationType === "Remote" ? "Remote" : form.location,
         salary: form.salary,
         description: form.description,
         skills,
-        postedBy: "Acme Corp",
       });
-      setSubmitting(false);
       setSubmitted(true);
-    }, 1200);
+      toast.success("Job posted successfully!");
+    } catch (err) {
+      toast.error("Failed to post job");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const inputCls =

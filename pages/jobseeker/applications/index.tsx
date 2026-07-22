@@ -3,12 +3,10 @@ import { Search, Filter, MoreHorizontal, Briefcase, Building, MapPin, CheckCircl
 import toast from "react-hot-toast";
 import { Badge } from "../../../src/components/ui/Badge";
 
-const mockApplications = [
-  { id: 1, role: "Senior Frontend Engineer", company: "Google", location: "Remote", status: "Interviewing", date: "Oct 24, 2025", logo: "https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" },
-  { id: 2, role: "Product Manager", company: "Microsoft", location: "Hyderabad", status: "Applied", date: "Oct 20, 2025", logo: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" },
-  { id: 3, role: "UI/UX Designer", company: "Apple", location: "Bengaluru", status: "Rejected", date: "Oct 15, 2025", logo: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" },
-  { id: 4, role: "Full Stack Developer", company: "Amazon", location: "Remote", status: "Offered", date: "Oct 10, 2025", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" },
-];
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -21,6 +19,9 @@ const getStatusBadge = (status: string) => {
 };
 
 export default function JobseekerApplicationsPage() {
+  const { data, isLoading } = useSWR("/jobseeker/applications", fetcher);
+  const applications = data?.data || [];
+  
   return (
     <JobseekerDashboardLayout>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -55,7 +56,16 @@ export default function JobseekerApplicationsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {mockApplications.map((app) => (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-slate-500 font-medium">Loading applications...</td>
+                </tr>
+              ) : applications.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-slate-500 font-medium">No applications found.</td>
+                </tr>
+              ) : (
+              applications.map((app: any) => (
                 <tr key={app.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-4">
@@ -81,7 +91,7 @@ export default function JobseekerApplicationsPage() {
                     </button>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

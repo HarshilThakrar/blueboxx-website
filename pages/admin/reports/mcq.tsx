@@ -39,7 +39,7 @@ export default function AdminMCQReportPage() {
         </AnimatedContent>
 
         <AnimatedContent direction="up" delay={0.3} className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-slate-100 flex items-center gap-2 bg-slate-50/50">
+          <div className="p-6 border-b border-slate-100 flex items-center gap-2 bg-slate-50">
              <BarChart2 size={18} className="text-[#1B2A6B]" />
              <h2 className="text-lg font-black text-slate-800">Toughest Questions Overview</h2>
           </div>
@@ -54,19 +54,19 @@ export default function AdminMCQReportPage() {
                  </tr>
                </thead>
                <tbody className="divide-y divide-slate-50 text-sm font-medium text-slate-700">
-                 <tr className="hover:bg-slate-50/50">
+                 <tr className="hover:bg-slate-50">
                    <td className="px-4 py-4 max-w-md truncate">"What is the time complexity of Array.prototype.sort() in V8 engine?"</td>
                    <td className="px-4 py-4 text-xs">React Fundamentals</td>
                    <td className="px-4 py-4"><span className="text-rose-600 font-bold">12.5%</span></td>
                    <td className="px-4 py-4 text-right">4,250</td>
                  </tr>
-                 <tr className="hover:bg-slate-50/50">
+                 <tr className="hover:bg-slate-50">
                    <td className="px-4 py-4 max-w-md truncate">"How do convolutional layers handle padding by default in PyTorch?"</td>
                    <td className="px-4 py-4 text-xs">AI/ML Basic (Python)</td>
                    <td className="px-4 py-4"><span className="text-rose-600 font-bold">18.2%</span></td>
                    <td className="px-4 py-4 text-right">2,100</td>
                  </tr>
-                 <tr className="hover:bg-slate-50/50">
+                 <tr className="hover:bg-slate-50">
                    <td className="px-4 py-4 max-w-md truncate">"Which auto-layout property dictates flex-wrapping in Figma?"</td>
                    <td className="px-4 py-4 text-xs">Advanced Figma Pro</td>
                    <td className="px-4 py-4"><span className="text-amber-500 font-bold">45.0%</span></td>

@@ -5,110 +5,451 @@ import { useAuth } from "../context/AuthContext";
 import {
   LayoutDashboard, Users, BookOpen, Briefcase, Settings, LogOut,
   Menu, X, Bell, Search, ShieldCheck, GraduationCap,
-  FileText, Activity, TerminalSquare,
-  ChevronRight, ShieldAlert, Image as ImageIcon,
-  Award,
-  Archive, Sliders,
-  Book, ClipboardList, Trophy
+  FileText, Activity, TerminalSquare, ChevronRight, ChevronDown,
+  ShieldAlert, Image as ImageIcon, Award, Archive, Sliders, Book,
+  ClipboardList, Trophy, Calendar, Radio, BarChart3, HelpCircle,
+  Percent, ShoppingCart, Landmark, PhoneCall, Layers, Globe, Mail,
+  ListTodo, UserCheck, Shield, Database, KeyRound, FileSpreadsheet,
+  Sparkles, Building2, Play, Plus, Trash2, Upload, Video, MessageSquare,
+  MessageCircle, Megaphone, Palette, FolderOpen, Link2, PieChart, HardDrive, Lock, History, Fingerprint,
+  Hammer, Loader, MapPin, AlertOctagon, ShieldBan, Wrench, RotateCcw, BarChart, Layout, Moon, Sun, Maximize, Minimize,
+  Code, TrendingUp, RefreshCcw
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { NotificationService } from "../lib/api/admin/RealtimeNotificationService";
+import { MessageService } from "../lib/api/admin/MessageService";
+import api from '../lib/axios';
+import { useGlobalSettings } from "../contexts/SettingsContext";
 
 const SIDEBAR_CATEGORIES = [
   {
-    title: "Overview",
+    title: "Dashboard",
+    icon: LayoutDashboard,
+    href: "/admin/dashboard",
+    isStandalone: true,
+  },
+  {
+    title: "Media Manager",
+    icon: FolderOpen,
+    href: "/admin/media",
+    isStandalone: true,
+  },
+  {
+    title: "USERS",
+    isHeader: true,
+  },
+  {
+    title: "Pending Approvals",
+    icon: UserCheck,
+    href: "/admin/approvals",
+    isStandalone: true,
+  },
+
+  {
+    title: "All Internships",
+    icon: ClipboardList,
     links: [
-      { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-      { name: "Media Manager", href: "/admin/media", icon: ImageIcon },
+      { name: "List Internships", href: "/admin/internships", icon: ClipboardList },
+      { name: "Active Internships", href: "/admin/internships/active", icon: Briefcase },
+      { name: "Add Internship", href: "/admin/internships/add", icon: Plus },
+    ]
+  },
+  {
+    title: "Students",
+    icon: GraduationCap,
+    links: [
+      { name: "Student List", href: "/admin/users/students", icon: GraduationCap },
+      { name: "Regular Student Import", href: "/admin/users/students/import", icon: Upload },
+      { name: "Setting", href: "/admin/users/students/setting", icon: Settings },
+    ]
+  },
+  {
+    title: "All Jobs",
+    icon: Briefcase,
+    links: [
+      { name: "List Jobs", href: "/admin/jobs", icon: Briefcase },
+      { name: "All Applications", href: "/admin/jobs/applications", icon: ClipboardList },
+    ]
+  },
+
+  {
+    title: "Instructors",
+    icon: Book,
+    links: [
+      { name: "All Instructor", href: "/admin/users/instructors", icon: Book },
     ]
   },
   {
     title: "User Manager",
+    icon: ShieldCheck,
     links: [
-      { name: "All Users", href: "/admin/users", icon: Users },
-      { name: "Students", href: "/admin/users/students", icon: GraduationCap },
-      { name: "Instructors", href: "/admin/users/instructors", icon: Book },
-      { name: "Scholarships", href: "/admin/scholarships", icon: Trophy },
-      { name: "Verifications", href: "/admin/verifications", icon: ShieldAlert },
-      { name: "Roles & Permissions", href: "/admin/roles", icon: ShieldCheck },
-    ]
-  },
-  {
-    title: "Jobs & Internships",
-    links: [
-      { name: "All Internships", href: "/admin/internships", icon: Briefcase },
-      { name: "Jobs Application", href: "/admin/jobs/applications", icon: ClipboardList },
-      { name: "Add Internship", href: "/admin/internships/add", icon: Activity },
-    ]
-  },
-  {
-    title: "Education",
-    links: [
-      { name: "Courses", href: "/admin/courses", icon: BookOpen },
-      { name: "Certificate", href: "/admin/education/certificate", icon: Award },
-    ]
-  },
-  {
-    title: "Content",
-    links: [
-      { name: "Frontend CMS", href: "/admin/cms", icon: FileText },
-      { name: "Clients & Partners", href: "/admin/clients", icon: Briefcase },
+      { name: "Roles", href: "/admin/roles", icon: ShieldCheck },
+
+      { name: "Delete Request", href: "/admin/users/delete-requests", icon: Trash2 },
     ]
   },
 
   {
-    title: "Administration",
+    title: "EDUCATION",
+    isHeader: true,
+  },
+  {
+    title: "Courses",
+    icon: BookOpen,
     links: [
-      { name: "System Setting", href: "/admin/settings", icon: Settings },
-      { name: "Sidebar Manager", href: "/admin/settings/sidebar", icon: Sliders },
-      { name: "Utility", href: "/admin/settings/utility", icon: TerminalSquare },
-      { name: "Backup", href: "/admin/settings/backup", icon: Archive },
+      { name: "Category List", href: "/admin/courses/categories", icon: Layers },
+      { name: "All Courses", href: "/admin/courses", icon: BookOpen },
+      { name: "Course Level", href: "/admin/courses/levels", icon: BarChart3 },
+      { name: "Course Setting", href: "/admin/courses/settings", icon: Settings },
+      { name: "Q&A", href: "/admin/courses/qa", icon: HelpCircle },
     ]
-  }
+  },
+
+  {
+    title: "Virtual Class",
+    icon: Play,
+    links: [
+      { name: "Virtual Class List", href: "/admin/education/virtual-class", icon: Play },
+    ]
+  },
+  {
+    title: "Zoom",
+    icon: Video,
+    links: [
+      { name: "Setting", href: "/admin/education/zoom", icon: Settings },
+    ]
+  },
+  {
+    title: "Certificate",
+    icon: Award,
+    links: [
+      { name: "Certificate List", href: "/admin/education/certificate", icon: Award },
+      { name: "Add Certificate", href: "/admin/education/certificate/add", icon: Plus },
+      { name: "Certificate Fonts", href: "/admin/education/certificate/fonts", icon: FileText },
+      { name: "Certificate Setting", href: "/admin/education/certificate/setting", icon: Settings },
+    ]
+  },
+  {
+    title: "Reports & Analytics",
+    icon: BarChart3,
+    href: "/admin/reports",
+    isStandalone: true,
+  },
+  {
+    title: "MCQ Results",
+    icon: BarChart,
+    href: "/admin/mcq-results",
+    isStandalone: true,
+  },
+  {
+    title: "Enrollments",
+    icon: UserCheck,
+    href: "/admin/education/enrollments",
+    isStandalone: true,
+  },
+  {
+    title: "CONTENT",
+    isHeader: true,
+  },
+
+  {
+    title: "Blogs",
+    icon: FileText,
+    links: [
+      { name: "All Blogs", href: "/admin/cms/blogs", icon: FileText },
+
+      { name: "Categories", href: "/admin/cms/blogs/categories", icon: Layers },
+    ]
+  },
+
+  {
+    title: "COMMUNICATION",
+    isHeader: true,
+  },
+  {
+    title: "Communication Center",
+    icon: MessageSquare,
+    href: "/admin/communication",
+    isStandalone: true,
+  },
+  {
+    title: "ADMINISTRATION",
+    isHeader: true,
+  },
+  {
+    title: "System Setting",
+    icon: Settings,
+    links: [
+      { name: "Activation", href: "/admin/settings/activation", icon: ShieldCheck },
+      { name: "General Setting", href: "/admin/settings/general", icon: Settings },
+      { name: "Email Setup", href: "/admin/settings/email-setup", icon: Mail },
+      { name: "Email Template", href: "/admin/settings/email-template", icon: FileText },
+      { name: "Api Settings", href: "/admin/settings/api", icon: Code },
+
+    ]
+  },
+
+
+
+
+
+
+  {
+    title: "SECURITY",
+    isHeader: true,
+  },
+  {
+    title: "Security & Logs",
+    icon: ShieldCheck,
+    links: [
+      { name: "Security Settings", href: "/admin/security/settings", icon: ShieldAlert },
+      { name: "Session Management", href: "/admin/security/sessions", icon: Fingerprint },
+    ]
+  },
+
+  {
+    title: "Backup",
+    icon: RotateCcw,
+    href: "/admin/security/backups",
+    isStandalone: true,
+  },
+
+  {
+    title: "UTILITY",
+    isHeader: true,
+  },
+  {
+    title: "Utility",
+    icon: Hammer,
+    links: [
+      { name: "Utilities", href: "/admin/utility", icon: Settings },
+      { name: "Preloader Setting", href: "/admin/utility/preloader", icon: Loader },
+      { name: "Geo Location", href: "/admin/utility/geo-location", icon: MapPin },
+      { name: "Ip Block", href: "/admin/utility/ip-block", icon: ShieldBan },
+    ]
+  },
+
 ];
 
 export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const { logout } = useAuth();
+  const { user, logout, isAuthenticated, isAuthReady } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false);
+  const { settings } = useGlobalSettings();
 
-  // Search Overlay State
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  // Auth guard — redirect unauthenticated users to login
+  useEffect(() => {
+    if (!isAuthReady) return;
+    if (!isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, isAuthReady, router]);
+
+  // Real-Time Notifications — only poll when authenticated
+  const { notifications, unreadCount, markAllRead } = NotificationService.useNotifications(isAuthenticated);
+  
+  // Real-Time Messages — only poll when authenticated
+  const { data: messagesData } = MessageService.useUnreadSummary(isAuthenticated);
+  const unreadMessagesCount = messagesData.unread_count || 0;
+
+  // Derive user initials from name for avatar display
+  const userInitials = user?.name
+    ? user.name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
+    : 'BB';
+
+  // Collapse state initialized
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("bb_sidebar_expanded");
+      if (stored) return JSON.parse(stored);
+    }
+    return {
+      "Media Manager": false,
+      "Employees": false,
+      "All Internships": false,
+      "Students": false,
+      "All Jobs": false,
+      "All Contest": false,
+      "Instructors": false,
+      "User Manager": false,
+      "Internship": false,
+      "Contest": false,
+      "Courses": false,
+      "Quiz": false,
+      "Virtual Class": false,
+      "Zoom": false,
+      "Certificate": false,
+      "Report": false,
+      "Enrollment": false,
+      "Frontend CMS": false,
+      "Blogs": false,
+      "Gamification": false,
+      "Communications": false,
+      "Comments": false,
+      "Q&A": false,
+      "System Setting": false,
+      "Appearance": false,
+      "Newsletter": false,
+      "Notification": false,
+      "Push Notification": false,
+      "Utility": false,
+      "Backup": false,
+    };
+  });
+
+  // Save expanded groups to session storage when it changes
+  useEffect(() => {
+    sessionStorage.setItem("bb_sidebar_expanded", JSON.stringify(expandedGroups));
+  }, [expandedGroups]);
+
+  // Simple Inline Search State
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  
+  // Flatten links for search
+  const dummyDataLinks = [
+    { name: "John Doe (Student)", href: "/admin/users/students", category: "Students" },
+    { name: "Jane Smith (Student)", href: "/admin/users/students", category: "Students" },
+    { name: "Sr. Frontend Developer", href: "/admin/jobs", category: "Jobs" },
+    { name: "Product Manager Role", href: "/admin/jobs", category: "Jobs" },
+    { name: "Advanced React Patterns", href: "/admin/courses", category: "Courses" },
+    { name: "UI/UX Masterclass", href: "/admin/courses", category: "Courses" },
+    { name: "Hero Banner Video.mp4", href: "/admin/media?tab=all", category: "Media Manager" },
+    { name: "Company Logo.png", href: "/admin/media?tab=all", category: "Media Manager" },
+  ];
+  
+  const allLinks = React.useMemo(() => {
+    const links = SIDEBAR_CATEGORIES.reduce((acc, cat) => {
+      if (cat.href && cat.title) acc.push({ name: cat.title, href: cat.href, category: cat.title });
+      if (cat.links) {
+        cat.links.forEach(link => {
+          acc.push({ name: link.name, href: link.href, category: cat.title });
+        });
+      }
+      return acc;
+    }, [] as { name: string, href: string, category: string }[]);
+    return [...links, ...dummyDataLinks];
+  }, []);
+
+  const searchResults = searchQuery
+    ? allLinks.filter(l => l.name.toLowerCase().includes(searchQuery.toLowerCase()) || l.category.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 5)
+    : [];
+
+  // Quick Action Dropdown State
+  const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
+
+  // Profile Dropdown State
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Notification State
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: "URGENT: Suspicious login attempt blocked from IP 192.168.1.1", time: "10 mins ago", read: false, type: 'critical' },
-    { id: 2, text: "SECURITY: Core API keys were rotated by System Root", time: "2 hours ago", read: false, type: 'important' },
-    { id: 3, text: "SYSTEM: Automated database backup failed. Manual intervention required.", time: "5 hours ago", read: true, type: 'critical' },
-  ]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.post('/logout');
+    } catch(e) {}
     logout();
     router.push("/login");
   };
 
-  const markAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  // Toggle Collapse/Expand on Sidebar Groups
+  const toggleGroup = (title: string) => {
+    setExpandedGroups(prev => {
+      const isCurrentlyOpen = prev[title];
+      if (isCurrentlyOpen) {
+        return { ...prev, [title]: false };
+      } else {
+        const newState = { ...prev };
+        Object.keys(newState).forEach(key => newState[key] = false);
+        newState[title] = true;
+        return newState;
+      }
+    });
   };
 
   // Keyboard shortcut for Search Command Palette
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        setIsSearchOpen(true);
+        searchInputRef.current?.focus();
       }
       if (e.key === "Escape") {
-        setIsSearchOpen(false);
+        searchInputRef.current?.blur();
+        setIsSearchFocused(false);
         setIsNotifOpen(false);
+        setIsQuickActionOpen(false);
+        setIsProfileOpen(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  // Auto-expand the active section group
+  useEffect(() => {
+    if (!router.isReady) return;
+    const currentPath = router.asPath.split("?")[0];
+    let activeCategory = "";
+
+    SIDEBAR_CATEGORIES.forEach(category => {
+      if (category.links) {
+        const hasActive = category.links.some(link => {
+          const linkPath = link.href.split("?")[0];
+          return currentPath === linkPath || currentPath.startsWith(linkPath + "/");
+        });
+        if (hasActive) {
+          activeCategory = category.title;
+        }
+      }
+    });
+
+    if (activeCategory) {
+      setExpandedGroups(prev => {
+        if (prev[activeCategory] && Object.keys(prev).filter(k => prev[k]).length === 1) return prev; // Already correct state
+        const newState = { ...prev };
+        Object.keys(newState).forEach(key => newState[key] = false);
+        newState[activeCategory] = true;
+        sessionStorage.setItem("bb_sidebar_expanded", JSON.stringify(newState));
+        return newState;
+      });
+    }
+  }, [router.asPath, router.isReady]);
+
+  // Handle Sidebar Scroll Position Restoration
+  useEffect(() => {
+    const sidebarEl = document.getElementById("admin-sidebar-scroll");
+    if (sidebarEl) {
+      const storedScroll = sessionStorage.getItem("bb_sidebar_scroll");
+      if (storedScroll) {
+        sidebarEl.scrollTop = parseInt(storedScroll, 10);
+      }
+
+      const handleScroll = () => {
+        sessionStorage.setItem("bb_sidebar_scroll", sidebarEl.scrollTop.toString());
+      };
+
+      sidebarEl.addEventListener("scroll", handleScroll);
+      return () => sidebarEl.removeEventListener("scroll", handleScroll);
+    }
+  }, []);
+
+  // Generate dynamic breadcrumbs from asPath to handle dynamic routes correctly
+  const currentUrlPath = router.isReady ? router.asPath.split("?")[0] : router.pathname;
+  const pathSegments = currentUrlPath.split("/").filter(Boolean);
+  const breadcrumbs = pathSegments.map((segment, index) => {
+    let href = "/" + pathSegments.slice(0, index + 1).join("/");
+    const label = segment.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+    // Ensure the root 'admin' breadcrumb always navigates to the dashboard
+    if (index === 0 && segment.toLowerCase() === 'admin') {
+      href = "/admin/dashboard";
+    }
+
+    return { label, href };
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -125,108 +466,240 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
 
       {/* Admin Sidebar */}
       <motion.aside
-        className={`fixed inset-y-0 left-0 w-72 bg-[#0d1635] text-slate-300 z-50 flex flex-col transform transition-transform duration-300 lg:translate-x-0 border-r border-white/5 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed inset-y-0 left-0 w-72 bg-[#0d1635] text-slate-300 z-50 flex flex-col transform transition-transform duration-300 border-r border-white/5 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:${isDesktopSidebarCollapsed ? '-translate-x-full' : 'translate-x-0'}`}
       >
         <div className="h-20 flex items-center px-6 border-b border-white/10 justify-between lg:justify-start">
           <Link href="/admin/dashboard" className="flex items-center gap-3">
-            <img src="/logowhite.png" alt="BlueBoxx DA" className="h-12 w-auto object-contain" />
+            <img src={settings.admin_dashboard_logo || settings.footer_logo || "/logowhite.png"} alt="BlueBoxx DA" className="h-12 w-auto object-contain" />
           </Link>
           <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-400 hover:text-white">
             <X size={20} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-8 admin-scrollbar pb-24">
-          {SIDEBAR_CATEGORIES.map((category, idx) => (
-            <div key={idx}>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 px-3">
-                {category.title}
-              </p>
-              <div className="space-y-1">
-                {category.links.map((link) => {
-                  const isActive = router.pathname === link.href || router.pathname.startsWith(`${link.href}/`);
-                  return (
-                    <Link
-                      key={link.name}
-                      href={link.href}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${isActive
-                          ? "bg-[#C9A227] text-[#0d1635] shadow-lg shadow-[#C9A227]/20"
-                          : "text-slate-400 hover:bg-white/5 hover:text-white"
-                        }`}
-                    >
-                      <link.icon size={18} className={isActive ? "text-[#0d1635]" : "text-slate-500"} />
-                      {link.name}
-                    </Link>
-                  );
-                })}
+        <div id="admin-sidebar-scroll" className="flex-1 overflow-y-auto py-6 px-4 space-y-4 admin-scrollbar pb-24">
+          {SIDEBAR_CATEGORIES.map((category, idx) => {
+            if (category.isHeader) {
+              return (
+                <p key={idx} className="text-[10px] font-black text-slate-500 uppercase tracking-widest pt-4 pb-1 px-3">
+                  {category.title}
+                </p>
+              );
+            }
+
+            if (category.isStandalone) {
+              const categoryPath = (category.href || "").split("?")[0];
+              const isActive = currentUrlPath === categoryPath;
+              const Icon = category.icon;
+              return (
+                <Link
+                  key={category.title}
+                  href={category.href || "#"}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${isActive
+                    ? "bg-[#C9A227] text-[#0d1635] shadow-lg shadow-[#C9A227]/20"
+                    : "text-slate-400 hover:bg-white/5 hover:text-white"
+                    }`}
+                >
+                  {Icon && <Icon size={18} className={isActive ? "text-[#0d1635]" : "text-slate-500"} />}
+                  <span>{category.title}</span>
+                </Link>
+              );
+            }
+
+            const isExpanded = !!expandedGroups[category.title];
+            const hasActiveChild = category.links?.some(
+              (link) => {
+                const linkPath = link.href.split("?")[0];
+                return currentUrlPath === linkPath || currentUrlPath.startsWith(`${linkPath}/`);
+              }
+            );
+            const Icon = category.icon;
+
+            return (
+              <div key={category.title} className="rounded-xl overflow-hidden bg-white/0 transition-all">
+                {/* Header Collapsible Trigger */}
+                <button
+                  onClick={() => toggleGroup(category.title)}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${hasActiveChild ? "text-[#C9A227]" : "text-slate-400 hover:bg-white/5 hover:text-white"
+                    }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {Icon && <Icon size={18} className={hasActiveChild ? "text-[#C9A227]" : "text-slate-500"} />}
+                    <span>{category.title}</span>
+                  </div>
+                  {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                </button>
+
+                {/* Collapsible Content */}
+                {isExpanded && category.links && (
+                  <div className="mt-1 pl-4 space-y-1">
+                    {category.links.map((link, linkIndex) => {
+                      const linkPath = link.href.split("?")[0];
+                      const hasQueryParams = link.href.includes("?");
+                      let isActive = false;
+
+                      if (hasQueryParams) {
+                        isActive = router.asPath === link.href;
+                        // If no query params in URL, default to highlighting the first tab
+                        if (!isActive && router.asPath === linkPath && linkIndex === 0) {
+                          isActive = true;
+                        }
+                      } else {
+                        if (currentUrlPath === linkPath) {
+                          isActive = true;
+                        } else if (currentUrlPath.startsWith(`${linkPath}/`)) {
+                          // Prevent parent link highlighting if a more specific sibling link exactly matches
+                          const hasExactOtherLink = category.links.some(l => l.href !== link.href && currentUrlPath === l.href.split("?")[0]);
+                          if (!hasExactOtherLink) {
+                            isActive = true;
+                          }
+                        } else if (linkPath === "/admin/cms/blogs" && currentUrlPath.startsWith("/admin/cms/blog-editor")) {
+                          // Special case for blog editor
+                          isActive = true;
+                        }
+                      }
+
+                      const SubIcon = link.icon;
+                      return (
+                        <Link
+                          key={link.name}
+                          href={link.href}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-xl font-bold text-xs transition-all ${isActive
+                            ? "bg-[#C9A227] text-[#0d1635] shadow-lg shadow-[#C9A227]/20"
+                            : "text-slate-400 hover:bg-white/5 hover:text-white"
+                            }`}
+                        >
+                          {SubIcon && <SubIcon size={14} className={isActive ? "text-[#0d1635]" : "text-slate-500"} />}
+                          <span>{link.name}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        <div className="p-4 border-t border-white/10 bg-[#0d1635] shrink-0">
-          <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-xl bg-white/5 border border-white/10">
-            <div className="w-10 h-10 rounded-full bg-[#C9A227] flex items-center justify-center text-[#0d1635] font-black shadow-inner">
-              <ShieldCheck size={20} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-white leading-none mb-1 truncate">Admin Profile</p>
-              <p className="text-[10px] text-slate-400 font-semibold leading-none truncate">admin@blueboxx.in</p>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl font-bold transition-all text-xs"
-          >
-            <LogOut size={16} /> Sign Out
-          </button>
-        </div>
+
       </motion.aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-72 min-h-screen">
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 min-h-screen ${isDesktopSidebarCollapsed ? 'lg:ml-0' : 'lg:ml-72'}`}>
         {/* Top Navbar */}
         <header className="h-20 bg-white border-b border-slate-200 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-8 shadow-sm">
           <div className="flex items-center gap-4">
             <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-slate-500 hover:text-slate-900 bg-slate-50 p-2 rounded-lg">
               <Menu size={24} />
             </button>
-            <div
-              onClick={() => setIsSearchOpen(true)}
-              className="hidden md:flex relative group cursor-pointer"
-            >
+            <div className="hidden md:block relative z-50">
               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
+                ref={searchInputRef}
                 type="text"
-                readOnly
-                placeholder="Global search (Users, Courses, Invoices)..."
-                className="pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none w-96 font-medium text-slate-400 cursor-pointer hover:bg-slate-100/50 transition-all"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+                placeholder="Global search (⌘ K)..."
+                className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#C9A227]/50 focus:border-[#C9A227] w-80 font-medium text-slate-700 transition-all shadow-inner"
               />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 border border-slate-200 rounded px-1.5 py-0.5">⌘ K</div>
+              {!searchQuery && <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-bold text-slate-400 border border-slate-200 rounded px-1.5 py-0.5">⌘ K</div>}
+              
+              {/* Inline Search Results Dropdown */}
+              <AnimatePresence>
+                {isSearchFocused && searchQuery && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 5 }}
+                    className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden"
+                  >
+                    {searchResults.length > 0 ? (
+                      <div className="max-h-64 overflow-y-auto py-2">
+                        <p className="px-3 pb-2 pt-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">Search Results</p>
+                        {searchResults.map((result, idx) => (
+                          <Link
+                            key={idx}
+                            href={result.href}
+                            className="flex flex-col px-4 py-2 hover:bg-[#C9A227]/10 transition-colors"
+                          >
+                            <span className="text-sm font-bold text-slate-700">{result.name}</span>
+                            <span className="text-[10px] font-semibold text-slate-400 uppercase">{result.category}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center text-sm text-slate-500 font-medium">
+                        No results found for "{searchQuery}"
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 mr-4 text-xs font-bold px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-              System Operational
+          <div className="flex items-center gap-1 sm:gap-2 relative">
+            {/* Action Icons Row */}
+            <Link href="/" target="_blank" className="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-[#1B2A6B] hover:bg-[#1B2A6B]/5 transition-all" title="View Frontend">
+              <Globe size={22} strokeWidth={1.5} />
+            </Link>
+
+            {/* Quick Actions */}
+            <div className="relative hidden sm:block">
+              <button
+                onClick={() => setIsQuickActionOpen(!isQuickActionOpen)}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isQuickActionOpen ? 'bg-[#1B2A6B]/10 text-[#1B2A6B]' : 'text-slate-500 hover:text-[#1B2A6B] hover:bg-[#1B2A6B]/5'}`}
+              >
+                <Plus size={22} strokeWidth={1.5} />
+              </button>
+              
+              <AnimatePresence>
+                {isQuickActionOpen && (
+                  <>
+                    <div className="fixed inset-0 z-30" onClick={() => setIsQuickActionOpen(false)} />
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+                      className="absolute right-0 mt-3 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl z-40 py-2 text-left"
+                    >
+                      <div className="px-4 py-2 border-b border-slate-100">
+                        <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Quick Actions</span>
+                      </div>
+                      <Link href="/admin/courses/add" className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors">
+                        <BookOpen size={16} className="text-[#C9A227]"/> Create Course
+                      </Link>
+                      <Link href="/admin/jobs" className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors">
+                        <Briefcase size={16} className="text-[#C9A227]"/> Post a Job
+                      </Link>
+                      <Link href="/admin/media?tab=upload" className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors">
+                        <Upload size={16} className="text-[#C9A227]"/> Upload Media
+                      </Link>
+                      <Link href="/admin/internships/add" className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors">
+                        <ClipboardList size={16} className="text-[#C9A227]"/> New Internship
+                      </Link>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
+
+            <button onClick={() => setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed)} className="hidden lg:flex w-10 h-10 rounded-full items-center justify-center text-slate-500 hover:text-[#1B2A6B] hover:bg-[#1B2A6B]/5 transition-all" title="Toggle Sidebar">
+              <Layout size={22} strokeWidth={1.5} />
+            </button>
 
             {/* Notification Area */}
             <div className="relative">
               <button
                 onClick={() => setIsNotifOpen(!isNotifOpen)}
-                className="relative p-2.5 text-slate-500 hover:text-[#1B2A6B] bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors border border-slate-200"
+                className={`relative w-10 h-10 rounded-full flex items-center justify-center transition-all ${isNotifOpen ? 'bg-[#1B2A6B]/10 text-[#1B2A6B]' : 'text-slate-500 hover:text-[#1B2A6B] hover:bg-[#1B2A6B]/5'}`}
               >
-                <Bell size={20} />
-                {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white animate-bounce">
-                    {unreadCount}
-                  </span>
-                )}
+                <Bell size={22} strokeWidth={1.5} />
+                <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white shadow-sm leading-none">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
               </button>
 
-              {/* Notification Dropdown Panel */}
               <AnimatePresence>
                 {isNotifOpen && (
                   <>
@@ -236,28 +709,28 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
                       className="absolute right-0 mt-3 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl z-40 py-2 overflow-hidden text-left"
                     >
                       <div className="px-4 py-2.5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                        <span className="text-xs font-black text-rose-600 flex items-center gap-1.5"><ShieldAlert size={14} /> Important Alerts</span>
+                        <span className="text-xs font-black text-rose-600 flex items-center gap-1.5"><ShieldAlert size={14} /> System Logs & Alerts</span>
                         {unreadCount > 0 && (
                           <button onClick={markAllRead} className="text-[10px] font-black text-[#1B2A6B] hover:underline">
-                            Mark all as read
+                            Mark all read
                           </button>
                         )}
                       </div>
                       <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto">
-                        {notifications.map(notif => (
-                          <div key={notif.id} className={`p-4 hover:bg-slate-50 transition-colors flex gap-3 ${!notif.read ? 'bg-rose-50/50' : ''}`}>
-                            <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!notif.read ? 'bg-rose-500' : 'bg-slate-300'}`} />
+                        {notifications.length === 0 ? (
+                          <div className="py-8 text-center text-slate-500 flex flex-col items-center">
+                             <Bell size={24} className="opacity-20 mb-2" />
+                             <p className="text-xs font-bold">No notifications</p>
+                          </div>
+                        ) : notifications.map((notif: any) => (
+                          <div key={notif.id} className={`p-4 hover:bg-slate-50 transition-colors flex gap-3 ${!notif.read_at ? 'bg-rose-50/50' : ''}`}>
+                            <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!notif.read_at ? 'bg-rose-500' : 'bg-slate-300'}`} />
                             <div className="flex-1 min-w-0">
-                              <p className={`text-xs font-semibold leading-normal ${!notif.read ? 'text-rose-700' : 'text-slate-600'}`}>{notif.text}</p>
-                              <p className="text-[10px] text-slate-400 font-bold mt-1">{notif.time}</p>
+                              <p className={`text-xs font-semibold leading-normal ${!notif.read_at ? 'text-rose-700' : 'text-slate-600'}`}>{notif.data?.message || notif.title || "Notification"}</p>
+                              <p className="text-[10px] text-slate-400 font-bold mt-1">{new Date(notif.created_at).toLocaleString()}</p>
                             </div>
                           </div>
                         ))}
-                        {notifications.length === 0 && (
-                          <div className="p-4 text-center text-xs font-bold text-slate-400">
-                            No critical alerts at the moment.
-                          </div>
-                        )}
                       </div>
                     </motion.div>
                   </>
@@ -265,15 +738,78 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
               </AnimatePresence>
             </div>
 
-            {/* Logout Topbar */}
-            <button
-              onClick={handleLogout}
-              className="relative p-2.5 text-slate-500 hover:text-rose-500 bg-slate-50 hover:bg-rose-50 rounded-xl transition-colors border border-slate-200"
-            >
-              <LogOut size={20} />
-            </button>
+            {/* Messages Area */}
+            <div className="relative">
+              <Link href="/admin/communication" className="relative w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-[#1B2A6B] hover:bg-[#1B2A6B]/5 transition-all">
+                <MessageSquare size={22} strokeWidth={1.5} />
+                <span className={`absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white shadow-sm leading-none ${unreadMessagesCount > 0 ? 'bg-[#C9A227]' : 'hidden'}`}>
+                  {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
+                </span>
+              </Link>
+            </div>
+
+            <div className="w-px h-6 bg-slate-200 mx-2 hidden sm:block"></div>
+
+            {/* Profile Dropdown Menu */}
+            <div className="relative">
+              <button
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className={`w-10 h-10 rounded-full overflow-hidden transition-all focus:outline-none focus:ring-2 focus:ring-[#1B2A6B]/30 ${isProfileOpen ? 'ring-2 ring-[#1B2A6B]/30' : 'ring-2 ring-transparent hover:ring-[#1B2A6B]/20'}`}
+              >
+                {user?.avatar && !user.avatar.includes('dicebear') ? (
+                  <img src={user.avatar} alt="Admin" className="w-full h-full object-cover bg-slate-100" />
+                ) : (
+                  <div className="w-full h-full bg-[#C9A227] text-[#0d1635] flex items-center justify-center font-black uppercase shadow-inner text-sm tracking-widest">
+                    {userInitials}
+                  </div>
+                )}
+              </button>
+
+              <AnimatePresence>
+                {isProfileOpen && (
+                  <>
+                    <div className="fixed inset-0 z-30" onClick={() => setIsProfileOpen(false)} />
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+                      className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl z-40 py-2 text-left"
+                    >
+                      <div className="px-4 py-2 border-b border-slate-100">
+                        <p className="text-xs font-bold text-slate-800">{user?.name ?? 'Admin'}</p>
+                        <p className="text-[10px] font-semibold text-slate-400">{user?.email}</p>
+                      </div>
+                      <button onClick={() => { router.push('/admin/settings'); setIsProfileOpen(false); }} className="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                        <Settings size={14} /> System Settings
+                      </button>
+                      <button onClick={() => { router.push('/admin/roles'); setIsProfileOpen(false); }} className="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                        <ShieldCheck size={14} /> Access Controls
+                      </button>
+                      <div className="border-t border-slate-100 my-1"></div>
+                      <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50 flex items-center gap-2">
+                        <LogOut size={14} /> Log Out
+                      </button>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </header>
+
+        {/* Dynamic Breadcrumbs Area */}
+        {breadcrumbs.length > 0 && (
+          <div className="bg-white border-b border-slate-200 px-6 py-3 flex items-center gap-2 text-xs font-bold text-slate-400 shrink-0">
+            {breadcrumbs.map((breadcrumb, idx) => (
+              <React.Fragment key={idx}>
+                {idx > 0 && <ChevronRight size={12} className="text-slate-300" />}
+                {idx === breadcrumbs.length - 1 ? (
+                  <span className="text-slate-600 font-extrabold">{breadcrumb.label}</span>
+                ) : (
+                  <Link href={breadcrumb.href} className="hover:text-[#1B2A6B] transition-colors">{breadcrumb.label}</Link>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        )}
 
         {/* Page Content */}
         <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8 bg-slate-50/50">
@@ -281,86 +817,13 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
         </main>
       </div>
 
-      {/* Global Command Palette / Search Modal */}
-      <AnimatePresence>
-        {isSearchOpen && (
-          <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4">
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
-              onClick={() => setIsSearchOpen(false)}
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden z-50 relative"
-            >
-              <div className="p-4 border-b border-slate-100 flex items-center gap-3">
-                <Search size={20} className="text-slate-400" />
-                <input
-                  type="text"
-                  autoFocus
-                  placeholder="Type to search modules, users or tools..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full text-base font-medium text-slate-800 placeholder-slate-400 outline-none border-none focus:ring-0"
-                />
-                <button onClick={() => setIsSearchOpen(false)} className="text-slate-400 hover:text-slate-600 bg-slate-100 px-2 py-1 rounded-lg text-xs font-bold">ESC</button>
-              </div>
-
-              <div className="p-4 max-h-96 overflow-y-auto space-y-4">
-                {searchQuery ? (
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">Search Results</p>
-                    <div className="space-y-1">
-                      <div className="p-3 bg-slate-50 rounded-xl hover:bg-slate-100 cursor-pointer flex items-center justify-between">
-                        <span className="text-sm font-bold text-slate-800">Search for "{searchQuery}" in Users</span>
-                        <ChevronRight size={16} className="text-slate-400" />
-                      </div>
-                      <div className="p-3 bg-slate-50 rounded-xl hover:bg-slate-100 cursor-pointer flex items-center justify-between">
-                        <span className="text-sm font-bold text-slate-800">Search for "{searchQuery}" in Courses</span>
-                        <ChevronRight size={16} className="text-slate-400" />
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">Quick Navigation</p>
-                      <div className="grid grid-cols-2 gap-2">
-                        {[
-                          { name: "User Directory", href: "/admin/users" },
-                          { name: "Payment Logs", href: "/admin/payments" },
-                          { name: "Platform Settings", href: "/admin/settings" }
-                        ].map(nav => (
-                          <button
-                            key={nav.name}
-                            onClick={() => {
-                              router.push(nav.href);
-                              setIsSearchOpen(false);
-                            }}
-                            className="p-3 text-left bg-slate-50 hover:bg-[#1B2A6B]/5 hover:text-[#1B2A6B] rounded-xl text-xs font-bold transition-all"
-                          >
-                            {nav.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* Removed the large search modal */}
 
       {/* Custom Scrollbar Styles for Sidebar */}
       <style dangerouslySetInnerHTML={{
-        __html: `
-        .admin-scrollbar::-webkit-scrollbar { width: 6px; }
-        .admin-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .admin-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        .admin-scrollbar:hover::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
-      `}} />
+        __html: ".admin-scrollbar::-webkit-scrollbar { width: 6px; } .admin-scrollbar::-webkit-scrollbar-track { background: transparent; } .admin-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; } .admin-scrollbar:hover::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }"
+      }} />
+
     </div>
   );
-};;
+};

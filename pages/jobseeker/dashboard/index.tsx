@@ -5,9 +5,18 @@ import { AnimatedContent } from "../../../src/components/reactbits/AnimatedConte
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { AnimatePresence, motion } from "framer-motion";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function JobseekerDashboard() {
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
+  
+  const { data, isLoading } = useSWR("/jobseeker/dashboard", fetcher);
+  
+  const stats = data?.data?.stats || { jobs_applied: 0, profile_views: 0, interviews: 0 };
+  const recentApps = data?.data?.recent_applications || [];
 
   const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -39,9 +48,9 @@ export default function JobseekerDashboard() {
           {/* Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
-              { label: "Jobs Applied", value: "12", icon: Target, color: "text-blue-600", bg: "bg-blue-50" },
-              { label: "Profile Views", value: "48", icon: Eye, color: "text-emerald-600", bg: "bg-emerald-50" },
-              { label: "Interviews Scheduled", value: "2", icon: Calendar, color: "text-amber-600", bg: "bg-amber-50" },
+              { label: "Jobs Applied", value: isLoading ? "-" : stats.jobs_applied.toString(), icon: Target, color: "text-blue-600", bg: "bg-blue-50" },
+              { label: "Profile Views", value: isLoading ? "-" : stats.profile_views.toString(), icon: Eye, color: "text-emerald-600", bg: "bg-emerald-50" },
+              { label: "Interviews Scheduled", value: isLoading ? "-" : stats.interviews.toString(), icon: Calendar, color: "text-amber-600", bg: "bg-amber-50" },
             ].map((stat, i) => (
               <AnimatedContent key={i} direction="up" delay={i * 0.1} className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-shadow">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${stat.bg} ${stat.color} mb-3`}>
@@ -65,27 +74,30 @@ export default function JobseekerDashboard() {
             </div>
             
             <div className="divide-y divide-slate-100">
-              {[
-                { company: "TechFlow Innovations", role: "Frontend Developer", status: "In Review", time: "2 days ago", type: "Full-time" },
-                { company: "Nexus Digital", role: "React Engineer", status: "Interview", time: "1 week ago", type: "Remote" },
-              ].map((app, i) => (
-                <div key={i} className="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                  <div>
-                    <h3 className="text-base font-bold text-[#0d1635]">{app.role}</h3>
-                    <p className="text-sm font-semibold text-slate-600 mb-2">{app.company}</p>
-                    <div className="flex items-center gap-3 text-xs font-semibold text-slate-500">
-                      <span className="bg-slate-100 px-2 py-1 rounded-md">{app.type}</span>
-                      <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                      <span>Applied {app.time}</span>
+              {isLoading ? (
+                <div className="p-8 text-center text-slate-400">Loading applications...</div>
+              ) : recentApps.length === 0 ? (
+                <div className="p-8 text-center text-slate-400">No recent applications found.</div>
+              ) : (
+                recentApps.map((app: any, i: number) => (
+                  <div key={i} className="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                    <div>
+                      <h3 className="text-base font-bold text-[#0d1635]">{app.role}</h3>
+                      <p className="text-sm font-semibold text-slate-600 mb-2">{app.company}</p>
+                      <div className="flex items-center gap-3 text-xs font-semibold text-slate-500">
+                        <span className="bg-slate-100 px-2 py-1 rounded-md">{app.type}</span>
+                        <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                        <span>Applied {app.time}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-full ${app.status === 'interview' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
+                        {app.status}
+                      </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-full ${app.status === 'Interview' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
-                      {app.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </AnimatedContent>
         </div>
@@ -131,9 +143,9 @@ export default function JobseekerDashboard() {
              <h3 className="text-base font-black text-[#0d1635] mb-2">Complete Your Profile</h3>
              <p className="text-sm text-slate-500 font-medium mb-4">Profiles with complete details are 3x more likely to be shortlisted.</p>
              <div className="w-full bg-slate-100 rounded-full h-2 mb-4">
-                <div className="bg-[#C9A227] h-2 rounded-full" style={{ width: '65%' }}></div>
+                <div className="bg-[#C9A227] h-2 rounded-full" style={{ width: '0%' }}></div>
              </div>
-             <p className="text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest">65% Completed</p>
+             <p className="text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest">0% Completed</p>
              <Link href="/jobseeker/profile" className="inline-block px-5 py-2 border-2 border-slate-200 text-slate-600 font-bold rounded-xl text-sm hover:border-[#1B2A6B] hover:text-[#1B2A6B] transition-colors">
                Update Profile
              </Link>

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
 import { StudentDashboardLayout } from "../../../src/layout/StudentDashboardLayout";
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
 import { Briefcase, Building, MapPin, Calendar, CheckCircle2, XCircle, Clock, Search, Filter } from "lucide-react";
@@ -6,53 +8,56 @@ import { Card, CardContent } from "../../../src/components/ui/Card";
 import { Badge } from "../../../src/components/ui/Badge";
 import Link from "next/link";
 
-const mockApplications = [
-  {
-    id: "app-1",
-    jobTitle: "Software Development Intern",
-    company: "Amazon",
-    logo: "A",
-    type: "Internship",
-    dateApplied: "2026-06-25",
-    status: "Interview", // Applied, In Review, Interview, Offered, Rejected
-    statusColor: "text-blue-700 bg-blue-100",
-  },
-  {
-    id: "app-2",
-    jobTitle: "Frontend Engineer (React)",
-    company: "Razorpay",
-    logo: "R",
-    type: "Full-time",
-    dateApplied: "2026-06-20",
-    status: "In Review",
-    statusColor: "text-amber-700 bg-amber-100",
-  },
-  {
-    id: "app-3",
-    jobTitle: "Product Designer",
-    company: "CRED",
-    logo: "C",
-    type: "Full-time",
-    dateApplied: "2026-06-15",
-    status: "Offered",
-    statusColor: "text-emerald-700 bg-emerald-100",
-  },
-  {
-    id: "app-4",
-    jobTitle: "Data Analyst Intern",
-    company: "Swiggy",
-    logo: "S",
-    type: "Internship",
-    dateApplied: "2026-06-10",
-    status: "Rejected",
-    statusColor: "text-red-700 bg-red-100",
-  }
-];
+const fetcher = (url: string) => api.get(url).then(res => res.data.data);
 
 export default function PlacementsPage() {
   const [filter, setFilter] = useState("All");
   
-  const filteredApps = mockApplications.filter(app => filter === "All" || app.status === filter);
+  const { data: jobApps = [] } = useSWR("/public/jobs/my-applications", fetcher);
+  const { data: internshipApps = [] } = useSWR("/public/internships/my-applications", fetcher);
+
+  // Normalize data and merge
+  const allApplications = [
+    ...jobApps.map((a: any) => ({
+      id: `job-${a.id}`,
+      jobTitle: a.job_title || a.title,
+      company: a.company || a.company_name,
+      logo: (a.company || a.company_name || 'C').charAt(0).toUpperCase(),
+      type: "Full-time",
+      dateApplied: a.applied_at,
+      status: a.status,
+      statusColor: getStatusColor(a.status),
+    })),
+    ...internshipApps.map((a: any) => ({
+      id: `intern-${a.id}`,
+      jobTitle: a.internship_title || a.title,
+      company: a.company || a.company_name,
+      logo: (a.company || a.company_name || 'C').charAt(0).toUpperCase(),
+      type: "Internship",
+      dateApplied: a.applied_at,
+      status: a.status,
+      statusColor: getStatusColor(a.status),
+    }))
+  ].sort((a, b) => new Date(b.dateApplied).getTime() - new Date(a.dateApplied).getTime());
+
+  function getStatusColor(status: string) {
+    switch (status?.toLowerCase()) {
+      case 'applied': return "text-blue-700 bg-blue-100";
+      case 'in review': return "text-amber-700 bg-amber-100";
+      case 'interview': return "text-purple-700 bg-purple-100";
+      case 'offered': return "text-emerald-700 bg-emerald-100";
+      case 'rejected': return "text-red-700 bg-red-100";
+      default: return "text-slate-700 bg-slate-100";
+    }
+  }
+  
+  const filteredApps = allApplications.filter(app => filter === "All" || app.status === filter);
+
+  // Stats calculation
+  const totalApplied = allApplications.length;
+  const inReview = allApplications.filter(a => a.status.toLowerCase() === 'in review').length;
+  const interviews = allApplications.filter(a => a.status.toLowerCase() === 'interview').length;
+  const offers = allApplications.filter(a => a.status.toLowerCase() === 'offered').length;
 
   return (
     <StudentDashboardLayout>
@@ -72,10 +77,10 @@ export default function PlacementsPage() {
         {/* Stats */}
         <AnimatedContent direction="up" delay={0.2} className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
-            { label: "Total Applied", value: "12", color: "text-blue-600" },
-            { label: "In Review", value: "4", color: "text-amber-500" },
-            { label: "Interviews", value: "2", color: "text-purple-500" },
-            { label: "Offers", value: "1", color: "text-emerald-500" },
+            { label: "Total Applied", value: totalApplied, color: "text-blue-600" },
+            { label: "In Review", value: inReview, color: "text-amber-500" },
+            { label: "Interviews", value: interviews, color: "text-purple-500" },
+            { label: "Offers", value: offers, color: "text-emerald-500" },
           ].map((stat, i) => (
             <Card key={i} className="border-none shadow-sm">
               <CardContent className="p-6">

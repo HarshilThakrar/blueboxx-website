@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthContext";
 import { LayoutDashboard, Target, FileText, Settings, LogOut, Menu, X, Bell, Search } from "lucide-react";
-import { MOCK_USER } from "../data/mockData";
 import { motion, AnimatePresence } from "framer-motion";
 
 const SIDEBAR_LINKS = [
@@ -15,13 +14,23 @@ const SIDEBAR_LINKS = [
 
 export const JobseekerDashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const { logout } = useAuth();
+  const { user, logout, isAuthenticated, isAuthReady } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     router.push("/login");
   };
+
+  // Auth guard — redirect unauthenticated users to login
+  useEffect(() => {
+    if (!isAuthReady) return;
+    if (!isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, isAuthReady, router]);
+
+  const initials = user?.name?.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2) ?? "JS";
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -75,9 +84,11 @@ export const JobseekerDashboardLayout = ({ children }: { children: React.ReactNo
 
         <div className="mt-auto p-6 space-y-6">
           <div className="flex items-center gap-3 px-2">
-            <img src={MOCK_USER.avatar} alt="Jobseeker" className="w-10 h-10 rounded-full border-2 border-white/20 object-cover" />
+            <div className="w-10 h-10 rounded-full bg-[#C9A227] flex items-center justify-center text-[#0d1635] font-black text-sm">
+              {initials}
+            </div>
             <div>
-              <p className="text-sm font-bold text-white">{MOCK_USER.name}</p>
+              <p className="text-sm font-bold text-white">{user?.name ?? "Job Seeker"}</p>
               <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Job Seeker</p>
             </div>
           </div>
@@ -111,10 +122,12 @@ export const JobseekerDashboardLayout = ({ children }: { children: React.ReactNo
             </button>
             <div className="flex items-center gap-3 border-l border-slate-200 pl-4 sm:pl-6">
               <div className="hidden sm:block text-right">
-                <p className="text-sm font-bold text-slate-900 leading-none mb-1">{MOCK_USER.name}</p>
+                <p className="text-sm font-bold text-slate-900 leading-none mb-1">{user?.name ?? "Job Seeker"}</p>
                 <p className="text-xs text-slate-500 leading-none capitalize">Job Seeker</p>
               </div>
-              <img src={MOCK_USER.avatar} alt={MOCK_USER.name} className="w-9 h-9 rounded-full object-cover border border-slate-200" />
+              <div className="w-9 h-9 rounded-full bg-[#C9A227] flex items-center justify-center text-[#0d1635] font-black text-xs">
+                {initials}
+              </div>
             </div>
           </div>
         </header>

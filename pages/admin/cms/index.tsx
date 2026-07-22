@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import { useConfirm } from "../../../src/context/ConfirmContext";
 import { SEO } from "../../../src/components/seo/SEO";
 
 // Mock Data for pages
@@ -29,7 +30,19 @@ export default function AdminCMSPage() {
   const [activeTab, setActiveTab] = useState("pages"); // 'pages' or 'templates'
   const [statusFilter, setStatusFilter] = useState("All");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [pages, setPages] = useState(INITIAL_PAGES);
+  const [pages, setPages] = useState<any[]>([]);
+  const confirmAction = useConfirm();
+  
+  useEffect(() => {
+    const stored = localStorage.getItem('bb_cms_pages');
+    if (stored) {
+      setPages(JSON.parse(stored));
+    } else {
+      setPages(INITIAL_PAGES);
+      localStorage.setItem('bb_cms_pages', JSON.stringify(INITIAL_PAGES));
+    }
+  }, []);
+
   const [templates] = useState(TEMPLATES_DATA);
   
   // New Page Modal
@@ -71,7 +84,9 @@ export default function AdminCMSPage() {
       views: '-'
     };
     
-    setPages([newPage, ...pages]);
+    const updatedPages = [newPage, ...pages];
+    setPages(updatedPages);
+    localStorage.setItem('bb_cms_pages', JSON.stringify(updatedPages));
     setIsNewPageModalOpen(false);
     toast.success("Page created successfully!");
     
@@ -91,15 +106,19 @@ export default function AdminCMSPage() {
         lastEdited: 'Just now',
         views: '-'
       };
-      setPages([newPage, ...pages]);
+      const updatedPages = [newPage, ...pages];
+      setPages(updatedPages);
+      localStorage.setItem('bb_cms_pages', JSON.stringify(updatedPages));
       toast.success(`Duplicated "${pageToDuplicate.name}"`);
     }
     setOpenDropdownId(null);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this page?")) {
-      setPages(pages.filter(p => p.id !== id));
+  const handleDelete = async (id: string) => {
+    if (await confirmAction({ title: "Delete Page", description: "Are you sure you want to delete this page?", isDestructive: true })) {
+      const updatedPages = pages.filter(p => p.id !== id);
+      setPages(updatedPages);
+      localStorage.setItem('bb_cms_pages', JSON.stringify(updatedPages));
       toast.success("Page deleted successfully");
     }
     setOpenDropdownId(null);
@@ -214,7 +233,7 @@ export default function AdminCMSPage() {
         <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100">
+              <tr className="bg-slate-50 border-b border-slate-100">
                 <th className="py-4 px-6 text-xs font-black text-slate-500 uppercase tracking-wider">Page Name</th>
                 <th className="py-4 px-6 text-xs font-black text-slate-500 uppercase tracking-wider">Path</th>
                 <th className="py-4 px-6 text-xs font-black text-slate-500 uppercase tracking-wider">Status</th>
@@ -224,7 +243,7 @@ export default function AdminCMSPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredPages.map((page) => (
-                <tr key={page.id} className="hover:bg-slate-50/80 transition-colors group">
+                <tr key={page.id} className="hover:bg-slate-50 transition-colors group">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-[#1B2A6B]/5 flex items-center justify-center text-[#1B2A6B] shrink-0">

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { MainLayout } from "../src/layout/MainLayout";
-import { dummyMentors } from "../src/data/mentors";
 import { TopSearchBar } from "../src/components/ui/TopSearchBar";
 import { SidebarFilter } from "../src/components/ui/SidebarFilter";
 import { Pagination } from "../src/components/ui/Pagination";
@@ -9,14 +8,29 @@ import { TestimonialSection } from "../src/sections/TestimonialSection";
 import { PartnersSection } from "../src/sections/PartnersSection";
 import { Card, CardContent } from "../src/components/ui/Card";
 import { Button } from "../src/components/ui/Button";
-import { Star, Building, ArrowRight, Video, X, Filter } from "lucide-react";
+import { Star, Building, ArrowRight, Video, X, Filter, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import Image from "next/image";
 import { SEO } from "../src/components/seo/SEO";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import useSWR from "swr";
+import api from "../src/lib/axios";
+
+// Simple debounce hook for local use
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debouncedValue;
+}
 
 const mentorSchema = z.object({
   experience: z.string().min(1, { message: "Please select your experience" }),
@@ -26,13 +40,16 @@ type MentorFormValues = z.infer<typeof mentorSchema>;
 
 export default function ExpertsPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortOption, setSortOption] = useState("top-rated");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const [sortOption, setSortOption] = useState("rating_high");
   const [currentPage, setCurrentPage] = useState(1);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [isMentorModalOpen, setIsMentorModalOpen] = useState(false);
   const [mentorStep, setMentorStep] = useState(1);
   const [mentorData, setMentorData] = useState({ experience: '', subject: '' });
-
+  
+  const [activeFilters, setActiveFilters] = useState<any>({});
+  
   const { register: registerMentor, handleSubmit: handleSubmitMentor, formState: { errors: mentorErrors, isValid: isMentorValid } } = useForm<MentorFormValues>({
     resolver: zodResolver(mentorSchema),
     mode: "onChange"
@@ -43,27 +60,30 @@ export default function ExpertsPage() {
     setMentorStep(2);
   };
 
-  useEffect(() => {
-    // Intentionally left empty to remove the annoying auto-popup
-  }, []);
+  const params: any = {
+    page: currentPage,
+    per_page: 6,
+    sort: sortOption,
+  };
+  
+  let searchTerms = [];
+  if (debouncedSearchQuery) searchTerms.push(debouncedSearchQuery);
+  if (activeFilters.domain) searchTerms.push(activeFilters.domain);
+  if (searchTerms.length > 0) params.search = searchTerms.join(' ');
+  
+  if (activeFilters.experience) {
+     params.experience = activeFilters.experience;
+  }
 
-  const filteredMentors = dummyMentors.filter(mentor => 
-    mentor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    mentor.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    mentor.designation.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const sortedMentors = [...filteredMentors].sort((a, b) => {
-    if (sortOption === "most-sessions") {
-      const aVal = parseInt(String(a.students).replace(/[^0-9]/g, '')) || 0;
-      const bVal = parseInt(String(b.students).replace(/[^0-9]/g, '')) || 0;
-      return bVal - aVal;
-    }
-    if (sortOption === "top-rated") {
-      return parseFloat(String(b.rating)) - parseFloat(String(a.rating));
-    }
-    return 0;
+  const fetcher = (url: string) => api.get(url, { params }).then(res => res.data);
+  const { data, error, isLoading } = useSWR(['/public/experts', currentPage, sortOption, debouncedSearchQuery, activeFilters], ([url]) => fetcher(url), {
+    revalidateOnFocus: false,
+    keepPreviousData: true,
   });
+
+  const experts = data?.data || [];
+  const totalPages = data?.pagination?.last_page || 1;
+  const totalExperts = data?.pagination?.total || 0;
 
   return (
     <>
@@ -132,12 +152,12 @@ export default function ExpertsPage() {
             </div>
 
             <div className={`lg:col-span-1 ${isMobileFilterOpen ? 'block' : 'hidden'} lg:block`}>
-              <SidebarFilter type="experts" />
+              <SidebarFilter type="experts" onFilterChange={setActiveFilters} />
             </div>
 
             <main className="lg:col-span-3">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="font-bold text-slate-800 text-lg">Showing {sortedMentors.length} experts</h2>
+                  <h2 className="font-bold text-slate-800 text-lg">Showing {totalExperts} experts</h2>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-slate-500 font-semibold">Sort by:</span>
                     <select 
@@ -145,23 +165,44 @@ export default function ExpertsPage() {
                       onChange={(e) => setSortOption(e.target.value)}
                       className="bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-800 px-3 py-1.5 focus:ring-[#C9A227] focus:border-[#C9A227] cursor-pointer outline-none"
                     >
-                      <option value="top-rated">Top Rated</option>
-                      <option value="most-sessions">Most Sessions</option>
+                      <option value="rating_high">Top Rated</option>
+                      <option value="price_low">Price: Low to High</option>
+                      <option value="price_high">Price: High to Low</option>
                     </select>
                   </div>
                 </div>
 
-                {sortedMentors.length > 0 ? (
+                {isLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <Card key={i} className="animate-pulse bg-white rounded-[1.25rem] border border-slate-200 overflow-hidden h-[300px]">
+                        <div className="h-24 bg-slate-200"></div>
+                        <CardContent className="p-4 flex-1 flex flex-col -mt-8 relative z-10">
+                          <div className="w-12 h-12 rounded-full bg-slate-300 border-2 border-white mb-3"></div>
+                          <div className="h-4 bg-slate-200 rounded w-1/2 mb-2"></div>
+                          <div className="h-3 bg-slate-200 rounded w-1/3 mb-4"></div>
+                          <div className="h-3 bg-slate-200 rounded w-2/3 mb-6"></div>
+                          <div className="mt-auto pt-3 border-t border-slate-100 flex justify-between">
+                            <div className="h-4 bg-slate-200 rounded w-1/4"></div>
+                            <div className="h-8 bg-slate-200 rounded w-1/3"></div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : experts.length > 0 ? (
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {sortedMentors.slice((currentPage - 1) * 6, currentPage * 6).map((mentor) => (
+                      {experts.map((mentor) => (
                         <Card key={mentor.id} className="group relative overflow-hidden bg-white border border-slate-200 hover:border-[#1B2A6B]/30 hover:shadow-[0_8px_30px_rgba(27,42,107,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full rounded-[1.25rem]">
                           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-[#1B2A6B]/5 to-transparent opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-500"></div>
                           <CardContent className="p-4 flex-1 flex flex-col relative z-10">
                             <div className="flex justify-between items-start mb-3">
-                              <img src={mentor.avatar} alt={mentor.name} className="w-12 h-12 rounded-full border border-slate-100 shadow-sm object-cover group-hover:scale-105 transition-transform duration-300" />
+                              <div className="w-12 h-12 relative rounded-full border border-slate-100 shadow-sm overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                                <Image src={mentor.avatar || `https://ui-avatars.com/api/?name=${mentor.name}&background=random`} alt={mentor.name} fill className="object-cover" sizes="48px" />
+                              </div>
                               <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 text-slate-700 px-2 py-0.5 rounded-md text-xs font-bold shadow-sm">
-                                <Star size={10} className="fill-amber-500 text-amber-500" /> {mentor.rating}
+                                <Star size={10} className="fill-amber-500 text-amber-500" /> {Number(mentor.average_rating).toFixed(1)}
                               </div>
                             </div>
                             
@@ -173,10 +214,10 @@ export default function ExpertsPage() {
                             </p>
                             
                             <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
-                              <div className="text-xs text-slate-400 font-bold flex items-center gap-1 uppercase tracking-wider">
-                                Expert Mentor
+                              <div className="text-xs text-emerald-600 font-extrabold flex items-center gap-1 tracking-wider">
+                                {mentor.hourly_rate > 0 ? `₹${mentor.hourly_rate}/hr` : 'Free'}
                               </div>
-                              <Link href={`/experts/${mentor.slug}`}>
+                              <Link href={`/experts/${mentor.id}`}>
                                 <Button variant="outline" className="h-8 text-[11px] font-bold border-slate-200 text-slate-700 bg-slate-50 group-hover:bg-[#1B2A6B] group-hover:text-white group-hover:border-[#1B2A6B] transition-colors shadow-sm rounded-lg px-4">
                                   View Profile
                                 </Button>
@@ -186,10 +227,10 @@ export default function ExpertsPage() {
                         </Card>
                       ))}
                     </div>
-                    {Math.ceil(sortedMentors.length / 6) > 1 && (
+                    {totalPages > 1 && (
                       <Pagination 
                         currentPage={currentPage} 
-                        totalPages={Math.ceil(sortedMentors.length / 6)} 
+                        totalPages={totalPages} 
                         onPageChange={setCurrentPage} 
                         className="mt-12"
                       />

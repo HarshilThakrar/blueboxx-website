@@ -56,7 +56,7 @@ export default function AdminPushSettingsPage() {
         </AnimatedContent>
 
         <AnimatedContent direction="up" delay={0.2} className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-           <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+           <div className="p-6 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
               <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
                  <Key size={18} className="text-[#1B2A6B]" /> VAPID Keys (Web Push)
               </h2>
@@ -97,7 +97,7 @@ export default function AdminPushSettingsPage() {
         </AnimatedContent>
 
         <AnimatedContent direction="up" delay={0.3} className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-           <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+           <div className="p-6 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
               <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
                  <TestTube2 size={18} className="text-[#1B2A6B]" /> Test Configuration
               </h2>

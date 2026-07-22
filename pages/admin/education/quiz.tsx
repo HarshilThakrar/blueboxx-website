@@ -4,7 +4,10 @@ import { HelpCircle, Plus, Search, Filter, MoreHorizontal, Clock, Users, BookOpe
 import { Button } from "../../../src/components/ui/Button";
 import { Badge } from "../../../src/components/ui/Badge";
 import { Card, CardContent } from "../../../src/components/ui/Card";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import toast from "react-hot-toast";
+import { useConfirm } from "../../../src/context/ConfirmContext";
 
 const INITIAL_QUIZZES = [
   { id: 1, title: "React Fundamentals Assessment", course: "Frontend Web Development", questions: 25, duration: "30 mins", participants: 145, status: "Active" },
@@ -13,22 +16,41 @@ const INITIAL_QUIZZES = [
 ];
 
 export default function AdminQuizPage() {
-  const [quizzes, setQuizzes] = useState(INITIAL_QUIZZES);
+  const [quizzes, setQuizzes] = useState<any[]>([]);
+  const router = useRouter();
+  const confirmAction = useConfirm();
+
+  useEffect(() => {
+    const stored = localStorage.getItem('bb_quizzes');
+    if (stored) {
+      setQuizzes(JSON.parse(stored));
+    } else {
+      setQuizzes(INITIAL_QUIZZES);
+      localStorage.setItem('bb_quizzes', JSON.stringify(INITIAL_QUIZZES));
+    }
+  }, []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newQuizTitle, setNewQuizTitle] = useState("");
   
-  const handleDelete = (id: number) => {
-    setQuizzes(prev => prev.filter(q => q.id !== id));
+  const handleDelete = async (id: number) => {
+    if (await confirmAction({ title: "Delete Quiz", description: "Are you sure you want to delete this quiz?", isDestructive: true })) {
+      const updated = quizzes.filter(q => q.id !== id);
+      setQuizzes(updated);
+      localStorage.setItem('bb_quizzes', JSON.stringify(updated));
+      toast.success("Quiz deleted.");
+    }
   };
 
   const handleCreateQuiz = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newQuizTitle.trim()) return;
     
-    setQuizzes([
+    const updated = [
       { id: Date.now(), title: newQuizTitle, course: "Unassigned", questions: 0, duration: "10 mins", participants: 0, status: "Draft" },
       ...quizzes
-    ]);
+    ];
+    setQuizzes(updated);
+    localStorage.setItem('bb_quizzes', JSON.stringify(updated));
     setNewQuizTitle("");
     setIsModalOpen(false);
   };
@@ -79,8 +101,8 @@ export default function AdminQuizPage() {
                   </div>
                   
                   <div className="flex sm:flex-col gap-2 shrink-0 justify-center">
-                    <Button variant="outline" className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50 gap-2" onClick={() => setIsModalOpen(true)}><Edit3 size={16}/> Edit Questions</Button>
-                    <Button variant="outline" className="flex-1 text-slate-600 gap-2 hover:bg-slate-50"><MoreHorizontal size={16}/> View Results</Button>
+                    <Button variant="outline" className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50 gap-2" onClick={() => router.push(`/admin/education/quiz-edit?id=${quiz.id}`)}><Edit3 size={16}/> Edit Questions</Button>
+                    <Button variant="outline" className="flex-1 text-slate-600 gap-2 hover:bg-slate-50" onClick={() => toast.success("Results loaded!")}><MoreHorizontal size={16}/> View Results</Button>
                     <Button variant="outline" onClick={() => handleDelete(quiz.id)} className="flex-1 text-red-600 border-red-200 hover:bg-red-50 gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={16}/> Delete</Button>
                   </div>
                 </div>
@@ -93,7 +115,7 @@ export default function AdminQuizPage() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <AnimatedContent direction="up" className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden relative">
-            <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50/50">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50">
               <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2"><Plus size={20} className="text-[#1B2A6B]" /> Quiz Builder</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
                 <X size={24} />

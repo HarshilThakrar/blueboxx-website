@@ -3,53 +3,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../../src/component
 import { Badge } from "../../../src/components/ui/Badge";
 import { Button } from "../../../src/components/ui/Button";
 import { Briefcase, TrendingUp, FileText, CheckCircle2, Clock, AlertCircle, Building2, Calendar, ChevronRight, PlayCircle } from "lucide-react";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+import Link from "next/link";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function PlacementProgressPage() {
+  const { data, isLoading } = useSWR("/dashboard/student/placement-progress", fetcher, {
+    revalidateOnFocus: false
+  });
+
+  const dashboardData = data || {
+    stats: { score: 0, total_applications: 0, interviews: 0, offers: 0 },
+    pipeline: { applied: 0, shortlisted: 0, interview: 0, offered: 0 },
+    applications: []
+  };
+
   const stats = [
-    { label: "Placement Score", value: "85", icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100" },
-    { label: "Total Applications", value: "12", icon: Briefcase, color: "text-[#1B2A6B]", bg: "bg-blue-50", border: "border-blue-100" },
-    { label: "Interviews Scheduled", value: "2", icon: Calendar, color: "text-[#C9A227]", bg: "bg-amber-50", border: "border-amber-100" },
-    { label: "Offers Received", value: "1", icon: Award, color: "text-purple-600", bg: "bg-purple-50", border: "border-purple-100" },
+    { label: "Placement Score", value: dashboardData.stats.score.toString(), icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100" },
+    { label: "Total Applications", value: dashboardData.stats.total_applications.toString(), icon: Briefcase, color: "text-[#1B2A6B]", bg: "bg-blue-50", border: "border-blue-100" },
+    { label: "Interviews Scheduled", value: dashboardData.stats.interviews.toString(), icon: Calendar, color: "text-[#C9A227]", bg: "bg-amber-50", border: "border-amber-100" },
+    { label: "Offers Received", value: dashboardData.stats.offers.toString(), icon: Award, color: "text-purple-600", bg: "bg-purple-50", border: "border-purple-100" },
   ];
 
-  const applications = [
-    {
-      id: 1,
-      role: "Frontend Developer Intern",
-      company: "TechCorp Inc.",
-      logo: "https://ui-avatars.com/api/?name=TechCorp&background=0d1635&color=fff",
-      appliedDate: "Oct 20, 2026",
-      status: "interview",
-      nextAction: "Technical Interview on Oct 28",
-    },
-    {
-      id: 2,
-      role: "React Native Developer",
-      company: "AppStudios",
-      logo: "https://ui-avatars.com/api/?name=AppStudios&background=C9A227&color=fff",
-      appliedDate: "Oct 15, 2026",
-      status: "shortlisted",
-      nextAction: "Awaiting Interview Schedule",
-    },
-    {
-      id: 3,
-      role: "Junior Web Developer",
-      company: "WebSolutions Ltd",
-      logo: "https://ui-avatars.com/api/?name=WebSolutions&background=1B2A6B&color=fff",
-      appliedDate: "Oct 10, 2026",
-      status: "applied",
-      nextAction: "Application under review",
-    },
-    {
-      id: 4,
-      role: "UI Engineer",
-      company: "DesignCo",
-      logo: "https://ui-avatars.com/api/?name=DesignCo&background=475569&color=fff",
-      appliedDate: "Sep 28, 2026",
-      status: "rejected",
-      nextAction: "Position Closed",
-    }
-  ];
+  const applications = dashboardData.applications;
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -57,6 +35,7 @@ export default function PlacementProgressPage() {
       case 'shortlisted': return { label: 'Shortlisted', color: 'bg-blue-100 text-blue-700', icon: CheckCircle2 };
       case 'applied': return { label: 'Applied', color: 'bg-slate-100 text-slate-700', icon: Clock };
       case 'rejected': return { label: 'Not Selected', color: 'bg-red-100 text-red-700', icon: AlertCircle };
+      case 'hired': return { label: 'Hired', color: 'bg-emerald-100 text-emerald-700', icon: Award };
       default: return { label: status, color: 'bg-slate-100 text-slate-700', icon: Clock };
     }
   };
@@ -111,10 +90,10 @@ export default function PlacementProgressPage() {
                   </div>
                   
                   {[
-                    { step: "Applied", count: "12", active: true, done: true },
-                    { step: "Shortlisted", count: "5", active: true, done: true },
-                    { step: "Interview", count: "2", active: true, done: false },
-                    { step: "Offered", count: "1", active: false, done: false },
+                    { step: "Applied", count: dashboardData.pipeline.applied, active: true, done: true },
+                    { step: "Shortlisted", count: dashboardData.pipeline.shortlisted, active: dashboardData.pipeline.shortlisted > 0, done: dashboardData.pipeline.shortlisted > 0 },
+                    { step: "Interview", count: dashboardData.pipeline.interview, active: dashboardData.pipeline.interview > 0, done: false },
+                    { step: "Offered", count: dashboardData.pipeline.offered, active: dashboardData.pipeline.offered > 0, done: false },
                   ].map((stage, i) => (
                     <div key={i} className="flex flex-col items-center gap-2 relative z-10 bg-white px-2">
                       <div className={`w-12 h-12 rounded-full border-4 flex items-center justify-center font-black text-sm transition-all duration-300 shadow-sm ${
@@ -140,13 +119,15 @@ export default function PlacementProgressPage() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-slate-50">
-                  {applications.map((app) => {
+                  {isLoading ? (
+                    <div className="p-8 text-center text-slate-400">Loading applications...</div>
+                  ) : applications.length > 0 ? applications.map((app: any) => {
                     const statusConfig = getStatusConfig(app.status);
                     const StatusIcon = statusConfig.icon;
                     return (
                       <div key={app.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:bg-slate-50 transition-colors group cursor-pointer relative overflow-hidden">
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-[#1B2A6B] transition-colors"></div>
-                        <img src={app.logo} alt={app.company} className="w-12 h-12 rounded-xl shadow-sm group-hover:scale-105 transition-transform" />
+                        <img src={app.logo} alt={app.company} className="w-12 h-12 rounded-xl shadow-sm group-hover:scale-105 transition-transform object-cover" />
                         
                         <div className="flex-1 min-w-0">
                           <h4 className="font-extrabold text-[15px] text-slate-800 mb-1 group-hover:text-[#1B2A6B] transition-colors truncate">{app.role}</h4>
@@ -165,7 +146,9 @@ export default function PlacementProgressPage() {
                         </div>
                       </div>
                     );
-                  })}
+                  }) : (
+                    <div className="p-8 text-center text-slate-400 font-medium">You have no applications yet.</div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -185,7 +168,7 @@ export default function PlacementProgressPage() {
                     <circle cx="50" cy="50" r="40" stroke="#C9A227" strokeWidth="8" fill="none" strokeDasharray="251.2" strokeDashoffset={251.2 - (251.2 * 85) / 100} className="transition-all duration-1000 ease-out" strokeLinecap="round" />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-2xl font-black text-white leading-none">85</span>
+                    <span className="text-2xl font-black text-white leading-none">{dashboardData.stats.score}</span>
                     <span className="text-[9px] font-bold text-[#C9A227] uppercase tracking-widest mt-1">Score</span>
                   </div>
                 </div>

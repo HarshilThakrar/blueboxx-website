@@ -56,7 +56,7 @@ export default function AdminPaymentsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50">
+              <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="py-4 px-6 text-[11px] font-black text-slate-500 uppercase tracking-wider">Transaction ID</th>
                 <th className="py-4 px-6 text-[11px] font-black text-slate-500 uppercase tracking-wider">Customer & Plan</th>
                 <th className="py-4 px-6 text-[11px] font-black text-slate-500 uppercase tracking-wider">Date</th>
@@ -67,7 +67,7 @@ export default function AdminPaymentsPage() {
             </thead>
             <tbody className="divide-y divide-slate-100 font-mono text-xs">
               {payments.map((pay) => (
-                <tr key={pay.id} className="hover:bg-slate-50/50 transition-colors group">
+                <tr key={pay.id} className="hover:bg-slate-50 transition-colors group">
                   <td className="py-4 px-6 text-slate-500 font-bold">{pay.txnId}</td>
                   <td className="py-4 px-6">
                     <p className="font-sans text-sm font-bold text-slate-800">{pay.user}</p>

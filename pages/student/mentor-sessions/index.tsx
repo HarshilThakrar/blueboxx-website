@@ -5,46 +5,58 @@ import { Badge } from "../../../src/components/ui/Badge";
 import { Button } from "../../../src/components/ui/Button";
 import { Video, Calendar as CalendarIcon, Clock, Link as LinkIcon, Search } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import toast from "react-hot-toast";
 
-const INITIAL_SESSIONS = [
-  {
-    id: 1,
-    mentor: "Ankit Sharma",
-    title: "System Design Mock Interview",
-    date: "Oct 24, 2026",
-    time: "10:00 AM - 10:45 AM",
-    status: "Upcoming",
-    link: "https://zoom.us/j/123456789",
-    avatar: "https://i.pravatar.cc/150?u=ankit"
-  },
-  {
-    id: 2,
-    mentor: "Priya Desai",
-    title: "UI/UX Portfolio Review",
-    date: "Oct 28, 2026",
-    time: "11:00 AM - 11:30 AM",
-    status: "Upcoming",
-    link: "https://zoom.us/j/987654321",
-    avatar: "https://i.pravatar.cc/150?u=priya"
-  },
-  {
-    id: 3,
-    mentor: "Rohan Gupta",
-    title: "Mock Interview - Data Structures",
-    date: "Oct 15, 2026",
-    time: "5:00 PM - 6:00 PM",
-    status: "Completed",
-    link: null,
-    avatar: "https://i.pravatar.cc/150?u=rohan"
-  }
-];
+import api from "../../../src/lib/axios";
+
+interface SessionItem {
+  id: number;
+  mentor: string;
+  title: string;
+  date: string;
+  time: string;
+  status: string;
+  link: string | null;
+  avatar: string;
+}
 
 export default function StudentMentorSessionsPage() {
-  const [sessions, setSessions] = useState(INITIAL_SESSIONS);
+  const [sessions, setSessions] = useState<SessionItem[]>([]);
   const [activeTab, setActiveTab] = useState("Upcoming");
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    api.get("/mentor-sessions")
+      .then((res) => {
+        const mapped = res.data.map((s: any) => {
+          const dateStr = s.scheduled_at 
+            ? new Date(s.scheduled_at).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' })
+            : "TBD";
+            
+          const timeStr = s.scheduled_at
+            ? new Date(s.scheduled_at).toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit' })
+            : "TBD";
+
+          return {
+            id: s.id,
+            mentor: s.expert?.name || "Expert Mentor",
+            title: s.notes || "1:1 Mentorship Session",
+            date: dateStr,
+            time: `${timeStr} (${s.duration_minutes} mins)`,
+            status: s.status === "scheduled" ? "Upcoming" : "Completed",
+            link: s.meeting_url,
+            avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(s.expert?.name || 'Mentor')}`
+          };
+        });
+        setSessions(mapped);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setIsLoading(false);
+      });
+  }, []);
 
   const filteredSessions = sessions.filter(session => session.status === activeTab);
 
@@ -89,7 +101,14 @@ export default function StudentMentorSessionsPage() {
 
         <AnimatedContent direction="up" delay={0.3}>
           {filteredSessions.length === 0 ? (
-            <div className="text-center text-slate-400 font-semibold py-12">No mentorship sessions in this category.</div>
+            <div className="bg-white rounded-[2rem] border border-slate-200 p-12 text-center shadow-sm max-w-xl mx-auto">
+              <Video size={36} className="text-[#C9A227] mx-auto mb-3 animate-pulse" />
+              <p className="font-black text-slate-800 mb-1 text-base">No mentorship sessions scheduled</p>
+              <p className="text-xs text-slate-500 font-medium mb-6">Connect 1:1 with industry experts from Microsoft, Google, and Amazon to review portfolios or conduct mock interviews.</p>
+              <Link href="/experts">
+                <Button variant="primary" className="bg-[#1B2A6B] hover:bg-[#0d1635] text-white font-bold px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider shadow-md">Book your first mentoring session</Button>
+              </Link>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredSessions.map((session, i) => (

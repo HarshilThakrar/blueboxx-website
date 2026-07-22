@@ -2,9 +2,12 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { CompanyDashboardLayout } from "../../../src/layout/CompanyDashboardLayout";
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
-import { Briefcase, Clock, MapPin, Users, Plus, Search, Eye, MoreVertical, Trash2, CheckCircle, XCircle } from "lucide-react";
-import { useJobStore, JobStatus } from "../../../src/store/useJobStore";
+import { Briefcase, Clock, MapPin, Users, Plus, Search, Eye, MoreVertical, Trash2, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 const STATUS_COLORS: Record<string, string> = {
   Active: "bg-emerald-100 text-emerald-700",
@@ -14,17 +17,35 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function CompanyJobsPage() {
-  const jobs = useJobStore((s) => s.jobs);
-  const updateJobStatus = useJobStore((s) => s.updateJobStatus);
-  const deleteJob = useJobStore((s) => s.deleteJob);
+  const { data, isLoading, mutate } = useSWR("/company/jobs", fetcher);
+  
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
 
-  // Only show jobs belonging to this company
-  const companyJobs = jobs.filter((j) => j.postedBy === "Acme Corp");
+  const companyJobs = data?.data || [];
 
-  const filtered = companyJobs.filter((job) => {
+  const updateJobStatus = async (id: string, status: string) => {
+    try {
+      await api.put(`/company/jobs/${id}/status`, { status });
+      mutate();
+      toast.success(`Job marked as ${status}`);
+    } catch (err) {
+      toast.error("Failed to update status");
+    }
+  };
+
+  const deleteJob = async (id: string) => {
+    try {
+      await api.delete(`/company/jobs/${id}`);
+      mutate();
+      toast.success("Job deleted");
+    } catch (err) {
+      toast.error("Failed to delete job");
+    }
+  };
+
+  const filtered = companyJobs.filter((job: any) => {
     const matchesFilter =
       filter === "all" ||
       (filter === "active" && (job.status === "Active" || job.status === "Pending")) ||
@@ -33,10 +54,10 @@ export default function CompanyJobsPage() {
     return matchesFilter && matchesSearch;
   });
 
-  const activeCount = companyJobs.filter((j) => j.status === "Active").length;
-  const pendingCount = companyJobs.filter((j) => j.status === "Pending").length;
-  const totalApplicants = companyJobs.reduce((acc, j) => acc + j.applicants, 0);
-  const totalViews = companyJobs.reduce((acc, j) => acc + j.views, 0);
+  const activeCount = companyJobs.filter((j: any) => j.status === "Active").length;
+  const pendingCount = companyJobs.filter((j: any) => j.status === "Pending").length;
+  const totalApplicants = companyJobs.reduce((acc: number, j: any) => acc + (j.applicants || 0), 0);
+  const totalViews = companyJobs.reduce((acc: number, j: any) => acc + (j.views || 0), 0);
 
   return (
     <CompanyDashboardLayout>
@@ -158,14 +179,14 @@ export default function CompanyJobsPage() {
 
               {/* Performance */}
               <div className="col-span-2 flex flex-col items-center">
-                <p className="text-sm font-black text-slate-800">{job.applicants}</p>
+                <p className="text-sm font-black text-slate-800">{job.applicants || 0}</p>
                 <p className="text-[10px] font-bold text-slate-400">Applicants</p>
-                <p className="text-[10px] font-semibold text-slate-400 mt-0.5">{job.views} views</p>
+                <p className="text-[10px] font-semibold text-slate-400 mt-0.5">{job.views || 0} views</p>
               </div>
 
               {/* Posted */}
               <div className="col-span-2 flex justify-center text-xs font-semibold text-slate-500">
-                {job.postedAt}
+                {job.posted}
               </div>
 
               {/* Actions */}
@@ -219,7 +240,12 @@ export default function CompanyJobsPage() {
               </div>
             </AnimatedContent>
           ))}
-          {filtered.length === 0 && (
+          {isLoading && (
+            <div className="p-12 text-center flex justify-center items-center">
+              <Loader2 className="w-8 h-8 animate-spin text-[#1B2A6B]" />
+            </div>
+          )}
+          {!isLoading && filtered.length === 0 && (
             <div className="p-12 text-center">
               <p className="text-slate-500 font-medium mb-4">No postings found.</p>
               <Link

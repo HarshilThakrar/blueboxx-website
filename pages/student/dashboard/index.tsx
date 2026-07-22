@@ -9,21 +9,10 @@ import { useAuth } from "../../../src/context/AuthContext";
 import { AnimatePresence, motion } from "framer-motion";
 import { OnboardingTour } from "../../../src/components/OnboardingTour";
 
-const ACTIVE_COURSES = [
-  { id: "react", title: "Advanced React Patterns", module: "Module 4: Context API & State Machines", category: "Web Dev", progress: 65, lessons: 18, done: 12, thumb: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=800&auto=format&fit=crop" },
-  { id: "design", title: "UI/UX Design Masterclass", module: "Module 2: Wireframing with Figma", category: "Design", progress: 30, lessons: 24, done: 7, thumb: "https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=800&auto=format&fit=crop" },
-];
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
 
-const APPLICATIONS = [
-  { id: 1, role: "Frontend Developer Intern", company: "Google India", status: "interview", statusColor: "bg-purple-50 text-purple-700", appliedDate: "2 days ago" },
-  { id: 2, role: "UI/UX Designer", company: "Microsoft", status: "In Review", statusColor: "bg-amber-50 text-amber-700", appliedDate: "1 week ago" },
-  { id: 3, role: "Backend Developer Intern", company: "Razorpay", status: "Applied", statusColor: "bg-blue-50 text-blue-700", appliedDate: "Today" },
-];
-
-const UPCOMING_CLASSES = [
-  { title: "React Context API Deep Dive", course: "Advanced React Patterns", date: "Today", time: "4:00 PM" },
-  { title: "Wireframing with Figma", course: "UI/UX Design Masterclass", date: "Jul 7", time: "6:00 PM" },
-];
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function StudentDashboardPage() {
   const { user } = useAuth();
@@ -31,6 +20,11 @@ export default function StudentDashboardPage() {
   const firstName = user?.name?.split(" ")[0] ?? "Student";
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [showTour, setShowTour] = useState(false);
+  
+  // Live Dashboard State
+  const { data: dashboardData, error, isLoading } = useSWR('/dashboard/student', fetcher, {
+    revalidateOnFocus: false,
+  });
 
   useEffect(() => {
     const hasSeen = localStorage.getItem("bb_student_tour_done");
@@ -71,10 +65,33 @@ export default function StudentDashboardPage() {
     },
   ];
 
-  const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      toast.success(`Resume "${e.target.files[0].name}" uploaded successfully!`);
-      setIsResumeModalOpen(false);
+      const file = e.target.files[0];
+      const formData = new FormData();
+      formData.append('resume', file);
+
+      setIsUploading(true);
+      try {
+        const res = await api.post('/student/resume/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        if (res.data.success) {
+          toast.success(`Resume "${file.name}" uploaded successfully!`);
+          setIsResumeModalOpen(false);
+        }
+      } catch (err: any) {
+        toast.error(err.response?.data?.message || 'Failed to upload resume');
+      } finally {
+        setIsUploading(false);
+        if (e.target) {
+            e.target.value = ''; // Reset input
+        }
+      }
     }
   };
 
@@ -105,21 +122,25 @@ export default function StudentDashboardPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {[
-          { id: "stat-courses", label: "Courses in Progress", value: "2", icon: BookOpen, color: "text-blue-600", bg: "bg-blue-50", href: "/student/courses" },
-          { id: "stat-completed", label: "Completed Courses", value: "2", icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50", href: "/student/courses" },
-          { id: "stat-applications", label: "Active Applications", value: "3", icon: Briefcase, color: "text-indigo-600", bg: "bg-indigo-50", href: "/student/applications" },
-          { id: "stat-certificates", label: "Certificates Earned", value: "4", icon: Trophy, color: "text-amber-600", bg: "bg-amber-50", href: "/student/certificates" },
+          { id: "stat-courses", label: "Courses in Progress", value: dashboardData?.stats?.active_courses ?? 0, icon: BookOpen, color: "text-blue-600", bg: "bg-blue-50", href: "/student/courses" },
+          { id: "stat-completed", label: "Completed Courses", value: dashboardData?.stats?.completed_courses ?? 0, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50", href: "/student/courses" },
+          { id: "stat-applications", label: "Active Applications", value: dashboardData?.stats?.active_applications ?? 0, icon: Briefcase, color: "text-indigo-600", bg: "bg-indigo-50", href: "/student/applications" },
+          { id: "stat-certificates", label: "Certificates Earned", value: dashboardData?.stats?.certificates_earned ?? 0, icon: Trophy, color: "text-amber-600", bg: "bg-amber-50", href: "/student/certificates" },
         ].map((stat, i) => (
           <AnimatedContent key={i} direction="up" delay={i * 0.08}>
             <Link
               id={stat.id}
               href={stat.href}
-              className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col items-center text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 block"
+              className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col items-center text-center hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 block h-full"
             >
               <div className={`w-10 h-10 rounded-full flex items-center justify-center ${stat.bg} ${stat.color} mb-3`}>
                 <stat.icon size={18} />
               </div>
-              <h3 className="text-2xl font-black text-slate-800 mb-1">{stat.value}</h3>
+              {isLoading ? (
+                <div className="w-12 h-6 bg-slate-200 rounded animate-pulse mb-1"></div>
+              ) : (
+                <h3 className="text-2xl font-black text-slate-800 mb-1">{stat.value}</h3>
+              )}
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{stat.label}</p>
             </Link>
           </AnimatedContent>
@@ -142,28 +163,48 @@ export default function StudentDashboardPage() {
             </div>
 
             <div className="divide-y divide-slate-100">
-              {ACTIVE_COURSES.map((course) => (
-                <div key={course.id} className="p-5 flex flex-col sm:flex-row gap-4 items-start sm:items-center hover:bg-slate-50/30 transition-colors">
-                  <div className="w-full sm:w-32 h-20 rounded-xl overflow-hidden shrink-0">
-                    <img src={course.thumb} alt={course.title} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded uppercase tracking-wider">{course.category}</span>
-                    <h3 className="font-black text-slate-800 text-sm mt-1 mb-0.5">{course.title}</h3>
-                    <p className="text-xs text-slate-400 font-semibold mb-2">{course.module}</p>
-                    <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mb-1">
-                      <div className="bg-[#1B2A6B] h-full rounded-full" style={{ width: `${course.progress}%` }} />
+              {isLoading ? (
+                [1, 2].map((n) => (
+                  <div key={n} className="p-5 flex gap-4 animate-pulse">
+                    <div className="w-32 h-20 bg-slate-200 rounded-xl"></div>
+                    <div className="flex-1 space-y-3">
+                      <div className="h-4 bg-slate-200 rounded w-1/3"></div>
+                      <div className="h-3 bg-slate-200 rounded w-2/3"></div>
                     </div>
-                    <p className="text-[10px] font-bold text-slate-400">{course.progress}% · {course.done}/{course.lessons} Lessons</p>
                   </div>
-                  <Link
-                    href={`/student/learn/${course.id}`}
-                    className="flex items-center gap-2 px-5 py-2 bg-[#1B2A6B] text-white text-sm font-bold rounded-xl hover:bg-[#0d1635] transition-colors shrink-0"
-                  >
-                    <PlayCircle size={14} /> Resume
-                  </Link>
+                ))
+              ) : dashboardData?.courses?.length > 0 ? (
+                dashboardData.courses.map((course: any) => (
+                  <div key={course.id} className="p-5 flex flex-col sm:flex-row gap-4 items-start sm:items-center hover:bg-slate-50/30 transition-colors">
+                    <div className="w-full sm:w-32 h-20 rounded-xl overflow-hidden shrink-0 bg-slate-100 flex items-center justify-center text-slate-400">
+                      {course.thumbnail ? (
+                        <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <BookOpen size={24} />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded uppercase tracking-wider">{course.category?.name || 'Course'}</span>
+                      <h3 className="font-black text-slate-800 text-sm mt-1 mb-0.5">{course.title}</h3>
+                      <p className="text-xs text-slate-400 font-semibold mb-2">{course.level || 'Beginner'}</p>
+                      <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mb-1">
+                        <div className="bg-[#1B2A6B] h-full rounded-full" style={{ width: `${course.progress || 0}%` }} />
+                      </div>
+                      <p className="text-[10px] font-bold text-slate-400">{course.progress || 0}% Complete</p>
+                    </div>
+                    <Link
+                      href={`/student/learn/${course.id}`}
+                      className="flex items-center gap-2 px-5 py-2 bg-[#1B2A6B] text-white text-sm font-bold rounded-xl hover:bg-[#0d1635] transition-colors shrink-0"
+                    >
+                      <PlayCircle size={14} /> Resume
+                    </Link>
+                  </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-xs font-bold text-slate-400">
+                  You haven't enrolled in any courses yet.
                 </div>
-              ))}
+              )}
             </div>
           </AnimatedContent>
 
@@ -178,24 +219,38 @@ export default function StudentDashboardPage() {
               </Link>
             </div>
             <div className="divide-y divide-slate-100">
-              {UPCOMING_CLASSES.map((cls, i) => (
-                <div key={i} className="p-4 flex items-center gap-4 hover:bg-slate-50/30 transition-colors">
-                  <div className="w-10 h-10 rounded-xl bg-[#1B2A6B]/10 flex items-center justify-center shrink-0">
-                    <Calendar size={17} className="text-[#1B2A6B]" />
+              {isLoading ? (
+                 <div className="p-4 flex gap-4 animate-pulse">
+                   <div className="w-10 h-10 rounded-xl bg-slate-200"></div>
+                   <div className="flex-1 space-y-2">
+                     <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+                     <div className="h-3 bg-slate-200 rounded w-1/3"></div>
+                   </div>
+                 </div>
+              ) : dashboardData?.upcoming_classes?.length > 0 ? (
+                dashboardData.upcoming_classes.map((cls: any, i: number) => (
+                  <div key={i} className="p-4 flex items-center gap-4 hover:bg-slate-50/30 transition-colors">
+                    <div className="w-10 h-10 rounded-xl bg-[#1B2A6B]/10 flex items-center justify-center shrink-0">
+                      <Calendar size={17} className="text-[#1B2A6B]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-black text-slate-800 truncate">{cls.title}</p>
+                      <p className="text-xs text-slate-400 font-semibold">{cls.course}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-xs font-black text-slate-700">{cls.date}</p>
+                      <p className="text-[10px] text-slate-400 font-semibold">{cls.time}</p>
+                    </div>
+                    <a href={cls.join_url || "#"} target="_blank" rel="noreferrer" className="px-3 py-1.5 bg-[#1B2A6B] text-white text-[10px] font-black rounded-lg hover:bg-[#0d1635] transition-colors">
+                      Join
+                    </a>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-black text-slate-800 truncate">{cls.title}</p>
-                    <p className="text-xs text-slate-400 font-semibold">{cls.course}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-xs font-black text-slate-700">{cls.date}</p>
-                    <p className="text-[10px] text-slate-400 font-semibold">{cls.time}</p>
-                  </div>
-                  <Link href="/student/classes" className="px-3 py-1.5 bg-[#1B2A6B] text-white text-[10px] font-black rounded-lg hover:bg-[#0d1635] transition-colors">
-                    Join
-                  </Link>
+                ))
+              ) : (
+                <div className="p-6 text-center text-xs font-bold text-slate-400">
+                  No upcoming classes scheduled.
                 </div>
-              ))}
+              )}
             </div>
           </AnimatedContent>
         </div>
@@ -214,18 +269,32 @@ export default function StudentDashboardPage() {
               </Link>
             </div>
             <div className="divide-y divide-slate-100">
-              {APPLICATIONS.map((app) => (
-                <Link key={app.id} href="/student/applications" className="p-4 flex items-center gap-3 hover:bg-slate-50/50 transition-colors block">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1B2A6B] to-[#2E45A3] text-white font-black text-xs flex items-center justify-center shrink-0">
-                    {app.company[0]}
+              {isLoading ? (
+                <div className="p-4 flex gap-4 animate-pulse">
+                  <div className="w-8 h-8 rounded-lg bg-slate-200"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 bg-slate-200 rounded w-full"></div>
+                    <div className="h-3 bg-slate-200 rounded w-2/3"></div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-black text-slate-800 truncate">{app.role}</p>
-                    <p className="text-[10px] text-slate-400 font-semibold">{app.company} · {app.appliedDate}</p>
-                  </div>
-                  <span className={`px-2 py-0.5 text-[9px] font-black rounded-full shrink-0 ${app.statusColor}`}>{app.status}</span>
-                </Link>
-              ))}
+                </div>
+              ) : dashboardData?.applications?.length > 0 ? (
+                dashboardData.applications.map((app: any) => (
+                  <Link key={app.id} href="/student/applications" className="p-4 flex items-center gap-3 hover:bg-slate-50/50 transition-colors block">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1B2A6B] to-[#2E45A3] text-white font-black text-xs flex items-center justify-center shrink-0 uppercase">
+                      {app.company[0]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-black text-slate-800 truncate">{app.role}</p>
+                      <p className="text-[10px] text-slate-400 font-semibold">{app.company} · {app.appliedDate}</p>
+                    </div>
+                    <span className={`px-2 py-0.5 text-[9px] font-black rounded-full shrink-0 ${app.statusColor}`}>{app.status}</span>
+                  </Link>
+                ))
+              ) : (
+                <div className="p-8 text-center text-xs font-bold text-slate-400">
+                  No applications submitted yet.
+                </div>
+              )}
             </div>
             <div className="p-4 border-t border-slate-100">
               <Link
@@ -277,10 +346,16 @@ export default function StudentDashboardPage() {
               </div>
               <div className="p-6">
                 <label className="border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 hover:border-[#1B2A6B] transition-colors group">
-                  <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                    <Upload size={24} />
-                  </div>
-                  <p className="text-sm font-bold text-slate-700 mb-1">Click to browse or drag file here</p>
+                  {isUploading ? (
+                    <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-3 animate-spin">
+                      <Upload size={24} />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                      <Upload size={24} />
+                    </div>
+                  )}
+                  <p className="text-sm font-bold text-slate-700 mb-1">{isUploading ? 'Uploading...' : 'Click to browse or drag file here'}</p>
                   <p className="text-xs text-slate-500 font-medium">Supports PDF, DOCX (Max 5MB)</p>
                   <input type="file" className="hidden" accept=".pdf,.doc,.docx" onChange={handleResumeUpload} />
                 </label>

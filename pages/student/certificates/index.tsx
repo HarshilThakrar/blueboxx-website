@@ -3,28 +3,44 @@ import { StudentDashboardLayout } from "../../../src/layout/StudentDashboardLayo
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
 import { Award, Download, Share2, Calendar, CheckCircle2, ExternalLink, Copy, X, Linkedin, Twitter } from "lucide-react";
 import toast from "react-hot-toast";
+import api from "../../../src/lib/axios";
 
-// All certificates use the BlueBoxx navy/gold brand — no rainbow colors
-const CERTIFICATES = [
-  { id: 1, title: "Python for Data Science", issuer: "BlueBoxx DA", date: "Jun 15, 2026", credentialId: "BB-2026-PY-001", grade: "A+", skills: ["Python", "Pandas", "ML Basics"] },
-  { id: 2, title: "Digital Marketing Pro", issuer: "BlueBoxx DA", date: "May 28, 2026", credentialId: "BB-2026-DM-002", grade: "A", skills: ["SEO", "SEM", "Analytics"] },
-  { id: 3, title: "UI/UX Fundamentals", issuer: "BlueBoxx DA", date: "Apr 10, 2026", credentialId: "BB-2026-UX-003", grade: "A+", skills: ["Figma", "Wireframing", "Usability"] },
-  { id: 4, title: "React Basics", issuer: "BlueBoxx DA", date: "Feb 20, 2026", credentialId: "BB-2026-RE-004", grade: "B+", skills: ["React", "Hooks", "JSX"] },
-];
+interface CertificateItem {
+  id: number;
+  title: string;
+  issuer: string;
+  date: string;
+  credentialId: string;
+  grade: string;
+  skills: string[];
+}
 
-const UPCOMING = [
-  { title: "Advanced React Patterns", progress: 65 },
-  { title: "Node.js & Backend APIs", progress: 10 },
-];
+import useSWR from "swr";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function CertificatesPage() {
-  const [shareModal, setShareModal] = useState<typeof CERTIFICATES[0] | null>(null);
+  const [shareModal, setShareModal] = useState<CertificateItem | null>(null);
+  const { data: responseData, isLoading } = useSWR("/student/certificates", fetcher);
+  
+  const rawEarned = responseData?.data?.earned || [];
+  const inProgress = responseData?.data?.in_progress || [];
 
-  const handleDownload = (cert: typeof CERTIFICATES[0]) => {
+  const earnedCertificates = rawEarned.map((c: any) => ({
+    id: c.id,
+    title: c.course?.title || "Course Certificate",
+    issuer: "BlueBoxx DA",
+    date: c.issued_at ? new Date(c.issued_at).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' }) : "Just now",
+    credentialId: c.credential_id || "BB-PENDING",
+    grade: c.grade || "A",
+    skills: c.course?.skills || ["Web Dev", "LMS"]
+  }));
+
+  const handleDownload = (cert: CertificateItem) => {
     toast.success(`Downloading "${cert.title}" certificate...`);
   };
 
-  const handleCopyLink = (cert: typeof CERTIFICATES[0]) => {
+  const handleCopyLink = (cert: CertificateItem) => {
     navigator.clipboard?.writeText(`https://blueboxxda.in/verify/${cert.credentialId}`);
     toast.success("Verification link copied!");
   };
@@ -44,7 +60,7 @@ export default function CertificatesPage() {
             <Award size={22} className="text-[#C9A227]" />
           </div>
           <div>
-            <p className="text-3xl font-black text-slate-800">{CERTIFICATES.length}</p>
+            <p className="text-3xl font-black text-slate-800">{earnedCertificates.length}</p>
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Certificates Earned</p>
           </div>
         </AnimatedContent>
@@ -53,7 +69,7 @@ export default function CertificatesPage() {
             <CheckCircle2 size={22} className="text-[#1B2A6B]" />
           </div>
           <div>
-            <p className="text-3xl font-black text-slate-800">{UPCOMING.length}</p>
+            <p className="text-3xl font-black text-slate-800">{inProgress.length}</p>
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">In Progress</p>
           </div>
         </AnimatedContent>
@@ -64,13 +80,16 @@ export default function CertificatesPage() {
         <div className="lg:col-span-2 space-y-5">
           <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Earned Certificates</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {CERTIFICATES.map((cert, i) => (
-              <AnimatedContent
-                key={cert.id}
-                direction="up"
-                delay={i * 0.08}
-                className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
-              >
+            {isLoading ? (
+              <div className="col-span-2 p-12 text-center text-slate-400 font-semibold animate-pulse">Loading certificates...</div>
+            ) : earnedCertificates.length > 0 ? (
+              earnedCertificates.map((cert: any, i: number) => (
+                <AnimatedContent
+                  key={cert.id}
+                  direction="up"
+                  delay={i * 0.08}
+                  className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
+                >
                 {/* Certificate Visual — always navy + gold accent */}
                 <div className="h-40 bg-[#0d1635] p-5 relative flex flex-col justify-between overflow-hidden">
                   {/* Decorative */}
@@ -126,8 +145,15 @@ export default function CertificatesPage() {
                     </button>
                   </div>
                 </div>
-              </AnimatedContent>
-            ))}
+                </AnimatedContent>
+              ))
+            ) : (
+              <div className="col-span-2 bg-white rounded-2xl border border-slate-200 p-12 text-center">
+                <Award size={32} className="text-slate-300 mx-auto mb-3" />
+                <p className="font-black text-slate-600 mb-1">No certificates earned yet</p>
+                <p className="text-xs text-slate-400 font-semibold">Complete your enrolled courses to receive verified certifications.</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -136,22 +162,31 @@ export default function CertificatesPage() {
           <div>
             <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">In Progress</h2>
             <div className="space-y-3">
-              {UPCOMING.map((c, i) => (
-                <AnimatedContent key={i} direction="up" delay={0.3 + i * 0.1} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-9 h-9 rounded-xl bg-[#1B2A6B]/5 flex items-center justify-center shrink-0">
-                      <Award size={16} className="text-[#1B2A6B]" />
+              {isLoading ? (
+                <div className="p-4 text-center text-slate-400 text-xs font-semibold animate-pulse">Loading...</div>
+              ) : inProgress.length === 0 ? (
+                <div className="p-6 text-center bg-white rounded-2xl border border-slate-200">
+                  <p className="text-xs text-slate-400 font-bold mb-1">No courses in progress</p>
+                  <p className="text-[10px] text-slate-400">Enroll in a course to see your progress here.</p>
+                </div>
+              ) : (
+                inProgress.map((c: any, i: number) => (
+                  <AnimatedContent key={i} direction="up" delay={0.3 + i * 0.1} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-9 h-9 rounded-xl bg-[#1B2A6B]/5 flex items-center justify-center shrink-0">
+                        <Award size={16} className="text-[#1B2A6B]" />
+                      </div>
+                      <p className="text-sm font-black text-slate-700 leading-tight line-clamp-1">{c.course?.title || "Course Name"}</p>
                     </div>
-                    <p className="text-sm font-black text-slate-700 leading-tight">{c.title}</p>
-                  </div>
-                  <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1.5">
-                    <span>Progress</span><span className="text-[#1B2A6B]">{c.progress}%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#1B2A6B] rounded-full" style={{ width: `${c.progress}%` }} />
-                  </div>
-                </AnimatedContent>
-              ))}
+                    <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1.5">
+                      <span>Progress</span><span className="text-[#1B2A6B]">{c.progress}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                      <div className="h-full bg-[#1B2A6B] rounded-full" style={{ width: `${c.progress}%` }} />
+                    </div>
+                  </AnimatedContent>
+                ))
+              )}
             </div>
           </div>
 

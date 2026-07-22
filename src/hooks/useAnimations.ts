@@ -1,64 +1,36 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import { useInView, animate, useReducedMotion } from "framer-motion";
 
-/**
- * Animates a number from 0 to `end` when the element enters the viewport.
- */
-export const useCountUp = (end: number, duration = 2000) => {
-  const [count, setCount] = useState(0);
+export const useCountUp = (
+  end: number,
+  durationMs: number = 1000,
+  delay: number = 0
+) => {
   const ref = useRef<HTMLSpanElement>(null);
-  const hasAnimated = useRef(false);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !hasAnimated.current) {
-          hasAnimated.current = true;
-          const start = 0;
-          const step = Math.ceil(end / (duration / 16));
-          let current = start;
+    if (!isInView || !ref.current) return;
 
-          const timer = setInterval(() => {
-            current += step;
-            if (current >= end) {
-              setCount(end);
-              clearInterval(timer);
-            } else {
-              setCount(current);
-            }
-          }, 16);
+    if (prefersReducedMotion) {
+      ref.current.textContent = end.toLocaleString("en-IN");
+      return;
+    }
+
+    const controls = animate(0, end, {
+      duration: durationMs / 1000, // convert to seconds
+      delay: delay,
+      ease: [0.16, 1, 0.3, 1], // Smooth custom easing (easeOutExpo-like)
+      onUpdate(value) {
+        if (ref.current) {
+          ref.current.textContent = Math.round(value).toLocaleString("en-IN");
         }
       },
-      { threshold: 0.5 }
-    );
+    });
 
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [end, duration]);
+    return () => controls.stop();
+  }, [end, durationMs, delay, isInView, prefersReducedMotion]);
 
-  return { count, ref };
-};
-
-/**
- * Returns `true` once the element enters the viewport.
- */
-export const useInView = (threshold = 0.15) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [isInView, setIsInView] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          observer.disconnect();
-        }
-      },
-      { threshold }
-    );
-
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [threshold]);
-
-  return { ref, isInView };
+  return { ref };
 };

@@ -2,8 +2,8 @@ import React, { useState, useRef } from "react";
 import { StudentDashboardLayout } from "../../../src/layout/StudentDashboardLayout";
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
 import { Download, Trash2, Plus, Loader2, Palette, Sparkles, Target, TrendingUp, CheckCircle, AlertCircle, BookOpen, ArrowRight } from "lucide-react";
-import { MOCK_USER } from "../../../src/data/mockData";
 import { motion } from "framer-motion";
+import { useAuth } from "../../../src/context/AuthContext";
 
 // ── Types ──────────────────────────────────────────────────────
 interface EduEntry {
@@ -32,10 +32,12 @@ export default function ResumeBuilderPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiResults, setAiResults] = useState<any>(null);
 
+  const { user } = useAuth();
+  
   // ── Personal ──────────────────────────────────────────────
-  const [fullName, setFullName] = useState(MOCK_USER.name);
+  const [fullName, setFullName] = useState(user?.name || "John Doe");
   const [jobTitle, setJobTitle] = useState("Frontend Developer");
-  const [phone, setPhone] = useState("+91 9876543210");
+  const [phone, setPhone] = useState(user?.phone || "+91 9876543210");
   const [location, setLocation] = useState("Bangalore, India");
   const [summary, setSummary] = useState(
     "Passionate and detail‑oriented frontend developer with experience in React and Node.js. Strong focus on UI/UX and performance optimization."
@@ -486,7 +488,7 @@ export default function ResumeBuilderPage() {
                   </h1>
                   <p className="text-xs text-slate-500 font-semibold mb-1">{jobTitle}</p>
                   <p className="text-slate-500 text-[11px] font-semibold mb-4 border-b border-slate-200 pb-3">
-                    {MOCK_USER.email} • {phone} • {location}
+                    {user?.email || "john@example.com"} • {phone} • {location}
                   </p>
 
                   {/* Summary */}

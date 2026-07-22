@@ -1,66 +1,78 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MainLayout } from "../src/layout/MainLayout";
-import { Filter } from "lucide-react";
-import { dummyInternships } from "../src/data/internships";
+import { Filter, Briefcase, Clock, ArrowRight, Building, Loader2 } from "lucide-react";
 import { TopSearchBar } from "../src/components/ui/TopSearchBar";
 import { SidebarFilter } from "../src/components/ui/SidebarFilter";
 import { Pagination } from "../src/components/ui/Pagination";
 import { Card, CardContent } from "../src/components/ui/Card";
 import { Badge } from "../src/components/ui/Badge";
 import { Button } from "../src/components/ui/Button";
-import { Briefcase, Clock, ArrowRight, Building } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { HowToEarnSection } from "../src/sections/HowToEarnSection";
 import { TestimonialSection } from "../src/sections/TestimonialSection";
 import { PartnersSection } from "../src/sections/PartnersSection";
-import { useJobStore } from "../src/store/useJobStore";
 import { SEO } from "../src/components/seo/SEO";
+import api from "../src/lib/axios";
 
 export default function InternshipsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("latest");
   const [currentPage, setCurrentPage] = useState(1);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const storeInternships = useJobStore((s) => s.getPublicInternships());
-
-  // Convert store internships to dummyInternships shape and merge
-  const storeMapped = storeInternships.map((j) => ({
-    id: j.id,
-    slug: j.id,
-    title: j.title,
-    company: j.company,
-    location: j.locationType === "Remote" ? "Remote" : j.location,
-    stipend: j.salary,
-    duration: "3-6 Months",
-    postedAt: j.postedAt,
-    tags: j.skills,
-    type: j.type,
-  }));
-
-  const allInternships = [...storeMapped, ...dummyInternships];
-
   const [activeFilters, setActiveFilters] = useState<any>({});
+  
+  const [internships, setInternships] = useState<any[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalInternships, setTotalInternships] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredInternships = allInternships.filter(internship => {
-    const matchesSearch = internship.title.toLowerCase().includes(searchQuery.toLowerCase()) || internship.company.toLowerCase().includes(searchQuery.toLowerCase());
+  useEffect(() => {
+    const fetchInternships = async () => {
+      try {
+        setIsLoading(true);
+        const params: any = {
+          page: currentPage,
+          per_page: 6,
+          sort: sortOption,
+        };
+
+        let searchTerms = [];
+        if (searchQuery) searchTerms.push(searchQuery);
+        if (activeFilters.domain) searchTerms.push(activeFilters.domain);
+        if (searchTerms.length > 0) params.search = searchTerms.join(' ');
+
+        if (activeFilters.mode) {
+           if (activeFilters.mode === "Remote") {
+               params.location = "Remote";
+           }
+        }
+        if (activeFilters.duration) {
+           params.duration = activeFilters.duration;
+        }
+        if (activeFilters.level) {
+           params.experience_level = activeFilters.level;
+        }
+
+        const res = await api.get("/public/internships", { params });
+        if (res.data.success) {
+          setInternships(res.data.data);
+          setTotalPages(res.data.pagination.last_page);
+          setTotalInternships(res.data.pagination.total);
+        }
+      } catch (error) {
+        console.error("Failed to fetch internships:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    // Live Sidebar Filters
-    const matchesDomain = activeFilters.domain ? internship.title.toLowerCase().includes(activeFilters.domain.split(' ')[0].toLowerCase()) : true;
-    const matchesMode = activeFilters.mode ? (activeFilters.mode === "Remote" ? internship.location === "Remote" : internship.location !== "Remote") : true;
-    const matchesDuration = activeFilters.duration ? internship.duration === activeFilters.duration : true;
+    const delayDebounceFn = setTimeout(() => {
+      fetchInternships();
+    }, 300);
 
-    return matchesSearch && matchesDomain && matchesMode && matchesDuration;
-  });
-
-  const sortedInternships = [...filteredInternships].sort((a, b) => {
-    if (sortOption === "highest-stipend") {
-      const aVal = parseInt(a.stipend.replace(/[^0-9]/g, '')) || 0;
-      const bVal = parseInt(b.stipend.replace(/[^0-9]/g, '')) || 0;
-      return bVal - aVal;
-    }
-    return 0;
-  });
+    return () => clearTimeout(delayDebounceFn);
+  }, [currentPage, sortOption, searchQuery, activeFilters]);
 
   return (
     <>
@@ -124,7 +136,7 @@ export default function InternshipsPage() {
 
             <main className="lg:col-span-3">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="font-bold text-slate-800 text-lg">Showing {sortedInternships.length} internships</h2>
+                <h2 className="font-bold text-slate-800 text-lg">Showing {totalInternships} internships</h2>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-slate-500 font-semibold">Sort by:</span>
                   <select
@@ -133,46 +145,52 @@ export default function InternshipsPage() {
                     className="bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-800 px-3 py-1.5 focus:ring-[#C9A227] focus:border-[#C9A227] cursor-pointer outline-none"
                   >
                     <option value="latest">Latest</option>
-                    <option value="highest-stipend">Highest Stipend</option>
+                    <option value="salary_high">Highest Stipend</option>
                   </select>
                 </div>
               </div>
 
-              {sortedInternships.length > 0 ? (
+              {isLoading ? (
+                <div className="py-20 text-center flex justify-center">
+                  <Loader2 className="animate-spin text-[#1B2A6B] w-10 h-10" />
+                </div>
+              ) : internships.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {sortedInternships.slice((currentPage - 1) * 6, currentPage * 6).map((internship) => (
+                    {internships.map((internship) => (
                       <Card key={internship.id} className="group relative overflow-hidden bg-white border border-slate-200 hover:border-[#1B2A6B]/30 hover:shadow-[0_8px_30px_rgba(27,42,107,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full rounded-[1.25rem]">
                         <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-[#1B2A6B]/5 to-transparent opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-500"></div>
                         <CardContent className="p-4 flex-1 flex flex-col relative z-10">
                           <div className="flex justify-between items-start mb-3">
                             <div className="w-10 h-10 rounded-lg border border-slate-100 bg-slate-50 shadow-sm shrink-0 overflow-hidden">
-                              <img src={`https://logo.clearbit.com/${internship.company.toLowerCase().replace(/\s+/g, '')}.com`} onError={(e) => { e.currentTarget.src = `https://ui-avatars.com/api/?name=${internship.company}&background=random` }} alt={internship.company} className="w-full h-full object-cover" />
+                              <img src={internship.company_logo || `https://ui-avatars.com/api/?name=${internship.company_name}&background=random`} alt={internship.company_name} className="w-full h-full object-cover" />
                             </div>
                             <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 text-slate-700 px-2 py-0.5 rounded-md text-xs font-bold shadow-sm">
-                              <Clock size={10} className="text-[#1B2A6B]" /> {internship.duration}
+                              <Clock size={10} className="text-[#1B2A6B]" /> {internship.duration || 'Flexible'}
                             </div>
                           </div>
 
                           <h3 className="text-base font-extrabold text-slate-900 mb-0.5 group-hover:text-[#1B2A6B] transition-colors leading-tight line-clamp-1">{internship.title}</h3>
                           <p className="text-[11px] font-bold text-slate-500 mb-3 flex items-center gap-1">
-                            <Building size={12} /> {internship.company}
+                            <Building size={12} /> {internship.company_name} • {internship.location}
                           </p>
 
                           <div className="flex flex-wrap items-center gap-2 mb-5">
-                            {(internship.tags || []).slice(0, 3).map((skill: string, idx: number) => (
-                              <Badge key={idx} variant="secondary" className="bg-slate-100 text-slate-600 hover:bg-slate-200 border-none font-bold text-[9px] px-2 py-0.5 rounded-md shadow-sm">{skill}</Badge>
-                            ))}
+                            {internship.is_featured && (
+                              <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-none font-bold text-[9px] px-2 py-0.5 rounded-md shadow-sm">Featured</Badge>
+                            )}
                           </div>
 
                           <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
                             <div>
-                              <div className="text-xs font-extrabold text-emerald-600 mb-0.5">{internship.stipend}</div>
-                              <div className="text-[9px] text-slate-400 font-bold uppercase flex items-center gap-1">
-                                <Clock size={10} /> {internship.duration}
+                              <div className="text-xs font-extrabold text-emerald-600 mb-0.5">
+                                {internship.hide_salary ? 'Undisclosed' : internship.salary_min ? `₹${internship.salary_min.toLocaleString()} - ₹${internship.salary_max.toLocaleString()}` : 'Not Specified'}
+                              </div>
+                              <div className="text-[9px] text-slate-400 font-bold flex items-center gap-1">
+                                <Clock size={10} /> POSTED {internship.posted_at?.toUpperCase()}
                               </div>
                             </div>
-                            <Link href={`/apply/internship/${internship.slug}`}>
+                            <Link href={`/apply/internship/${internship.id}`}>
                               <Button variant="outline" className="h-7 text-xs font-bold border-slate-200 text-slate-700 bg-slate-50 group-hover:bg-[#1B2A6B] group-hover:text-white group-hover:border-[#1B2A6B] transition-colors shadow-sm rounded-lg px-3">
                                 Apply
                               </Button>
@@ -182,10 +200,10 @@ export default function InternshipsPage() {
                       </Card>
                     ))}
                   </div>
-                  {Math.ceil(sortedInternships.length / 6) > 1 && (
+                  {totalPages > 1 && (
                     <Pagination
                       currentPage={currentPage}
-                      totalPages={Math.ceil(sortedInternships.length / 6)}
+                      totalPages={totalPages}
                       onPageChange={setCurrentPage}
                       className="mt-12"
                     />

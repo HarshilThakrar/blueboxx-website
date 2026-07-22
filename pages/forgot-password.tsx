@@ -1,23 +1,31 @@
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { Button } from "../src/components/ui/Button";
 import { Mail, ChevronRight, CheckCircle2, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
+import api from "../src/lib/axios";
+import toast from "react-hot-toast";
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email) return;
+
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await api.post("/forgot-password", { email });
+      toast.success("OTP sent to your email.");
+      router.push(`/reset-password?email=${encodeURIComponent(email)}`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to send reset email.");
       setIsLoading(false);
-      setIsSuccess(true);
-    }, 1200);
+    }
   };
 
   return (
@@ -65,11 +73,10 @@ export default function ForgotPasswordPage() {
           <ArrowLeft size={14} /> Back to Login
         </Link>
 
-        {!isSuccess ? (
           <div>
             <div className="text-center mb-6">
               <h2 className="text-xl font-black text-slate-800 leading-tight font-sora">Reset password</h2>
-              <p className="text-xs text-slate-500 font-semibold mt-1">We'll send you a link to reset your password.</p>
+              <p className="text-xs text-slate-500 font-semibold mt-1">We'll send you an OTP to reset your password.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -91,34 +98,21 @@ export default function ForgotPasswordPage() {
               <Button 
                 type="submit"
                 disabled={isLoading || !email}
-                className="w-full h-11 bg-[#1B2A6B] hover:bg-[#0d1635] text-white font-bold rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider mt-4"
+                className="w-full h-11 bg-[#1B2A6B] hover:bg-[#0d1635] text-white font-bold rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <div className="flex items-center gap-1.5">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    Sending...
+                    Sending OTP...
                   </div>
                 ) : (
                   <div className="flex items-center justify-center gap-1">
-                    Send Link <ChevronRight size={16} />
+                    Send OTP <ChevronRight size={16} />
                   </div>
                 )}
               </Button>
             </form>
           </div>
-        ) : (
-          <div className="text-center py-4">
-            <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-100">
-              <CheckCircle2 size={32} className="text-emerald-500" />
-            </div>
-            <h2 className="text-lg font-black text-slate-800 mb-1 leading-tight font-sora">Check your email</h2>
-            <p className="text-xs text-slate-500 font-semibold mb-6">We have sent a password reset link to <span className="font-bold text-slate-700">{email}</span></p>
-            
-            <p className="text-[11px] font-bold text-slate-400">
-              Didn't receive it? <button onClick={() => setIsSuccess(false)} className="text-[#1B2A6B] hover:underline font-bold">Resend email</button>
-            </p>
-          </div>
-        )}
       </motion.div>
     </div>
   );

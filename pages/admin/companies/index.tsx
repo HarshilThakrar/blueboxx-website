@@ -3,6 +3,8 @@ import { Building, Search, Plus, ShieldCheck, X, Check, ShieldAlert, Trash2, Mon
 import { Badge } from "../../../src/components/ui/Badge";
 import { MediaUploader } from "../../../src/components/ui/MediaUploader";
 import { useState } from "react";
+import toast from "react-hot-toast";
+import { useConfirm } from "../../../src/context/ConfirmContext";
 
 const MOCK_COMPANIES = [
   { id: 1, name: "Google India", email: "careers@google.in", jobs: 12, status: "Verified", logo: "https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" },
@@ -29,6 +31,7 @@ export default function AdminCompaniesPage() {
   const [activeTab, setActiveTab] = useState<"companies" | "projects">("companies");
   const [companies, setCompanies] = useState(MOCK_COMPANIES);
   const [projects, setProjects] = useState(MOCK_PROJECTS);
+  const confirmAction = useConfirm();
 
   // Modal states for Company
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -51,9 +54,10 @@ export default function AdminCompaniesPage() {
     link: ""
   });
 
-  const handleDeleteCompany = (id: number) => {
-    if (confirm("Are you sure you want to delete this company?")) {
+  const handleDeleteCompany = async (id: number) => {
+    if (await confirmAction({ title: "Delete Company", description: "Are you sure you want to delete this company?", isDestructive: true })) {
       setCompanies(prev => prev.filter(c => c.id !== id));
+      toast.success("Company deleted");
     }
   };
 
@@ -97,9 +101,10 @@ export default function AdminCompaniesPage() {
     }
   };
 
-  const handleDeleteProject = (id: number) => {
-    if (confirm("Are you sure you want to delete this project?")) {
+  const handleDeleteProject = async (id: number) => {
+    if (await confirmAction({ title: "Delete Project", description: "Are you sure you want to delete this project?", isDestructive: true })) {
       setProjects(prev => prev.filter(p => p.id !== id));
+      toast.success("Project deleted");
     }
   };
 
@@ -159,7 +164,7 @@ export default function AdminCompaniesPage() {
 
       {activeTab === "companies" && (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-visible flex flex-col min-h-[400px]">
-          <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="p-4 border-b border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="relative w-full sm:w-80">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input 
@@ -173,7 +178,7 @@ export default function AdminCompaniesPage() {
           <div className="overflow-visible">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/50">
+                <tr className="border-b border-slate-100 bg-slate-50">
                   <th className="py-4 px-6 text-[11px] font-black text-slate-500 uppercase tracking-wider">Company Info</th>
                   <th className="py-4 px-6 text-[11px] font-black text-slate-500 uppercase tracking-wider">Active Jobs</th>
                   <th className="py-4 px-6 text-[11px] font-black text-slate-500 uppercase tracking-wider">Status</th>
@@ -182,7 +187,7 @@ export default function AdminCompaniesPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {companies.map((company) => (
-                  <tr key={company.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <tr key={company.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 p-1.5 shadow-sm flex items-center justify-center overflow-hidden shrink-0">
@@ -231,11 +236,11 @@ export default function AdminCompaniesPage() {
                 <img src={project.image} alt={project.title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 
-                <div className="absolute top-3 left-3 bg-white/95 backdrop-blur px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-black text-purple-700 shadow-sm">
+                <div className="absolute top-3 left-3 bg-white backdrop-blur px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-black text-purple-700 shadow-sm">
                   <MonitorPlay size={14}/> {project.category}
                 </div>
                 
-                <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-black text-slate-800 shadow-sm">
+                <div className="absolute bottom-3 right-3 bg-white backdrop-blur px-3 py-1.5 rounded-lg text-xs font-black text-slate-800 shadow-sm">
                   {project.studio}
                 </div>
               </div>
@@ -348,7 +353,7 @@ export default function AdminCompaniesPage() {
               <button onClick={() => setIsAddProjectModalOpen(false)} className="text-slate-400 hover:text-slate-800 bg-white shadow-sm border border-slate-200 p-2 rounded-xl transition-colors"><X size={20} /></button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
+            <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
                <form id="create-project-form" onSubmit={handleUploadProject} className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                      <div className="space-y-1.5 md:col-span-2">

@@ -28,7 +28,7 @@ export default function Custom404() {
           className="absolute top-8 left-8"
         >
           <Link href="/">
-            <img src="/logoblue.png" alt="BlueBoxx" className="h-10 w-auto object-contain brightness-0 invert" />
+            <img src="/logowhite.png" alt="BlueBoxx DA" className="h-10 w-auto object-contain" />
           </Link>
         </motion.div>
 

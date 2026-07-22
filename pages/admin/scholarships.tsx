@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 export default function AdminScholarshipsPage() {
   const [applications, setApplications] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewModalData, setViewModalData] = useState<any>(null);
 
   useEffect(() => {
     // Load from local storage
@@ -149,7 +150,7 @@ export default function AdminScholarshipsPage() {
                           </>
                         )}
                         <button 
-                          onClick={() => alert(`Motivation:\n\n${app.motivation}`)} 
+                          onClick={() => setViewModalData(app)} 
                           className="p-1.5 text-slate-400 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 rounded-lg transition-colors"
                           title="View Motivation"
                         >
@@ -164,6 +165,34 @@ export default function AdminScholarshipsPage() {
           </table>
         </div>
       </div>
+
+      {/* View Motivation Modal */}
+      {viewModalData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setViewModalData(null)} />
+          <div className="bg-white rounded-3xl border border-slate-200 w-full max-w-lg shadow-2xl z-50 p-6 space-y-4">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+              <div>
+                <h2 className="text-xl font-black text-slate-800">{viewModalData.name}'s Motivation</h2>
+                <p className="text-xs text-slate-500 font-bold mt-1 uppercase tracking-wider">{viewModalData.domain}</p>
+              </div>
+              <button onClick={() => setViewModalData(null)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl">
+                <XCircle size={20}/>
+              </button>
+            </div>
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+              <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                {viewModalData.motivation || "No motivation provided."}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm pt-2">
+              <div><span className="font-bold text-slate-400 text-xs uppercase">College</span><p className="font-bold text-slate-800">{viewModalData.college}</p></div>
+              <div><span className="font-bold text-slate-400 text-xs uppercase">Status</span><p className={`font-bold ${viewModalData.status === 'Shortlisted' ? 'text-emerald-600' : viewModalData.status === 'Rejected' ? 'text-rose-600' : 'text-amber-600'}`}>{viewModalData.status}</p></div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </AdminDashboardLayout>
   );
 }

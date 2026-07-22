@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { Button } from "../src/components/ui/Button";
-import { useAuthStore } from "../src/store/useAuthStore";
+import { useAuth } from "../src/context/AuthContext";
+import api from "../src/lib/axios";
 import { Mail, Lock, ChevronRight, Eye, EyeOff, ShieldCheck, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,7 +16,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutTimer, setLockoutTimer] = useState(0);
-  const login = useAuthStore(state => state.login);
+  const { login } = useAuth();
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -23,54 +25,65 @@ export default function LoginPage() {
         setLockoutTimer(prev => prev - 1);
       }, 1000);
     } else if (lockoutTimer === 0 && failedAttempts >= 3) {
-      // Reset attempts after lockout
       setFailedAttempts(0);
     }
     return () => clearInterval(interval);
   }, [lockoutTimer, failedAttempts]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (lockoutTimer > 0) return;
 
-    // Simulate rate limiting / failure
-    // In a real app, this increments on 401s. We'll simulate a 3-strike rule if the user types a specific "fail" password
-    if (password === "fail") {
+    setIsLoading(true);
+
+    try {
+      const response = await api.post("/login", { email, password });
+      
+      const { token, user } = response.data;
+      
+      // Save token
+      localStorage.setItem("auth_token", token);
+      
+      // Extract role
+      const userRole = user.roles && user.roles.length > 0 ? user.roles[0].name : "student";
+      
+      // Map to context structure
+      const mappedUser = {
+        name: user.name,
+        email: user.email,
+        avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name)}`,
+        role: userRole
+      };
+
+      login(mappedUser);
+      toast.success("Logged in successfully!");
+      setIsLoading(false);
+
+      // Map role to correct dashboard route (handles hyphenated roles)
+      const roleToDashboard: Record<string, string> = {
+        admin:       '/admin/dashboard',
+        super_admin: '/admin/dashboard',
+        student:     '/student/dashboard',
+        expert:      '/expert/dashboard',
+        company:     '/company/dashboard',
+        college:     '/college/dashboard',
+        intern:      '/intern/dashboard',
+        'job-seeker':'/jobseeker/dashboard',
+        jobseeker:   '/jobseeker/dashboard',
+      };
+      const destination = roleToDashboard[userRole] ?? '/student/dashboard';
+      router.push(destination);
+    } catch (err: any) {
+      setIsLoading(false);
+      const message = err.response?.data?.message || "Invalid credentials.";
+      toast.error(message);
+      
       const newAttempts = failedAttempts + 1;
       setFailedAttempts(newAttempts);
-      if (newAttempts >= 3) {
-        setLockoutTimer(30); // 30 second lockout
+      if (newAttempts >= 5) {
+        setLockoutTimer(300); // 5 minute lock for frontend consistency
       }
-      return;
     }
-
-    setIsLoading(true);
-    
-    // Determine role based on email for testing
-    let userRole = "student";
-    const emailPrefix = email.split('@')[0].toLowerCase();
-    
-    if (["admin", "expert", "intern", "jobseeker", "colleges", "companies"].includes(emailPrefix)) {
-      userRole = emailPrefix;
-    } else if (emailPrefix === "mentor") {
-      userRole = "expert";
-    } else if (emailPrefix === "company") {
-      userRole = "companies";
-    } else if (emailPrefix === "college") {
-      userRole = "colleges";
-    }
-
-    setTimeout(() => {
-      login({
-        id: "1",
-        name: "Test User",
-        email: email,
-        role: userRole,
-        avatar: `https://api.dicebear.com/7.x/initials/svg?seed=Test+User`
-      });
-      setIsLoading(false);
-      router.push(`/${userRole}/dashboard`);
-    }, 1000);
   };
 
   return (
@@ -86,7 +99,7 @@ export default function LoginPage() {
         initial={{ scale: 1.1, opacity: 0 }}
         animate={{ scale: 1, opacity: 0.25 }}
         transition={{ duration: 2, ease: "easeOut" }}
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat mix-blend-overlay grayscale"
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat mix-blend-overlay grayscale pointer-events-none"
         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&q=80")' }} 
       />
 
@@ -123,7 +136,7 @@ export default function LoginPage() {
           <div className="space-y-1.5">
             <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Email Address</label>
             <div className="relative">
-              <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input 
                 type="email" 
                 required
@@ -141,7 +154,7 @@ export default function LoginPage() {
               <Link href="/forgot-password" className="text-[10px] font-bold text-[#1B2A6B] hover:underline">Forgot?</Link>
             </div>
             <div className="relative">
-              <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input 
                 type={showPassword ? "text" : "password"} 
                 required
@@ -155,9 +168,9 @@ export default function LoginPage() {
                 }`}
               />
               <button 
-                type="button" 
+                type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none z-30 cursor-pointer"
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>

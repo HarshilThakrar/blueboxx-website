@@ -1,96 +1,82 @@
-#  Blueboxx - Next-Gen Career & Learning Platform
+# Blueboxx - Next-Gen Career & Learning Platform
 
-Welcome to the **Blueboxx** frontend repository! Blueboxx is a comprehensive, multi-portal SaaS platform designed to bridge the gap between education, mentorship, and employment. It seamlessly connects Students, Interns, Jobseekers, Expert Mentors, and Companies in a single, unified ecosystem.
+Welcome to the **Blueboxx** repository! Blueboxx is a comprehensive, multi-portal SaaS platform designed to seamlessly connect Students, Interns, Jobseekers, Expert Mentors, Colleges, and Companies in a single, unified ecosystem.
 
-##  Technology Stack
-Blueboxx is built using modern, industry-standard technologies to ensure high performance and a premium user experience:
-- **Framework**: Next.js 14 (React)
-- **Language**: TypeScript for robust, type-safe code
-- **Styling**: Tailwind CSS paired with Custom CSS Variables for maximum flexibility
-- **Animations & Micro-interactions**: Framer Motion for smooth, dynamic interfaces
-- **Icons**: Lucide React for crisp, scalable iconography
-- **Notifications**: React Hot Toast for beautiful, non-blocking user alerts
-- **State Management**: React Context API & Zustand (simulating a real backend via `MockDataContext`)
+##  Overview
 
-##  Key Features
-- **Multi-Portal Architecture**: Six distinct, highly-tailored dashboards for every user role (Admin, Company, Student, Jobseeker, Intern, Expert).
-- **Interactive Jobs Pipeline**: Full CRUD capabilities allowing companies to post, edit, and delete jobs, with real-time updates across the platform.
-- **Premium UI/UX**: Designed to WOW users with glassmorphism, fluid page transitions, magnetic hover effects, and vibrant color palettes.
-- **No Clunky Alerts**: 100% of standard browser alerts have been replaced with smooth toast notifications for a true production feel.
-- **Responsive Layouts**: Fully responsive grids and components that look stunning on desktop, tablet, and mobile.
+Blueboxx is built with a decoupled modern architecture:
+- **Frontend**: Next.js 14, TypeScript, Tailwind CSS, Framer Motion
+- **Backend**: Laravel 11, PHP 8, MySQL (RESTful APIs)
 
 ---
 
-##  Platform Portals & Page Directory
+##  Frontend Completions
 
-Use the following links to navigate the platform locally (assuming your dev server is running on `http://localhost:3000`):
+The frontend is a premium, fully responsive application featuring multiple tailored dashboards:
 
-### 1.  Company Portal (Applicant Tracking System)
-Designed for recruiters and hiring managers to track applicants, post jobs, and manage pipelines.
-- [Company Dashboard](http://localhost:3000/company/dashboard)
-- [Manage Jobs](http://localhost:3000/company/jobs)
-- [Create a New Job](http://localhost:3000/companies/jobs/create)
-- [Review Applicants](http://localhost:3000/companies/applicants)
-- [Manage Interviews](http://localhost:3000/company/interviews)
-- [Company Profile](http://localhost:3000/company/profile)
-- [Account Settings](http://localhost:3000/company/settings)
-- [Support Center](http://localhost:3000/company/support)
+- **6 Distinct Portals**: Admin, Company (ATS), Student (LMS), Jobseeker, Intern, and Expert Mentors.
+- **Modern UI/UX**: Designed with glassmorphism, fluid page transitions, magnetic hover effects, and vibrant color palettes.
+- **Robust Admin Settings**: Complete system settings, API configurations, and email templating UI built out.
+- **Analytics Hubs**: Beautiful, interactive charting and metrics for platform monitoring.
+- **Comprehensive QA**: Fully audited with automated Playwright suites covering 18+ viewports for flawless responsive design.
 
-### 2.  Student Portal
-Tailored for continuous learning, completing assignments, and finding mentorship.
-- [Student Dashboard](http://localhost:3000/student/dashboard)
-- [Live Classes](http://localhost:3000/student/classes)
-- [Assignments](http://localhost:3000/student/assignments)
-- [Find Internships](http://localhost:3000/student/internships)
-- [My Applications](http://localhost:3000/student/applications)
-- [Mentor Sessions](http://localhost:3000/student/mentor-sessions)
-- [Resume Builder](http://localhost:3000/student/resume-builder)
-- [Account Settings](http://localhost:3000/student/settings)
+---
 
-### 3.  Jobseeker Portal
-Focused entirely on career advancement, job tracking, and professional profiling.
-- [Jobseeker Dashboard](http://localhost:3000/jobseeker/dashboard)
-- [My Applications](http://localhost:3000/jobseeker/applications)
-- [Public Profile](http://localhost:3000/jobseeker/profile)
-- [Account Settings](http://localhost:3000/jobseeker/settings)
+##  Backend Completions
 
-### 4.  Intern Portal
-Designed specifically for tracking ongoing internships and training progress.
-- [Intern Dashboard](http://localhost:3000/intern/dashboard)
-- [Applications](http://localhost:3000/intern/applications)
-- [My Resume](http://localhost:3000/intern/resume)
+The Laravel API backend powers the robust data engine of Blueboxx:
 
-### 5.  Expert/Mentor Portal
-Tools for industry professionals to offer guidance, manage schedules, and monetize their time.
-- [Expert Dashboard](http://localhost:3000/expert/dashboard)
-- [Manage Availability](http://localhost:3000/expert/availability)
+- **Authentication System**: Secure JWT-based authentication supporting multiple distinct user roles (Admin, Student, Company, etc.).
+- **Database Architecture**: Complex relational schema managing users, job postings, internships, course enrollments, and applications.
+- **RESTful API Endpoints**: Scalable routing structure built to serve the Next.js frontend seamlessly.
+- **Form Validation**: Strict backend validation rules to ensure data integrity for all incoming requests.
 
-### 6.  Admin Portal
-The overarching command center for platform owners to oversee all activity.
-- [Admin Dashboard](http://localhost:3000/admin/dashboard)
-- [User Management](http://localhost:3000/admin/users)
+---
 
-### 7.  Public & Global Pages
-- [Main Landing Page](http://localhost:3000/)
-- [Browse Experts](http://localhost:3000/experts)
-- [Jobs Board](http://localhost:3000/jobs)
-- [Authentication (Login/Signup)](http://localhost:3000/auth)
-- [Shopping Cart / Checkout](http://localhost:3000/cart)
+## Platform Portals Directory
+
+*Assuming your dev server is running on `http://localhost:3000`*
+
+###  Administration
+- **[Admin Dashboard](http://localhost:3000/admin/dashboard)** - Global command center
+- **[System Settings](http://localhost:3000/admin/settings/general)** - Core platform configuration
+
+### Corporate & Hiring
+- **[Company Dashboard](http://localhost:3000/company/dashboard)** - Applicant Tracking System
+- **[Manage Jobs](http://localhost:3000/company/jobs)** - Create and edit job postings
+
+### Learning & Careers
+- **[Student Dashboard](http://localhost:3000/student/dashboard)** - LMS, Courses, and Live Classes
+- **[Jobseeker Dashboard](http://localhost:3000/jobseeker/dashboard)** - Job applications and tracking
+- **[Intern Dashboard](http://localhost:3000/intern/dashboard)** - Internship progress tracking
+
+###  Mentorship
+- **[Expert Dashboard](http://localhost:3000/expert/dashboard)** - Manage mentor availability and sessions
+
+###  Public Pages
+- **[Main Landing Page](http://localhost:3000/)**
+- **[Browse Jobs](http://localhost:3000/jobs)** | **[Browse Experts](http://localhost:3000/experts)**
+- **[Authentication](http://localhost:3000/auth)**
 
 ---
 
 ##  Getting Started
 
-To run this project locally on your machine:
+### 1. Start the Frontend
+```bash
+npm install
+npm run dev
+# Runs on http://localhost:3000
+```
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-2. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
-3. **Open the platform:**
-   Navigate to [http://localhost:3000](http://localhost:3000) in your web browser.
+### 2. Start the Backend (Laravel)
+```bash
+cd backend
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan serve
+# Runs on http://localhost:8000
+```
 

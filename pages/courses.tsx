@@ -12,27 +12,46 @@ import { SidebarFilter } from '../src/components/ui/SidebarFilter';
 import { Clock, Users, Star, ArrowRight } from 'lucide-react';
 import { PartnersSection } from '../src/sections/PartnersSection';
 import { SEO } from '../src/components/seo/SEO';
+import Image from 'next/image';
+import useSWR from 'swr';
+import api from '../src/lib/axios';
+
+// Simple debounce hook for local use
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  React.useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debouncedValue;
+}
 
 export default function CoursesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [sortOption, setSortOption] = useState("recommended");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
 
-  React.useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1200);
-    return () => clearTimeout(timer);
-  }, []);
+  // SWR Fetcher
+  const fetcher = (url: string) => api.get(url).then(res => res.data.data || res.data);
+  const { data: coursesData, error, isLoading } = useSWR('/public/courses?per_page=50', fetcher, {
+    revalidateOnFocus: false, // Prevents aggressive refetching
+  });
 
+  const courses = coursesData || [];
   let sortedCourses = [...courses];
   
-  if (searchQuery) {
-    sortedCourses = sortedCourses.filter(c => 
-      c.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      c.category.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      c.shortDesc.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+  if (debouncedSearchQuery) {
+    sortedCourses = sortedCourses.filter(c => {
+      const titleMatch = c.title?.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
+      const catName = c.category?.name || c.category;
+      const catMatch = typeof catName === 'string' && catName.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
+      const descMatch = (c.short_description || c.shortDesc)?.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
+      return titleMatch || catMatch || descMatch;
+    });
   }
   
   if (sortOption === "price-asc") sortedCourses.sort((a, b) => a.price - b.price);
@@ -133,12 +152,14 @@ export default function CoursesPage() {
                         onClick={() => router.push(`/courses/${course.slug}`)}
                       >
                         <div className="relative aspect-[16/9] overflow-hidden bg-slate-200 shrink-0">
-                          <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                          <Image src={course.thumbnail} alt={course.title || "Course thumbnail"} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                           <div className="absolute top-2 left-2 flex flex-wrap gap-1.5">
-                            <Badge className="bg-white/90 text-slate-900 hover:bg-white border-none shadow-sm backdrop-blur-sm text-[10px] py-0">{course.category}</Badge>
-                            {course.badges.map(b => (
-                              <Badge key={b} variant="gold" className="shadow-sm text-[10px] py-0 px-2">{b}</Badge>
-                            ))}
+                            <Badge className="bg-white/90 text-slate-900 hover:bg-white border-none shadow-sm backdrop-blur-sm text-[10px] py-0">
+                              {course.category?.name || "Tech"}
+                            </Badge>
+                            {course.is_popular && (
+                              <Badge variant="gold" className="shadow-sm text-[10px] py-0 px-2">Popular</Badge>
+                            )}
                           </div>
                         </div>
                         
@@ -147,7 +168,7 @@ export default function CoursesPage() {
                             {course.title}
                           </h3>
                           
-                          <p className="text-xs text-slate-500 mb-3 line-clamp-2 leading-relaxed">{course.shortDesc}</p>
+                          <p className="text-xs text-slate-500 mb-3 line-clamp-2 leading-relaxed">{course.short_description || course.shortDesc}</p>
                           
                           <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-slate-600 mb-5 mt-auto">
                             <div className="flex items-center gap-1"><Clock size={12} className="text-[#1B2A6B]"/> {course.duration}</div>
@@ -156,8 +177,8 @@ export default function CoursesPage() {
 
                           <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
                             <div>
-                              <div className="text-[10px] text-slate-400 font-bold line-through mb-0.5">₹{course.originalPrice.toLocaleString()}</div>
-                              <div className="text-lg font-black text-slate-900 leading-none">₹{course.price.toLocaleString()}</div>
+                              <div className="text-[10px] text-slate-400 font-bold line-through mb-0.5">₹{(course.original_price || course.price * 1.5).toLocaleString()}</div>
+                              <div className="text-lg font-black text-slate-900 leading-none">₹{(course.price || 0).toLocaleString()}</div>
                             </div>
                             <button className="h-8 flex items-center justify-center text-xs font-bold bg-[#1B2A6B] hover:bg-[#0d1635] text-white transition-all rounded-lg shadow-md px-4 gap-1.5 border-none cursor-pointer group-hover:bg-[#C9A227] group-hover:text-[#0d1635] group-hover:shadow-lg">
                               Enroll <ArrowRight size={14}/>

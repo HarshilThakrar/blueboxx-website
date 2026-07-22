@@ -84,7 +84,7 @@ export default function AdminClientsPage() {
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-visible flex flex-col min-h-[400px]">
-        <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="p-4 border-b border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="relative w-full sm:w-80">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
@@ -98,7 +98,7 @@ export default function AdminClientsPage() {
         <div className="overflow-visible">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50">
+              <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="py-4 px-6 text-[11px] font-black text-slate-500 uppercase tracking-wider">Company</th>
                 <th className="py-4 px-6 text-[11px] font-black text-slate-500 uppercase tracking-wider">Details</th>
                 <th className="py-4 px-6 text-[11px] font-black text-slate-500 uppercase tracking-wider">Status</th>
@@ -108,7 +108,7 @@ export default function AdminClientsPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {partners.sort((a, b) => a.order - b.order).map((partner) => (
-                <tr key={partner.id} className="hover:bg-slate-50/50 transition-colors group">
+                <tr key={partner.id} className="hover:bg-slate-50 transition-colors group">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-10 bg-white border border-slate-200 rounded p-1 shadow-sm flex items-center justify-center overflow-hidden shrink-0">
@@ -164,7 +164,7 @@ export default function AdminClientsPage() {
               <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-slate-800 bg-white shadow-sm border border-slate-200 p-2 rounded-xl transition-colors"><X size={20} /></button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
+            <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
                <form id="create-partner-form" onSubmit={handleAddPartner} className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                      

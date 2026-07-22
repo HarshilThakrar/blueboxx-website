@@ -74,7 +74,7 @@ export default function AdminCollegesPage() {
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[400px] w-full max-w-full overflow-hidden">
-        <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="p-4 border-b border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="relative w-full sm:w-80">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
@@ -88,7 +88,7 @@ export default function AdminCollegesPage() {
         <div className="overflow-x-auto w-full custom-scrollbar">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50">
+              <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="py-4 px-6 text-[11px] font-black text-slate-500 uppercase tracking-wider">Institution Details</th>
                 <th className="py-4 px-6 text-[11px] font-black text-slate-500 uppercase tracking-wider">Students Enrolled</th>
                 <th className="py-4 px-6 text-[11px] font-black text-slate-500 uppercase tracking-wider">Placement Rate</th>
@@ -98,7 +98,7 @@ export default function AdminCollegesPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {colleges.map((college) => (
-                <tr key={college.id} className="hover:bg-slate-50/50 transition-colors group">
+                <tr key={college.id} className="hover:bg-slate-50 transition-colors group">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 p-1.5 shadow-sm flex items-center justify-center overflow-hidden shrink-0">

@@ -45,14 +45,14 @@ export default function AdminDeveloperPage() {
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-8">
-        <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
+        <div className="p-6 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
           <TerminalSquare size={20} className="text-[#C9A227]" />
           <h2 className="text-lg font-black text-slate-800">System API Credentials</h2>
         </div>
         
         <div className="divide-y divide-slate-100">
           {keys.map((key) => (
-            <div key={key.id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
+            <div key={key.id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
               <div>
                 <h3 className="text-sm font-black text-slate-800 mb-1">{key.name}</h3>
                 <div className="flex items-center gap-2 text-xs font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded w-fit">

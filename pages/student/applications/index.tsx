@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
+import api from "../../../src/lib/axios";
+
 type AppStatus = "applied" | "review" | "interview" | "offer" | "rejected";
 
 interface TimelineStep {
@@ -29,88 +31,6 @@ interface Application {
   notes?: string;
 }
 
-const APPLICATIONS: Application[] = [
-  {
-    id: 1,
-    role: "Frontend Developer Intern",
-    company: "Google India",
-    location: "Bangalore, Karnataka",
-    type: "Internship",
-    appliedDate: "Jul 2, 2026",
-    status: "interview",
-    notes: "Interview on Jul 5 at 3 PM via Google Meet. Prepare DSA + React concepts.",
-    timeline: [
-      { step: "Applied", date: "Jul 2", done: true },
-      { step: "Resume Screened", date: "Jul 3", done: true },
-      { step: "Interview Scheduled", date: "Jul 5", done: true },
-      { step: "Final Decision", date: "Pending", done: false },
-    ],
-  },
-  {
-    id: 2,
-    role: "UI/UX Design Intern",
-    company: "Microsoft",
-    location: "Hyderabad, Telangana",
-    type: "Internship",
-    appliedDate: "Jun 28, 2026",
-    status: "review",
-    notes: "Applied via LinkedIn. Expected response by Jul 10.",
-    timeline: [
-      { step: "Applied", date: "Jun 28", done: true },
-      { step: "Resume Screened", date: "Pending", done: false },
-      { step: "Interview Scheduled", date: "—", done: false },
-      { step: "Final Decision", date: "—", done: false },
-    ],
-  },
-  {
-    id: 3,
-    role: "Data Analyst Intern",
-    company: "Swiggy",
-    location: "Remote",
-    type: "Internship",
-    appliedDate: "Jun 15, 2026",
-    status: "rejected",
-    notes: "Rejection received Jun 20. Work on SQL and data visualisation skills.",
-    timeline: [
-      { step: "Applied", date: "Jun 15", done: true },
-      { step: "Resume Screened", date: "Jun 17", done: true },
-      { step: "Rejected", date: "Jun 20", done: true },
-    ],
-  },
-  {
-    id: 4,
-    role: "Backend Developer Intern",
-    company: "Razorpay",
-    location: "Bangalore, Karnataka",
-    type: "Internship",
-    appliedDate: "Jul 4, 2026",
-    status: "applied",
-    notes: "Applied on the careers portal. Stipend: ₹30,000/mo.",
-    timeline: [
-      { step: "Applied", date: "Jul 4", done: true },
-      { step: "Resume Screened", date: "Pending", done: false },
-      { step: "Interview Scheduled", date: "—", done: false },
-      { step: "Final Decision", date: "—", done: false },
-    ],
-  },
-  {
-    id: 5,
-    role: "Product Management Intern",
-    company: "Zomato",
-    location: "Delhi (Hybrid)",
-    type: "Internship",
-    appliedDate: "Jul 1, 2026",
-    status: "review",
-    notes: "Referred by college senior. Follow up if no response by Jul 8.",
-    timeline: [
-      { step: "Applied", date: "Jul 1", done: true },
-      { step: "Resume Screened", date: "Jul 3", done: true },
-      { step: "Interview Scheduled", date: "Pending", done: false },
-      { step: "Final Decision", date: "—", done: false },
-    ],
-  },
-];
-
 const STATUS_STYLES: Record<AppStatus, { label: string; pill: string; border: string }> = {
   applied:   { label: "Applied",    pill: "bg-blue-50 text-blue-700",    border: "border-blue-200" },
   review:    { label: "In Review",  pill: "bg-amber-50 text-amber-700",  border: "border-amber-200" },
@@ -122,20 +42,61 @@ const STATUS_STYLES: Record<AppStatus, { label: string; pill: string; border: st
 const FILTER_TABS: Array<"all" | AppStatus> = ["all", "applied", "review", "interview", "offer", "rejected"];
 
 export default function ApplicationsPage() {
-  const [expanded, setExpanded] = useState<number | null>(1);
+  const [expanded, setExpanded] = useState<number | null>(null);
   const [filter, setFilter] = useState<"all" | AppStatus>("all");
   const [editNoteId, setEditNoteId] = useState<number | null>(null);
-  const [notes, setNotes] = useState<Record<number, string>>(
-    Object.fromEntries(APPLICATIONS.map(a => [a.id, a.notes ?? ""]))
-  );
+  const [notes, setNotes] = useState<Record<number, string>>({});
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filtered = filter === "all" ? APPLICATIONS : APPLICATIONS.filter(a => a.status === filter);
+  React.useEffect(() => {
+    api.get("/dashboard/student")
+      .then((res) => {
+        const mapped = res.data.applications.map((app: any) => {
+          let status: AppStatus = "applied";
+          if (["shortlisted", "interview"].includes(app.status)) status = "interview";
+          else if (["rejected", "failed"].includes(app.status)) status = "rejected";
+          else if (["hired", "offer"].includes(app.status)) status = "offer";
+          else if (app.status === "review" || app.status === "in_review") status = "review";
+
+          return {
+            id: app.id,
+            role: app.role,
+            company: app.company,
+            location: "Remote (Hybrid)",
+            type: "Internship",
+            appliedDate: app.appliedDate || "Just now",
+            status: status,
+            notes: "",
+            timeline: [
+              { step: "Applied", date: app.appliedDate || "Just now", done: true },
+              { step: "Resume Screened", date: "Pending", done: status !== "applied" },
+              { step: "Interview", date: "Pending", done: status === "interview" || status === "offer" },
+              { step: "Final Decision", date: "Pending", done: status === "offer" || status === "rejected" }
+            ]
+          };
+        });
+        setApplications(mapped);
+        
+        const notesMap: Record<number, string> = {};
+        mapped.forEach((a: any) => {
+          notesMap[a.id] = a.notes || "";
+        });
+        setNotes(notesMap);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
+  const filtered = filter === "all" ? applications : applications.filter(a => a.status === filter);
 
   const toggleExpand = (id: number) => setExpanded(prev => prev === id ? null : id);
 
-  const successRate = Math.round(
-    (APPLICATIONS.filter(a => a.status === "offer" || a.status === "interview").length / APPLICATIONS.length) * 100
-  );
+  const successRate = applications.length > 0 
+    ? Math.round((applications.filter(a => a.status === "offer" || a.status === "interview").length / applications.length) * 100)
+    : 0;
 
   return (
     <StudentDashboardLayout>
@@ -158,7 +119,7 @@ export default function ApplicationsPage() {
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
         {(["all", "applied", "review", "interview", "offer", "rejected"] as const).map((key, i) => {
-          const count = key === "all" ? APPLICATIONS.length : APPLICATIONS.filter(a => a.status === key).length;
+          const count = key === "all" ? applications.length : applications.filter(a => a.status === key).length;
           const s = key === "all" ? null : STATUS_STYLES[key];
           return (
             <AnimatedContent key={key} direction="up" delay={i * 0.06}>
@@ -187,7 +148,7 @@ export default function ApplicationsPage() {
             <TrendingUp size={16} className="text-[#C9A227]" />
             <span className="text-sm font-black">Application Progress</span>
           </div>
-          <p className="text-xs text-blue-200 font-semibold">{APPLICATIONS.length} applications sent · {successRate}% advancing to interview stage</p>
+          <p className="text-xs text-blue-200 font-semibold">{applications.length} applications sent · {successRate}% advancing to interview stage</p>
         </div>
         <div className="w-full sm:w-48">
           <div className="flex justify-between text-xs font-bold mb-1">

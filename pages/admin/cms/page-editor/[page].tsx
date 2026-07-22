@@ -586,7 +586,7 @@ export default function AdminPageEditor() {
                 </div>
                 
                 <div className="relative z-10 text-center px-4 max-w-3xl">
-                  <span className="inline-block px-3 py-1 bg-white/10 border border-white/20 rounded-full text-[10px] font-bold text-white uppercase tracking-widest mb-6 backdrop-blur-md">
+                  <span className="inline-block px-3 py-1 bg-white border border-white/20 rounded-full text-[10px] font-bold text-white uppercase tracking-widest mb-6 backdrop-blur-md">
                     {pageData.title}
                   </span>
                   <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight tracking-tight mb-6 drop-shadow-lg">

@@ -36,7 +36,7 @@ export default function AdminEnrollmentReportPage() {
              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">New Enrollments (30d)</p>
           </div>
           <div className="bg-[#1B2A6B] rounded-3xl p-6 shadow-md relative overflow-hidden text-white">
-             <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-6"><Calendar size={24}/></div>
+             <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-6"><Calendar size={24}/></div>
              <p className="text-4xl font-black mb-1">68%</p>
              <p className="text-xs font-medium text-blue-200 uppercase tracking-widest">Course Completion Rate</p>
           </div>

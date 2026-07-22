@@ -1,24 +1,54 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { MainLayout } from "../../src/layout/MainLayout";
 import { Button } from "../../src/components/ui/Button";
 import { Card, CardContent } from "../../src/components/ui/Card";
 import { 
   PlayCircle, Star, Users, Clock, FileText, Smartphone, Award, 
-  CheckCircle2, ChevronDown, ChevronUp, Play, X
+  CheckCircle2, ChevronDown, ChevronUp, Play, X, Loader2
 } from "lucide-react";
 import { useStore } from "../../src/store/useStore";
-import { dummyCourses } from "../../src/data/courses";
+import api from "../../src/lib/axios";
 
 export default function CourseDetailPage() {
   const router = useRouter();
   const { id } = router.query;
-  const [openModule, setOpenModule] = useState<number | null>(1);
+  const [openModule, setOpenModule] = useState<number | null>(null);
   const [isVideoOpen, setIsVideoOpen] = useState(false);
+  const [course, setCourse] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const addToCart = useStore(state => state.addToCart);
 
-  // Find course data based on URL slug
-  const course = dummyCourses.find(c => c.slug === id);
+  useEffect(() => {
+    if (!id) return;
+    
+    const fetchCourse = async () => {
+      try {
+        setIsLoading(true);
+        const res = await api.get(`/public/courses/${id}`);
+        setCourse(res.data.data);
+        if (res.data.data?.curriculum?.length > 0) {
+          setOpenModule(res.data.data.curriculum[0].id);
+        }
+      } catch (error) {
+        console.error("Failed to fetch course details:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchCourse();
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <Loader2 className="animate-spin text-[#1B2A6B] w-12 h-12" />
+        </div>
+      </MainLayout>
+    );
+  }
 
   if (!course) {
     return (
@@ -36,7 +66,13 @@ export default function CourseDetailPage() {
     );
   }
 
-  const { whatYouWillLearn, curriculum } = course;
+  // Fallback lists if backend doesn't provide them
+  const whatYouWillLearn = [
+    "Build real-world applications from scratch",
+    "Master the core concepts and advanced features",
+    "Best practices for clean, scalable, and maintainable code",
+    "Prepare for technical interviews with confidence"
+  ];
 
   return (
     <MainLayout>
@@ -52,30 +88,28 @@ export default function CourseDetailPage() {
             {/* Left Content (Text) */}
             <div className="flex-1 lg:max-w-2xl">
               <div className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-widest text-[#C9A227] mb-6">
-                <span>Development</span>
+                <span>{course.category?.name || "Tech"}</span>
                 <span className="text-white/30">•</span>
-                <span>Web Development</span>
-                <span className="text-white/30">•</span>
-                <span>React</span>
+                <span>{course.level?.name || "All Levels"}</span>
               </div>
 
               <h1 className="text-3xl md:text-5xl font-black mb-4 leading-tight">{course.title}</h1>
-              <p className="text-lg text-slate-300 font-medium mb-6 leading-relaxed">{course.subtitle}</p>
+              <p className="text-lg text-slate-300 font-medium mb-6 leading-relaxed">{course.short_description}</p>
 
               <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm mb-6">
                 <div className="flex items-center gap-1.5 text-amber-400 font-black">
                   <Star size={16} className="fill-amber-400" />
-                  <span>{course.rating}</span>
-                  <span className="text-slate-400 font-medium underline">({course.reviews.toLocaleString()} ratings)</span>
+                  <span>4.8</span>
+                  <span className="text-slate-400 font-medium underline">(120 ratings)</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-slate-300">
-                  <Users size={16} className="text-slate-400" /> {course.students.toLocaleString()} students
+                  <Users size={16} className="text-slate-400" /> {course.enrolled_count?.toLocaleString() || 0} students
                 </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-slate-300">
-                <div>Created by <span className="text-[#C9A227] font-bold underline cursor-pointer">{course.instructor}</span></div>
-                <div className="flex items-center gap-1.5"><Clock size={16} className="text-slate-400"/> Last updated {course.lastUpdated}</div>
+                <div>Language <span className="text-white font-bold">{course.language || 'English'}</span></div>
+                <div className="flex items-center gap-1.5"><Clock size={16} className="text-slate-400"/> Duration {course.duration || 'Flexible'}</div>
               </div>
             </div>
 
@@ -112,12 +146,12 @@ export default function CourseDetailPage() {
             <div>
               <h2 className="text-2xl font-black text-slate-800 mb-6">Course Content</h2>
               <div className="flex justify-between items-center text-sm font-bold text-slate-500 mb-4 px-2">
-                <div>{curriculum.length} sections • 25 topics • 8h 20m total length</div>
+                <div>{course.curriculum?.length || 0} sections • {course.total_lessons || 0} topics • {Math.floor((course.total_minutes || 0)/60)}h {(course.total_minutes || 0)%60}m total length</div>
                 <button className="text-[#1B2A6B] hover:underline">Expand all sections</button>
               </div>
 
               <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm divide-y divide-slate-100">
-                {curriculum.map((module) => (
+                {course.curriculum?.map((module: any) => (
                   <div key={module.id} className="group">
                     {/* Accordion Header */}
                     <button 
@@ -129,20 +163,24 @@ export default function CourseDetailPage() {
                         <h3 className="font-extrabold text-slate-800 text-left">{module.title}</h3>
                       </div>
                       <div className="hidden sm:block text-xs font-bold text-slate-500">
-                        {module.lectures} topics • {module.duration}
+                        {module.lessons?.length || 0} topics
                       </div>
                     </button>
                     
                     {/* Accordion Body */}
                     {openModule === module.id && (
                       <div className="px-6 py-2 bg-white">
-                        {module.items.map((item, j) => (
-                          <div key={j} className="flex items-center justify-between py-3 group/item">
+                        {module.lessons?.map((item: any) => (
+                          <div key={item.id} className="flex items-center justify-between py-3 group/item">
                             <div className="flex items-center gap-3">
-                              <FileText size={14} className="text-slate-400 group-hover/item:text-[#1B2A6B] transition-colors" />
+                              {item.type === 'video' ? (
+                                <PlayCircle size={14} className="text-slate-400 group-hover/item:text-[#1B2A6B] transition-colors" />
+                              ) : (
+                                <FileText size={14} className="text-slate-400 group-hover/item:text-[#1B2A6B] transition-colors" />
+                              )}
                               <span className="text-sm font-semibold text-slate-600 group-hover/item:text-[#1B2A6B] transition-colors cursor-pointer">{item.title}</span>
                             </div>
-                            <span className="text-xs font-bold text-slate-400">{item.time}</span>
+                            <span className="text-xs font-bold text-slate-400">{item.duration_minutes}m</span>
                           </div>
                         ))}
                       </div>
@@ -152,37 +190,42 @@ export default function CourseDetailPage() {
               </div>
             </div>
 
-            {/* Requirements */}
+            {/* Description */}
             <div>
-              <h2 className="text-2xl font-black text-slate-800 mb-6">Requirements</h2>
-              <ul className="list-disc list-inside space-y-2 text-slate-600 font-medium">
-                <li>Basic understanding of HTML and CSS.</li>
-                <li>No prior JavaScript knowledge is strictly required, but it helps.</li>
-                <li>A computer with internet access and a code editor (like VS Code).</li>
-              </ul>
+              <h2 className="text-2xl font-black text-slate-800 mb-6">Description</h2>
+              {course.description ? (
+                <div 
+                  className="prose prose-slate max-w-none prose-headings:font-bold prose-a:text-[#1B2A6B]" 
+                  dangerouslySetInnerHTML={{__html: course.description}} 
+                />
+              ) : (
+                <p className="text-slate-600 font-medium">Detailed description coming soon.</p>
+              )}
             </div>
 
             {/* Instructor */}
-            <div>
-              <h2 className="text-2xl font-black text-slate-800 mb-6">Instructor</h2>
-              <div className="flex items-start gap-6">
-                <img src="https://ui-avatars.com/api/?name=Ankit+Sharma&background=1B2A6B&color=fff" alt="Instructor" className="w-24 h-24 rounded-full shadow-lg" />
-                <div>
-                  <h3 className="text-xl font-black text-slate-800 mb-1">Ankit Sharma</h3>
-                  <p className="text-sm font-extrabold text-slate-500 mb-3">Senior Software Engineer & Tech Educator</p>
-                  
-                  <div className="flex flex-wrap gap-4 text-xs font-bold text-slate-600 mb-4">
-                    <span className="flex items-center gap-1.5"><Star size={14} className="text-[#C9A227]"/> 4.8 Rating</span>
-                    <span className="flex items-center gap-1.5"><Award size={14} className="text-slate-400"/> 12,450 Reviews</span>
-                    <span className="flex items-center gap-1.5"><Users size={14} className="text-slate-400"/> 85,200 Students</span>
-                  </div>
+            {course.instructor && (
+              <div>
+                <h2 className="text-2xl font-black text-slate-800 mb-6">Instructor</h2>
+                <div className="flex items-start gap-6">
+                  <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(course.instructor.name)}&background=1B2A6B&color=fff`} alt={course.instructor.name} className="w-24 h-24 rounded-full shadow-lg" />
+                  <div>
+                    <h3 className="text-xl font-black text-slate-800 mb-1">{course.instructor.name}</h3>
+                    <p className="text-sm font-extrabold text-slate-500 mb-3">{course.instructor.title}</p>
+                    
+                    <div className="flex flex-wrap gap-4 text-xs font-bold text-slate-600 mb-4">
+                      <span className="flex items-center gap-1.5"><Star size={14} className="text-[#C9A227]"/> 4.8 Rating</span>
+                      <span className="flex items-center gap-1.5"><Award size={14} className="text-slate-400"/> 12,450 Reviews</span>
+                      <span className="flex items-center gap-1.5"><Users size={14} className="text-slate-400"/> 85,200 Students</span>
+                    </div>
 
-                  <p className="text-sm text-slate-600 font-medium leading-relaxed">
-                    I'm a full-stack developer with over 10 years of experience building large-scale applications for tech giants. I love breaking down complex technical concepts into easy-to-understand lessons.
-                  </p>
+                    <p className="text-sm text-slate-600 font-medium leading-relaxed">
+                      Blueboxx DA expert instructors are industry veterans with years of hands-on experience at top product companies. They bring real-world insights and best practices directly into the classroom.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
           </div>
 
@@ -209,9 +252,13 @@ export default function CourseDetailPage() {
 
               <CardContent className="p-8">
                 <div className="flex items-end gap-3 mb-6">
-                  <span className="text-4xl font-black text-slate-800">₹{course.price}</span>
-                  <span className="text-lg font-bold text-slate-400 line-through mb-1">₹{course.originalPrice}</span>
-                  <span className="text-sm font-black text-emerald-600 mb-1.5">61% off</span>
+                  <span className="text-4xl font-black text-slate-800">₹{(course.price || 0).toLocaleString()}</span>
+                  {course.discount_price && (
+                    <>
+                      <span className="text-lg font-bold text-slate-400 line-through mb-1">₹{(course.discount_price).toLocaleString()}</span>
+                      <span className="text-sm font-black text-emerald-600 mb-1.5">Save discount</span>
+                    </>
+                  )}
                 </div>
 
                 <div className="space-y-3 mb-6">
@@ -283,16 +330,21 @@ export default function CourseDetailPage() {
               <X size={20} />
             </button>
             <div className="aspect-video w-full bg-black">
-              {/* You can replace this with your actual video source */}
-              <iframe 
-                width="100%" 
-                height="100%" 
-                src={course.videoUrl} 
-                title={`${course.title} Preview Video`} 
-                frameBorder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowFullScreen
-              ></iframe>
+              {course.preview_video_url ? (
+                <iframe 
+                  width="100%" 
+                  height="100%" 
+                  src={course.preview_video_url} 
+                  title={`${course.title} Preview Video`} 
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                ></iframe>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-slate-500 font-bold">
+                  No preview video available.
+                </div>
+              )}
             </div>
           </div>
         </div>

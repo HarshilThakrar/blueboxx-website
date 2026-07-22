@@ -2,33 +2,10 @@ import React from 'react';
 import { Trophy, Clock, CheckCircle, XCircle, ArrowRight, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
-// Mock data for applied scholarships
-const APPLIED_SCHOLARSHIPS = [
-  {
-    id: 1,
-    title: 'CodeMasters Hackathon',
-    type: 'Software Engineering',
-    appliedDate: 'Oct 15, 2026',
-    status: 'In Review',
-    prize: '₹50,000 + Internship',
-  },
-  {
-    id: 2,
-    title: 'AI Innovators Sprint',
-    type: 'Artificial Intelligence',
-    appliedDate: 'Oct 10, 2026',
-    status: 'Shortlisted',
-    prize: '₹75,000 + Pro Membership',
-  },
-  {
-    id: 3,
-    title: 'UI/UX Design Challenge',
-    type: 'Design',
-    appliedDate: 'Sep 28, 2026',
-    status: 'Rejected',
-    prize: '₹40,000 + Mentorship',
-  }
-];
+import useSWR from 'swr';
+import api from '../lib/axios';
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -44,6 +21,12 @@ const getStatusBadge = (status: string) => {
 };
 
 export const MyScholarshipsView = ({ userRole }: { userRole: 'student' | 'intern' }) => {
+  const { data: responseData, isLoading } = useSWR('/student/scholarships', fetcher);
+  
+  const scholarships = responseData?.data?.scholarships || [];
+  const contests = responseData?.data?.contests || [];
+  const allApplications = [...scholarships, ...contests];
+
   return (
     <div className="max-w-6xl mx-auto space-y-8">
       {/* Header */}
@@ -67,29 +50,38 @@ export const MyScholarshipsView = ({ userRole }: { userRole: 'student' | 'intern
       </div>
 
       {/* Grid */}
-      {APPLIED_SCHOLARSHIPS.length > 0 ? (
+      {isLoading ? (
+        <div className="p-12 text-center text-slate-400 font-semibold animate-pulse">Loading your applications...</div>
+      ) : allApplications.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {APPLIED_SCHOLARSHIPS.map((scholarship) => (
-            <div key={scholarship.id} className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-lg transition-shadow group relative overflow-hidden">
+          {allApplications.map((app: any, idx: number) => {
+            const isScholarship = !!app.scholarship_program_id;
+            const title = isScholarship ? app.program?.title : app.contest?.title;
+            const prize = isScholarship ? `₹${app.program?.amount}` : (app.contest?.prize || 'Trophy');
+            const type = isScholarship ? 'Scholarship' : 'Hackathon';
+            const date = new Date(app.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            
+            return (
+            <div key={`${type}-${app.id}-${idx}`} className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-lg transition-shadow group relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity" />
               
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-3">
                   <span className="text-[10px] font-black uppercase tracking-widest text-[#1B2A6B] bg-indigo-50 px-2.5 py-1 rounded-full">
-                    {scholarship.type}
+                    {type}
                   </span>
-                  {getStatusBadge(scholarship.status)}
+                  {getStatusBadge(app.status)}
                 </div>
                 
-                <h3 className="text-lg font-bold text-slate-900 mb-1">{scholarship.title}</h3>
+                <h3 className="text-lg font-bold text-slate-900 mb-1">{title}</h3>
                 <p className="text-xs text-slate-500 mb-4 flex items-center gap-2">
-                  Applied on: {scholarship.appliedDate}
+                  Applied on: {date}
                 </p>
 
                 <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex justify-between items-center">
                   <div>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Potential Reward</p>
-                    <p className="text-slate-900 font-extrabold text-sm">{scholarship.prize}</p>
+                    <p className="text-slate-900 font-extrabold text-sm">{prize}</p>
                   </div>
                   <button className="text-[#C9A227] hover:text-amber-500 bg-amber-50 hover:bg-amber-100 p-2 rounded-lg transition-colors">
                     <ExternalLink size={16} />
@@ -97,7 +89,8 @@ export const MyScholarshipsView = ({ userRole }: { userRole: 'student' | 'intern
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center flex flex-col items-center">

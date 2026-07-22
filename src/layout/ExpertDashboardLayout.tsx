@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthContext";
@@ -27,7 +27,15 @@ const sidebarLinks = [
 export const ExpertDashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
-  const { logout } = useAuth();
+  const { user, logout, isAuthenticated, isAuthReady } = useAuth();
+
+  // Auth guard — redirect unauthenticated users to login
+  useEffect(() => {
+    if (!isAuthReady) return;
+    if (!isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, isAuthReady, router]);
 
   const handleLogout = () => {
     logout();
@@ -68,9 +76,11 @@ export const ExpertDashboardLayout = ({ children }: { children: React.ReactNode 
 
         <div className="mt-auto p-6 space-y-6">
           <div className="flex items-center gap-3 px-2">
-            <img src="https://i.pravatar.cc/150?u=ankit" alt="Mentor" className="w-10 h-10 rounded-full border-2 border-white/20" />
+            <div className="w-10 h-10 rounded-full bg-[#C9A227] flex items-center justify-center text-[#0d1635] font-black text-sm">
+              {user?.name?.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2) ?? 'EX'}
+            </div>
             <div>
-              <p className="text-sm font-bold">Ankit Sharma</p>
+              <p className="text-sm font-bold">{user?.name ?? 'Expert Mentor'}</p>
               <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Expert Mentor</p>
             </div>
           </div>

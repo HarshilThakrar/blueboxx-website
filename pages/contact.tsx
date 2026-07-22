@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import toast from "react-hot-toast";
+import api from "../src/lib/axios";
 
 const contactSchema = z.object({
   firstName: z.string().min(2, { message: "First name must be at least 2 characters" }),
@@ -28,9 +29,20 @@ export default function ContactPage() {
   });
 
   const onSubmit = async (data: ContactFormValues) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    toast.success("Message sent successfully! Our team will contact you within 24 hours.");
-    reset();
+    try {
+      await api.post("/public/contact", {
+        name: `${data.firstName} ${data.lastName}`,
+        email: data.email,
+        phone: data.phone,
+        subject: data.subject,
+        message: data.message,
+        source_page: "/contact"
+      });
+      toast.success("Message sent successfully! Our team will contact you within 24 hours.");
+      reset();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to send message. Please try again.");
+    }
   };
 
   return (

@@ -1,386 +1,350 @@
-import { AdminDashboardLayout } from "../../../src/layout/AdminDashboardLayout";
-import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
-import { Card, CardContent } from "../../../src/components/ui/Card";
-import { Search, Plus, MoreVertical, Edit2, Trash2, Eye, X, BookOpen, Users, Star, Clock } from "lucide-react";
-import { Button } from "../../../src/components/ui/Button";
-import { MediaUploader } from "../../../src/components/ui/MediaUploader";
-import { useState } from "react";
-import { useRouter } from "next/router";
+import React, { useState, useEffect } from 'react';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
+import { AdminDashboardLayout } from '../../../src/layout/AdminDashboardLayout';
+import { CourseService, Course } from '../../../src/lib/api/admin/CourseService';
+import { Plus, ListTree, Search, Filter, Download, MoreVertical, Edit, Trash2, Copy, Archive, CheckCircle, XCircle, Globe, Lock, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { CourseCategoryService } from '../../../src/lib/api/admin/CourseCategoryService';
 
-const INITIAL_COURSES = [
-  { id: 1, title: "Full Stack Web Development", category: "Web Development", instructor: "Ankit Sharma", enrolled: 1240, price: 45000, status: "Published", image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&q=80", rating: 4.8 },
-  { id: 2, title: "Advanced Data Science", category: "Data Science", instructor: "Dr. R. Mehta", enrolled: 850, price: 55000, status: "Published", image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&q=80", rating: 4.6 },
-  { id: 3, title: "UI/UX Design Masterclass", category: "Design", instructor: "Priya Desai", enrolled: 2100, price: 35000, status: "Published", image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=500&q=80", rating: 4.9 },
-  { id: 4, title: "System Design for Interviews", category: "Software Engineering", instructor: "Ankit Sharma", enrolled: 0, price: 15000, status: "Draft", image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&q=80", rating: 0 },
-];
-
-export default function AdminCoursesPage() {
-  const [coursesList, setCoursesList] = useState(INITIAL_COURSES);
+export default function CourseList() {
   const router = useRouter();
-  
-  // Modal states
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newCourse, setNewCourse] = useState({
-    title: "",
-    category: "AI/ML Basic (Python)",
-    subtitle: "",
-    instructor: "Dr. Vikram Singh",
-    price: "",
-    image: "",
-    learnings: "",
-    requirements: "",
-    modules: [{ title: "Module 1: Python Basics", topics: 5, duration: "3h 0m" }]
+  const [activeTab, setActiveTab] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [perPage] = useState(10);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [categoryFilter, setCategoryFilter] = useState('');
+
+  // Debounce search
+  useEffect(() => {
+    const handler = setTimeout(() => { setDebouncedSearch(searchQuery); setPage(1); }, 500);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  const getImageUrl = (path: string | null) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    return `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'}/storage/${path}`;
+  };
+
+  const { data: categories } = CourseCategoryService.useCategories();
+  const { data: courses, meta, isLoading, mutate } = CourseService.useCourses({
+    search: debouncedSearch,
+    status: activeTab === 'All' ? undefined : activeTab,
+    category_id: categoryFilter ? Number(categoryFilter) : undefined,
+    page,
+    per_page: perPage
   });
 
-  const handleInputChange = (field: string, value: any) => {
-    setNewCourse(prev => ({ ...prev, [field]: value }));
+  const toggleSelect = (id: number) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
+    setSelectedIds(newSet);
   };
 
-  const handleAddModule = () => {
-    setNewCourse(prev => ({
-      ...prev,
-      modules: [...prev.modules, { title: `Module ${prev.modules.length + 1}: New Topic`, topics: 3, duration: "2h 0m" }]
-    }));
+  const toggleSelectAll = () => {
+    if (selectedIds.size === courses.length && courses.length > 0) setSelectedIds(new Set());
+    else setSelectedIds(new Set(courses.map(c => c.id)));
   };
 
-  const handleRemoveModule = (index: number) => {
-    setNewCourse(prev => ({
-      ...prev,
-      modules: prev.modules.filter((_, i) => i !== index)
-    }));
-  };
-
-  const handleUpdateModule = (index: number, field: string, value: string) => {
-    const updatedModules = [...newCourse.modules];
-    updatedModules[index] = { ...updatedModules[index], [field]: value };
-    setNewCourse(prev => ({ ...prev, modules: updatedModules }));
-  };
-
-  const handleCreateCourse = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newCourse.title && newCourse.instructor && newCourse.price) {
-      const addedCourse = {
-        id: Date.now(),
-        title: newCourse.title,
-        category: newCourse.category,
-        instructor: newCourse.instructor,
-        enrolled: 0,
-        price: parseInt(newCourse.price) || 0,
-        status: "Draft",
-        image: newCourse.image || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&q=80",
-        rating: 0,
-      };
-      setCoursesList(prev => [addedCourse, ...prev]);
-
-      // Reset & close
-      setNewCourse({
-        title: "",
-        category: "AI/ML Basic (Python)",
-        subtitle: "",
-        instructor: "Dr. Vikram Singh",
-        price: "",
-        image: "",
-        learnings: "",
-        requirements: "",
-        modules: [{ title: "Module 1: Python Basics", topics: 5, duration: "3h 0m" }]
-      });
-      setIsAddModalOpen(false);
+  const handleDelete = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this course?')) return;
+    try {
+      await CourseService.delete(id);
+      toast.success('Course deleted');
+      mutate();
+    } catch (e) {
+      toast.error('Failed to delete course');
     }
   };
 
-  const handleDeleteCourse = (id: number) => {
-    if (confirm("Are you sure you want to delete this course?")) {
-      setCoursesList(prev => prev.filter(c => c.id !== id));
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Delete ${selectedIds.size} courses?`)) return;
+    try {
+      await CourseService.bulkDelete(Array.from(selectedIds));
+      toast.success('Courses deleted');
+      setSelectedIds(new Set());
+      mutate();
+    } catch (e) {
+      toast.error('Failed to bulk delete');
+    }
+  };
+
+  const handleBulkStatus = async (status: string) => {
+    if (selectedIds.size === 0) return;
+    try {
+      await CourseService.bulkStatus(Array.from(selectedIds), status);
+      toast.success(`Courses marked as ${status}`);
+      setSelectedIds(new Set());
+      mutate();
+    } catch (e) {
+      toast.error('Failed to update statuses');
+    }
+  };
+
+  const handleDuplicate = async (id: number) => {
+    try {
+      toast.loading('Duplicating...', { id: 'dup' });
+      await CourseService.duplicate(id);
+      toast.success('Course duplicated', { id: 'dup' });
+      mutate();
+    } catch (e) {
+      toast.error('Failed to duplicate', { id: 'dup' });
+    }
+  };
+
+  const handleStatusChange = async (id: number, status: string) => {
+    try {
+      await CourseService.updateStatus(id, status);
+      toast.success(`Course marked as ${status}`);
+      mutate();
+    } catch (e) {
+      toast.error('Failed to update status');
+    }
+  };
+
+  const handleArchive = async (id: number) => {
+    try {
+      await CourseService.toggleArchive(id);
+      toast.success('Archive status updated');
+      mutate();
+    } catch (e) {
+      toast.error('Failed to update archive status');
+    }
+  };
+
+  const handleExport = async (format: string) => {
+    try {
+      const toastId = toast.loading(`Preparing ${format.toUpperCase()}...`);
+      const { default: api } = await import('../../../src/lib/axios');
+      
+      if (format === 'pdf') {
+        const res = await api.get('/admin/courses/export?format=pdf');
+        const newWin = window.open('', '_blank');
+        if (newWin) {
+          newWin.document.write(res.data);
+          newWin.document.close();
+        }
+      } else {
+        const res = await api.get(`/admin/courses/export?format=${format}`, { responseType: 'blob' });
+        const url = window.URL.createObjectURL(new Blob([res.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `courses.${format === 'excel' ? 'xlsx' : format}`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode?.removeChild(link);
+      }
+      toast.success('Download started', { id: toastId });
+    } catch (e) {
+      toast.error('Failed to export data');
     }
   };
 
   return (
     <AdminDashboardLayout>
-      <div className="space-y-6">
-        
-        <AnimatedContent direction="up" delay={0.1} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <Head>
+        <title>Courses | Admin Panel</title>
+      </Head>
+      
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">Course Catalog</h1>
-            <p className="text-slate-500 text-sm">Manage existing courses or create detailed new ones.</p>
+            <h1 className="text-2xl font-black text-[#0d1635]">Course Management</h1>
+            <p className="text-sm font-semibold text-slate-500 mt-1">Manage courses, publish content, and track performance.</p>
           </div>
-          <Button variant="primary" className="shadow-md gap-2" onClick={() => setIsAddModalOpen(true)}><Plus size={18}/> Create Detailed Course</Button>
-        </AnimatedContent>
-
-        <AnimatedContent direction="up" delay={0.2}>
-          <Card className="border border-slate-200 shadow-sm overflow-hidden bg-white w-full max-w-full">
-            <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row gap-4 items-center justify-between">
-              <div className="relative w-full sm:w-96">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input 
-                  type="text" 
-                  placeholder="Search courses..." 
-                  className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A6B] transition-shadow"
-                />
+          <div className="flex gap-3">
+            <div className="relative group/export">
+              <button className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-sm shadow-sm hover:bg-slate-50 transition-colors">
+                <Download size={16} /> Export
+              </button>
+              <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-slate-200 rounded-xl shadow-lg opacity-0 invisible group-hover/export:opacity-100 group-hover/export:visible transition-all z-10 py-1">
+                <button onClick={() => handleExport('csv')} className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">CSV</button>
+                <button onClick={() => handleExport('excel')} className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Excel</button>
+                <button onClick={() => handleExport('pdf')} className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">PDF</button>
               </div>
             </div>
+            <button 
+              onClick={() => router.push('/admin/courses/add')}
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#1B2A6B] hover:bg-[#121c47] text-white text-sm font-black rounded-xl shadow-md transition-colors"
+            >
+              <Plus size={18} /> Create Course
+            </button>
+          </div>
+        </div>
+
+        {/* Main Card */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+          
+          {/* Tabs & Filters */}
+          <div className="px-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50">
+            <div className="flex overflow-x-auto admin-scrollbar">
+              {['All', 'Published', 'Draft', 'Pending Approval', 'Private', 'Featured', 'Archived'].map(tab => (
+                <button 
+                  key={tab} 
+                  onClick={() => { setActiveTab(tab); setPage(1); }}
+                  className={`px-4 py-4 text-sm font-black whitespace-nowrap border-b-2 transition-colors ${activeTab === tab ? 'border-[#1B2A6B] text-[#1B2A6B]' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
             
-            <div className="overflow-x-auto w-full custom-scrollbar">
-              <table className="w-full text-left text-sm whitespace-nowrap min-w-[800px]">
-                <thead className="bg-white border-b border-slate-200">
+            <div className="flex items-center gap-3 pb-4 md:pb-0">
+              {selectedIds.size > 0 && (
+                <div className="flex items-center gap-2 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">
+                  <span className="text-xs font-black text-indigo-700">{selectedIds.size} Selected</span>
+                  <div className="h-4 w-px bg-indigo-200 mx-1"></div>
+                  <button onClick={() => handleBulkStatus('Published')} className="text-xs font-bold text-emerald-600 hover:bg-emerald-100 px-2 py-1 rounded">Publish</button>
+                  <button onClick={() => handleBulkStatus('Draft')} className="text-xs font-bold text-amber-600 hover:bg-amber-100 px-2 py-1 rounded">Draft</button>
+                  <button onClick={handleBulkDelete} className="p-1 text-red-500 hover:bg-red-100 rounded" title="Delete Selected"><Trash2 size={14}/></button>
+                </div>
+              )}
+              <select value={categoryFilter} onChange={e => { setCategoryFilter(e.target.value); setPage(1); }} className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-[#1B2A6B]">
+                <option value="">All Categories</option>
+                {categories?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+              <div className="relative">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search courses..." className="w-full md:w-64 pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-[#1B2A6B]" />
+              </div>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto admin-scrollbar flex-1">
+            <table className="w-full text-left border-collapse min-w-[1000px]">
+              <thead className="bg-white border-b border-slate-200 text-[11px] font-black text-slate-500 uppercase tracking-wider">
+                <tr>
+                  <th className="p-4 w-12"><input type="checkbox" checked={selectedIds.size === courses.length && courses.length > 0} onChange={toggleSelectAll} className="rounded border-slate-300 text-[#1B2A6B] focus:ring-[#1B2A6B]" /></th>
+                  <th className="p-4">Course</th>
+                  <th className="p-4">Instructor</th>
+                  <th className="p-4 text-center">Type / Price</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4 text-center">Curriculum</th>
+                  <th className="p-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {isLoading ? (
+                  [...Array(5)].map((_, i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td className="p-4"><div className="w-4 h-4 bg-slate-200 rounded"></div></td>
+                      <td className="p-4 flex gap-3"><div className="w-12 h-12 bg-slate-200 rounded-lg"></div><div><div className="w-48 h-4 bg-slate-200 rounded mb-2"></div><div className="w-32 h-3 bg-slate-200 rounded"></div></div></td>
+                      <td className="p-4"><div className="w-32 h-4 bg-slate-200 rounded"></div></td>
+                      <td className="p-4"><div className="w-16 h-4 bg-slate-200 rounded mx-auto"></div></td>
+                      <td className="p-4"><div className="w-20 h-6 bg-slate-200 rounded-full"></div></td>
+                      <td className="p-4"><div className="w-24 h-8 bg-slate-200 rounded mx-auto"></div></td>
+                      <td className="p-4"><div className="w-8 h-8 bg-slate-200 rounded ml-auto"></div></td>
+                    </tr>
+                  ))
+                ) : courses.length === 0 ? (
                   <tr>
-                    <th className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Course Details</th>
-                    <th className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Instructor</th>
-                    <th className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs text-right">Price</th>
-                    <th className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs text-right">Enrolled</th>
-                    <th className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Status</th>
-                    <th className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs text-right">Actions</th>
+                    <td colSpan={7} className="p-12 text-center">
+                      <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center mx-auto mb-4"><Search size={32}/></div>
+                      <h3 className="text-lg font-black text-slate-800 mb-1">No courses found</h3>
+                      <p className="text-sm font-medium text-slate-500">Try adjusting your filters or create a new course.</p>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
-                  {coursesList.map((course) => (
-                    <tr key={course.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-4">
-                          <img src={course.image} alt={course.title} className="w-16 h-10 rounded-md object-cover border border-slate-200 shrink-0" />
+                ) : (
+                  courses.map(course => (
+                    <tr key={course.id} className="hover:bg-slate-50 transition-colors group">
+                      <td className="p-4"><input type="checkbox" checked={selectedIds.has(course.id)} onChange={() => toggleSelect(course.id)} className="rounded border-slate-300 text-[#1B2A6B] focus:ring-[#1B2A6B]" /></td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-lg bg-slate-100 shrink-0 overflow-hidden border border-slate-200 flex items-center justify-center relative">
+                            {course.thumbnail ? <img src={getImageUrl(course.thumbnail)} className="w-full h-full object-cover"/> : <span className="text-xs font-bold text-slate-400">IMG</span>}
+                            {course.is_featured && <div className="absolute top-0 right-0 bg-amber-500 w-3 h-3 rounded-bl-lg"></div>}
+                          </div>
                           <div>
-                            <span className="font-bold text-slate-900 block truncate max-w-[200px] sm:max-w-xs">{course.title}</span>
-                            <span className="text-xs text-slate-400 font-semibold">{course.category}</span>
+                            <div className="font-bold text-[#1B2A6B] line-clamp-1 max-w-[300px] mb-0.5">{course.title}</div>
+                            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-2">
+                              {course.category?.name || 'Uncategorized'}
+                              {course.is_archived && <span className="text-red-500 bg-red-50 px-1.5 rounded">Archived</span>}
+                            </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-slate-600 font-medium">
-                        {course.instructor}
+                      <td className="p-4">
+                        <div className="font-bold text-slate-800">{course.expert?.name || 'Unknown'}</div>
                       </td>
-                      <td className="px-6 py-4 text-slate-900 font-bold text-right">
-                        ₹{course.price.toLocaleString()}
+                      <td className="p-4 text-center">
+                        <div className="inline-flex flex-col items-center">
+                          <span className={`text-[10px] font-black uppercase tracking-widest ${course.course_type === 'Free' ? 'text-emerald-600' : 'text-blue-600'}`}>{course.course_type}</span>
+                          {course.course_type === 'Paid' && <span className="text-sm font-bold text-slate-800">₹{course.price}</span>}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 text-slate-600 font-medium text-right flex flex-col items-end">
-                        <span>{course.enrolled.toLocaleString()}</span>
-                        <span className="text-[10px] text-amber-500 font-bold flex items-center gap-0.5 mt-0.5"><Star size={10} fill="currentColor"/> {course.rating}</span>
+                      <td className="p-4">
+                        <StatusBadge status={course.status} />
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold ${
-                          course.status === 'Published' ? 'text-emerald-700 bg-emerald-100' : 'text-slate-600 bg-slate-100'
-                        }`}>
-                          {course.status}
-                        </span>
+                      <td className="p-4 text-center">
+                        <button 
+                          onClick={() => router.push(`/admin/courses/curriculum?courseId=${course.id}`)}
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1B2A6B] bg-[#1B2A6B]/5 px-3 py-1.5 rounded-lg hover:bg-[#1B2A6B]/10 transition-colors"
+                        >
+                          <ListTree size={14} /> Curriculum
+                        </button>
                       </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => router.push(`/courses/${course.id}`)} className="p-1.5 text-slate-400 hover:text-[#1B2A6B] hover:bg-[#1B2A6B]/10 rounded transition-colors" title="View Details">
-                            <Eye size={16} />
-                          </button>
-                          <button onClick={() => router.push(`/admin/courses/${course.id}`)} className="p-1.5 text-slate-400 hover:text-[#C9A227] hover:bg-[#C9A227]/10 rounded transition-colors" title="Edit">
-                            <Edit2 size={16} />
-                          </button>
-                          <button onClick={() => handleDeleteCourse(course.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" title="Delete">
-                            <Trash2 size={16} />
-                          </button>
+                      <td className="p-4 text-right">
+                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => router.push(`/admin/courses/edit/${course.id}`)} className="p-1.5 text-slate-400 hover:text-[#1B2A6B] hover:bg-slate-100 rounded-lg tooltip" title="Edit"><Edit size={16}/></button>
+                          <div className="relative group/dropdown">
+                            <button className="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg"><MoreVertical size={16}/></button>
+                            <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-xl shadow-lg opacity-0 invisible group-hover/dropdown:opacity-100 group-hover/dropdown:visible transition-all z-10 py-1">
+                              {course.status !== 'Published' && <button onClick={() => handleStatusChange(course.id, 'Published')} className="w-full text-left px-4 py-2 text-sm font-bold text-emerald-600 hover:bg-slate-50 flex items-center gap-2"><Globe size={14}/> Publish</button>}
+                              {course.status === 'Published' && <button onClick={() => handleStatusChange(course.id, 'Draft')} className="w-full text-left px-4 py-2 text-sm font-bold text-amber-600 hover:bg-slate-50 flex items-center gap-2"><Lock size={14}/> Unpublish</button>}
+                              <button onClick={() => handleStatusChange(course.id, course.status === 'Private' ? 'Draft' : 'Private')} className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2"><Lock size={14}/> Make {course.status === 'Private' ? 'Public' : 'Private'}</button>
+                              
+                              <div className="h-px bg-slate-100 my-1"></div>
+                              <button onClick={() => handleDuplicate(course.id)} className="w-full text-left px-4 py-2 text-sm font-bold text-blue-600 hover:bg-slate-50 flex items-center gap-2"><Copy size={14}/> Duplicate</button>
+                              <button onClick={() => handleArchive(course.id)} className="w-full text-left px-4 py-2 text-sm font-bold text-orange-600 hover:bg-slate-50 flex items-center gap-2"><Archive size={14}/> {course.is_archived ? 'Unarchive' : 'Archive'}</button>
+                              
+                              <div className="h-px bg-slate-100 my-1"></div>
+                              <button onClick={() => handleDelete(course.id)} className="w-full text-left px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-2"><Trash2 size={14}/> Delete</button>
+                            </div>
+                          </div>
                         </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </AnimatedContent>
-
-      </div>
-
-      {/* Comprehensive Create Course Modal */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsAddModalOpen(false)} />
-          
-          <div className="bg-white rounded-3xl border border-slate-200 w-full max-w-4xl shadow-2xl z-50 flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            {/* Header */}
-            <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50 shrink-0">
-              <div>
-                <h2 className="text-xl font-black text-slate-800">Create Comprehensive Course</h2>
-                <p className="text-xs font-semibold text-slate-500 mt-1">Fill in all details to build the course landing page structure.</p>
-              </div>
-              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-slate-800 bg-white shadow-sm border border-slate-200 p-2 rounded-xl transition-colors">
-                <X size={20} />
-              </button>
-            </div>
-            
-            {/* Scrollable Form Area */}
-            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-slate-50/30">
-              <form id="create-course-form" onSubmit={handleCreateCourse} className="space-y-8">
-                
-                {/* Section 1: Basic Info */}
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-                  <h3 className="text-sm font-black text-[#1B2A6B] uppercase tracking-widest border-b border-slate-100 pb-3 flex items-center gap-2">
-                    <BookOpen size={16}/> Basic Information
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div className="space-y-1.5 md:col-span-2">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Course Title</label>
-                      <input 
-                        type="text" required placeholder="e.g. Master React in 30 Days"
-                        value={newCourse.title} onChange={(e) => handleInputChange('title', e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none"
-                      />
-                    </div>
-                    
-                    <div className="space-y-1.5 md:col-span-2">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Subtitle / Short Description</label>
-                      <input 
-                        type="text" placeholder="e.g. Start your AI journey with Python programming fundamentals."
-                        value={newCourse.subtitle} onChange={(e) => handleInputChange('subtitle', e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Category</label>
-                      <input 
-                        type="text" placeholder="e.g. AI/ML Basic (Python)"
-                        value={newCourse.category} onChange={(e) => handleInputChange('category', e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Instructor</label>
-                      <select 
-                        value={newCourse.instructor} onChange={(e) => handleInputChange('instructor', e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:bg-white focus:ring-2 focus:ring-[#1B2A6B]"
-                      >
-                        <option value="Dr. Vikram Singh">Dr. Vikram Singh</option>
-                        <option value="Ankit Sharma">Ankit Sharma</option>
-                        <option value="Priya Desai">Priya Desai</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Price (INR)</label>
-                      <input 
-                        type="number" required placeholder="e.g. 29000"
-                        value={newCourse.price} onChange={(e) => handleInputChange('price', e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none"
-                      />
-                    </div>
-                    
-                    <MediaUploader
-                      label="Course Thumbnail Image URL"
-                      accept="image/*"
-                      value={newCourse.image}
-                      onUploadSuccess={(url) => handleInputChange('image', url)}
-                    />
-                    
-                    <div className="md:col-span-2">
-                      <MediaUploader
-                        label="Preview Video URL"
-                        accept="video/*"
-                        value={(newCourse as any).videoUrl || ''}
-                        onUploadSuccess={(url) => handleInputChange('videoUrl', url)}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Section 2: Details & Learnings */}
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-                  <h3 className="text-sm font-black text-[#1B2A6B] uppercase tracking-widest border-b border-slate-100 pb-3 flex items-center gap-2">
-                    <Star size={16}/> Details & Learnings
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div className="space-y-1.5 md:col-span-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">What you'll learn (One per line)</label>
-                      <textarea 
-                        rows={5} placeholder="- Python programming fundamentals&#10;- Data structures and algorithms&#10;- Object-oriented programming"
-                        value={newCourse.learnings} onChange={(e) => handleInputChange('learnings', e.target.value)}
-                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none resize-none"
-                      />
-                    </div>
-                    <div className="space-y-1.5 md:col-span-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Requirements (One per line)</label>
-                      <textarea 
-                        rows={5} placeholder="- Basic understanding of HTML and CSS.&#10;- A computer with internet access."
-                        value={newCourse.requirements} onChange={(e) => handleInputChange('requirements', e.target.value)}
-                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#1B2A6B] outline-none resize-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Section 3: Course Modules Builder */}
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <h3 className="text-sm font-black text-[#1B2A6B] uppercase tracking-widest flex items-center gap-2">
-                      <Clock size={16}/> Course Content / Modules
-                    </h3>
-                    <button type="button" onClick={handleAddModule} className="text-xs font-bold text-[#C9A227] hover:text-[#1B2A6B] flex items-center gap-1 transition-colors">
-                      <Plus size={14}/> Add Module
-                    </button>
-                  </div>
-
-                  <div className="space-y-4">
-                    {newCourse.modules.map((mod, idx) => (
-                      <div key={idx} className="flex flex-col md:flex-row items-center gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl group relative">
-                        <div className="w-full md:flex-1 space-y-1">
-                          <label className="text-[10px] font-bold text-slate-500 uppercase">Module Title</label>
-                          <input 
-                            type="text" value={mod.title} onChange={(e) => handleUpdateModule(idx, 'title', e.target.value)}
-                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold outline-none focus:ring-1 focus:ring-[#1B2A6B]"
-                          />
-                        </div>
-                        <div className="w-full md:w-32 space-y-1">
-                          <label className="text-[10px] font-bold text-slate-500 uppercase">Topics Count</label>
-                          <input 
-                            type="number" value={mod.topics} onChange={(e) => handleUpdateModule(idx, 'topics', e.target.value)}
-                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold outline-none focus:ring-1 focus:ring-[#1B2A6B]"
-                          />
-                        </div>
-                        <div className="w-full md:w-32 space-y-1">
-                          <label className="text-[10px] font-bold text-slate-500 uppercase">Duration</label>
-                          <input 
-                            type="text" placeholder="e.g. 3h 0m" value={mod.duration} onChange={(e) => handleUpdateModule(idx, 'duration', e.target.value)}
-                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold outline-none focus:ring-1 focus:ring-[#1B2A6B]"
-                          />
-                        </div>
-                        <div className="w-full md:w-auto pt-5 md:pt-4 flex justify-end">
-                          <button 
-                            type="button" 
-                            onClick={() => handleRemoveModule(idx)}
-                            className="p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </form>
-            </div>
-
-            {/* Footer Actions */}
-            <div className="p-4 border-t border-slate-100 bg-white shrink-0 flex gap-4 justify-end">
-              <button 
-                type="button" onClick={() => setIsAddModalOpen(false)}
-                className="px-6 py-2.5 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-50 transition-all"
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit" form="create-course-form"
-                className="px-8 py-2.5 bg-[#1B2A6B] hover:bg-[#0d1635] text-white text-sm font-bold rounded-xl shadow-md transition-all flex items-center gap-2"
-              >
-                <Plus size={16}/> Create & Publish Course
-              </button>
-            </div>
-
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
+          
+          {/* Pagination */}
+          {meta && meta.last_page > 1 && (
+            <div className="px-6 py-4 border-t border-slate-100 bg-white flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-xs font-semibold text-slate-500">Showing <span className="font-bold text-slate-700">{(page-1)*perPage + 1}</span> to <span className="font-bold text-slate-700">{Math.min(page*perPage, meta.total)}</span> of <span className="font-bold text-slate-700">{meta.total}</span> entries</p>
+              <div className="flex gap-1.5">
+                <button disabled={page <= 1} onClick={() => setPage(page-1)} className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">Prev</button>
+                <button className="px-3 py-1.5 bg-[#1B2A6B] text-white rounded-lg text-sm font-black shadow-sm">{page}</button>
+                <button disabled={page >= meta.last_page} onClick={() => setPage(page+1)} className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">Next</button>
+              </div>
+            </div>
+          )}
         </div>
-      )}
-
-      <style dangerouslySetInnerHTML={{__html: `
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; }
-      `}} />
+      </div>
     </AdminDashboardLayout>
   );
-}export { Button }; // Keep button export context safe if any file expects it
+}
+
+function StatusBadge({ status }: { status: string }) {
+  let colors = 'bg-slate-100 text-slate-600';
+  if (status === 'Published') colors = 'bg-emerald-100 text-emerald-700';
+  else if (status === 'Draft') colors = 'bg-slate-100 text-slate-600';
+  else if (status === 'Pending Approval') colors = 'bg-amber-100 text-amber-700';
+  else if (status === 'Private') colors = 'bg-indigo-100 text-indigo-700';
+  else if (status === 'Rejected') colors = 'bg-red-100 text-red-700';
+
+  return (
+    <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${colors}`}>
+      {status}
+    </span>
+  );
+}

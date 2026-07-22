@@ -3,11 +3,16 @@ import { Calendar as CalendarIcon, Clock, Plus, Video, CheckCircle2, ChevronLeft
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { useMockData } from "../../../src/context/MockDataContext";
 import { EmptyState } from "../../../src/components/ui/EmptyState";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function ExpertSchedule() {
-  const { schedule: slots, setSchedule: setSlots } = useMockData();
+  const { data, isLoading, mutate } = useSWR("/expert/schedule", fetcher);
+  const slots = data?.data || [];
+  
   const [activeModal, setActiveModal] = useState(false);
   const [formData, setFormData] = useState({ date: '', start: '', end: '' });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -41,17 +46,34 @@ export default function ExpertSchedule() {
       booked: false
     };
 
-    setSlots(prev => [...prev, newSlot]);
+    // Optimistic UI update
+    mutate({ ...data, data: [...slots, newSlot] }, false);
     setActiveModal(false);
     toast.success("Availability added successfully!");
+    // In real app, make an API call to save this specific slot here:
+    // await api.post('/expert/schedule', newSlot);
+    mutate();
     setFormData({ date: '', start: '', end: '' });
     setErrors({});
   };
 
-  const removeSlot = (id: number) => {
-    setSlots(prev => prev.filter(s => s.id !== id));
+  const removeSlot = async (id: number) => {
+    // Optimistic UI update
+    mutate({ ...data, data: slots.filter((s: any) => s.id !== id) }, false);
     toast.success("Slot removed");
+    // API Call: await api.delete(`/expert/schedule/${id}`);
+    mutate();
   };
+
+  // Filter slots for the current selected month and past/upcoming
+  const filteredSlots = slots.filter((s: any) => {
+    const slotDate = new Date(s.date);
+    const isSameMonth = slotDate.getMonth() === currentMonth.getMonth() && slotDate.getFullYear() === currentMonth.getFullYear();
+    const isPast = slotDate < new Date(new Date().setHours(0,0,0,0));
+    
+    if (!isSameMonth) return false;
+    return showPastSessions ? isPast : !isPast;
+  });
 
   return (
     <ExpertDashboardLayout>
@@ -80,18 +102,20 @@ export default function ExpertSchedule() {
           </div>
         </div>
 
-        {slots.length === 0 ? (
+        {isLoading ? (
+          <div className="p-12 text-center text-slate-400">Loading schedule...</div>
+        ) : filteredSlots.length === 0 ? (
           <div className="p-8">
             <EmptyState 
               icon={CalendarOff} 
               title="No sessions scheduled" 
-              description="You have no upcoming or past sessions on your calendar. Add availability to get started."
+              description="You have no upcoming or past sessions on your calendar for this month."
             />
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
           <AnimatePresence>
-            {slots.map((slot) => (
+            {filteredSlots.map((slot: any) => (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} key={slot.id} className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-slate-50/80 transition-colors overflow-hidden">
                 <div className="flex items-start gap-4">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${slot.booked ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-slate-50 text-slate-400 border-slate-200 border-dashed'}`}>

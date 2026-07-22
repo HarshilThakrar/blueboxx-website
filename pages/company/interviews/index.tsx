@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import { CompanyDashboardLayout } from "../../../src/layout/CompanyDashboardLayout";
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
-import { Calendar, Video, Search, User, X, CalendarDays, ArrowRight } from "lucide-react";
-import { useInterviewStore } from "../../../src/store/useInterviewStore";
+import { Calendar, Video, Search, User, X, CalendarDays, ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function CompanyInterviewsPage() {
-  const { interviews, updateInterview } = useInterviewStore();
+  const { data, isLoading, mutate } = useSWR("/company/interviews", fetcher);
+  const interviews = data?.data || [];
   const [activeTab, setActiveTab] = useState("Upcoming");
   const [search, setSearch] = useState("");
   const [rescheduleModal, setRescheduleModal] = useState<{ id: number; date: string; time: string } | null>(null);
@@ -20,21 +24,33 @@ export default function CompanyInterviewsPage() {
       (i.name.toLowerCase().includes(search.toLowerCase()) || i.role.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const handleReschedule = (e: React.FormEvent) => {
+  const handleReschedule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (rescheduleModal) {
-      updateInterview(rescheduleModal.id, {
-        date: rescheduleModal.date,
-        time: rescheduleModal.time,
-      });
+      try {
+        await api.put(`/company/interviews/${rescheduleModal.id}`, {
+          date: rescheduleModal.date,
+          time: rescheduleModal.time,
+        });
+        mutate();
+        toast.success("Interview rescheduled");
+      } catch (err) {
+        toast.error("Failed to reschedule interview");
+      }
       setRescheduleModal(null);
     }
   };
 
-  const handleFeedback = (e: React.FormEvent) => {
+  const handleFeedback = async (e: React.FormEvent) => {
     e.preventDefault();
     if (feedbackModal !== null) {
-      updateInterview(feedbackModal, { status: "Completed" });
+      try {
+        await api.put(`/company/interviews/${feedbackModal}`, { status: "Completed" });
+        mutate();
+        toast.success("Feedback submitted");
+      } catch (err) {
+        toast.error("Failed to submit feedback");
+      }
       setFeedbackModal(null);
       setFeedbackText("");
     }
@@ -80,7 +96,11 @@ export default function CompanyInterviewsPage() {
           </div>
 
           <div className="space-y-4">
-            {filtered.length === 0 ? (
+            {isLoading ? (
+              <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 flex justify-center text-[#1B2A6B]">
+                <Loader2 className="animate-spin w-8 h-8" />
+              </div>
+            ) : filtered.length === 0 ? (
               <div className="p-12 text-center bg-white rounded-2xl border border-slate-200">
                 <p className="text-slate-500 font-medium">No {activeTab.toLowerCase()} interviews found.</p>
                 {activeTab === "Upcoming" && (
@@ -115,8 +135,8 @@ export default function CompanyInterviewsPage() {
                           <p className="text-xs font-bold text-[#1B2A6B]">{interview.role}</p>
                         </div>
                       </div>
-                      <span className={`px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded ${interview.match >= 90 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
-                        {interview.match}% Match
+                      <span className={`px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded ${interview.match >= 90 || interview.match === 'High' ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                        {interview.score || interview.match}% Match
                       </span>
                     </div>
                     <div className="flex items-center gap-4 text-xs font-semibold text-slate-500 ml-13">

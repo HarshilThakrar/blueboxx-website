@@ -1,65 +1,87 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MainLayout } from "../src/layout/MainLayout";
-import { Filter } from "lucide-react";
-import { dummyJobs } from "../src/data/jobs";
+import { Filter, Briefcase, Clock, ArrowRight, Building, Loader2 } from "lucide-react";
 import { TopSearchBar } from "../src/components/ui/TopSearchBar";
 import { SidebarFilter } from "../src/components/ui/SidebarFilter";
 import { Pagination } from "../src/components/ui/Pagination";
 import { Card, CardContent } from "../src/components/ui/Card";
 import { Badge } from "../src/components/ui/Badge";
 import { Button } from "../src/components/ui/Button";
-import { Briefcase, Clock, ArrowRight, Building } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { TestimonialSection } from "../src/sections/TestimonialSection";
 import { PartnersSection } from "../src/sections/PartnersSection";
-import { useJobStore } from "../src/store/useJobStore";
 import { SEO } from "../src/components/seo/SEO";
+import api from "../src/lib/axios";
 
 export default function JobsPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortOption, setSortOption] = useState("most-recent");
+  const [sortOption, setSortOption] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const storeJobs = useJobStore((s) => s.getPublicJobs());
-
-  // Convert store jobs to dummyJobs shape and merge
-  const storeJobsMapped = storeJobs.map((j) => ({
-    id: j.id,
-    slug: j.id,
-    role: j.title,
-    company: j.company,
-    location: j.locationType === "Remote" ? "Remote" : j.location,
-    salary: j.salary,
-    experience: j.type,
-    postedAt: j.postedAt,
-    skills: j.skills,
-    type: j.type,
-  }));
-
-  const allJobs = [...storeJobsMapped, ...dummyJobs];
-
   const [activeFilters, setActiveFilters] = useState<any>({});
+  
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalJobs, setTotalJobs] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredJobs = allJobs.filter(job => {
-    const matchesSearch = job.role.toLowerCase().includes(searchQuery.toLowerCase()) || job.company.toLowerCase().includes(searchQuery.toLowerCase());
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        setIsLoading(true);
+        const params: any = {
+          page: currentPage,
+          per_page: 6,
+          sort: sortOption,
+        };
+        
+        let searchTerms = [];
+        if (searchQuery) searchTerms.push(searchQuery);
+        if (activeFilters.role) searchTerms.push(activeFilters.role);
+        if (searchTerms.length > 0) params.search = searchTerms.join(' ');
+        
+        if (activeFilters.mode) {
+           if (activeFilters.mode === "Remote") {
+               params.location = "Remote";
+           }
+        }
+        if (activeFilters.experience) {
+           params.experience_level = activeFilters.experience.split(' ')[0];
+        }
+        if (activeFilters.type) {
+           params.job_type = activeFilters.type;
+        }
+        if (activeFilters.salary) {
+           const match = activeFilters.salary.match(/(\d+)(?:-(\d+))?\s+LPA/);
+           if (match) {
+               params.min_salary = parseInt(match[1]) * 100000;
+               if (match[2]) params.max_salary = parseInt(match[2]) * 100000;
+           } else if (activeFilters.salary === "25+ LPA") {
+               params.min_salary = 2500000;
+           }
+        }
+
+        const res = await api.get("/public/jobs", { params });
+        if (res.data.success) {
+          setJobs(res.data.data);
+          setTotalPages(res.data.pagination.last_page);
+          setTotalJobs(res.data.pagination.total);
+        }
+      } catch (error) {
+        console.error("Failed to fetch jobs:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    // Live Sidebar Filters
-    const matchesRole = activeFilters.role ? job.role.toLowerCase().includes(activeFilters.role.toLowerCase()) : true;
-    const matchesMode = activeFilters.mode ? (activeFilters.mode === "Remote" ? job.location === "Remote" : job.location !== "Remote") : true;
-    const matchesExperience = activeFilters.experience ? job.experience?.toLowerCase().includes(activeFilters.experience.split(' ')[0].toLowerCase()) : true;
+    // Add debounce for search query
+    const delayDebounceFn = setTimeout(() => {
+      fetchJobs();
+    }, 300);
 
-    return matchesSearch && matchesRole && matchesMode && matchesExperience;
-  });
-
-  const sortedJobs = [...filteredJobs].sort((a, b) => {
-    if (sortOption === "highest-salary") {
-      const aVal = parseInt(a.salary.replace(/[^0-9]/g, '')) || 0;
-      const bVal = parseInt(b.salary.replace(/[^0-9]/g, '')) || 0;
-      return bVal - aVal;
-    }
-    return 0;
-  });
+    return () => clearTimeout(delayDebounceFn);
+  }, [currentPage, sortOption, searchQuery, activeFilters]);
 
   return (
     <>
@@ -123,7 +145,7 @@ export default function JobsPage() {
 
             <main className="lg:col-span-3">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="font-bold text-slate-800 text-lg">Showing {sortedJobs.length} jobs</h2>
+                <h2 className="font-bold text-slate-800 text-lg">Showing {totalJobs} jobs</h2>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-slate-500 font-semibold">Sort by:</span>
                   <select
@@ -131,47 +153,53 @@ export default function JobsPage() {
                     onChange={(e) => setSortOption(e.target.value)}
                     className="bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-800 px-3 py-1.5 focus:ring-[#C9A227] focus:border-[#C9A227] cursor-pointer outline-none"
                   >
-                    <option value="most-recent">Most Recent</option>
-                    <option value="highest-salary">Highest Salary</option>
+                    <option value="newest">Most Recent</option>
+                    <option value="salary_high">Highest Salary</option>
                   </select>
                 </div>
               </div>
 
-              {sortedJobs.length > 0 ? (
+              {isLoading ? (
+                <div className="py-20 text-center flex justify-center">
+                  <Loader2 className="animate-spin text-[#1B2A6B] w-10 h-10" />
+                </div>
+              ) : jobs.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {sortedJobs.slice((currentPage - 1) * 6, currentPage * 6).map((job) => (
+                    {jobs.map((job) => (
                       <Card key={job.id} className="group relative overflow-hidden bg-white border border-slate-200 hover:border-[#1B2A6B]/30 hover:shadow-[0_8px_30px_rgba(27,42,107,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full rounded-[1.25rem]">
                         <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-[#1B2A6B]/5 to-transparent opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-500"></div>
                         <CardContent className="p-4 flex-1 flex flex-col relative z-10">
                           <div className="flex justify-between items-start mb-3">
                             <div className="w-10 h-10 rounded-lg border border-slate-100 bg-slate-50 shadow-sm shrink-0 overflow-hidden">
-                              <img src={`https://logo.clearbit.com/${job.company.toLowerCase().replace(/\s+/g, '')}.com`} onError={(e) => { e.currentTarget.src = `https://ui-avatars.com/api/?name=${job.company}&background=random` }} alt={job.company} className="w-full h-full object-cover" />
+                              <img src={job.company_logo || `https://ui-avatars.com/api/?name=${job.company_name}&background=random`} alt={job.company_name} className="w-full h-full object-cover" />
                             </div>
                             <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 text-slate-700 px-2 py-0.5 rounded-md text-xs font-bold shadow-sm">
-                              <Briefcase size={10} className="text-[#1B2A6B]" /> {job.experience}
+                              <Briefcase size={10} className="text-[#1B2A6B]" /> {job.experience_level || job.job_type}
                             </div>
                           </div>
 
-                          <h3 className="text-base font-extrabold text-slate-900 mb-0.5 group-hover:text-[#1B2A6B] transition-colors leading-tight line-clamp-1">{job.role}</h3>
+                          <h3 className="text-base font-extrabold text-slate-900 mb-0.5 group-hover:text-[#1B2A6B] transition-colors leading-tight line-clamp-1">{job.title}</h3>
                           <p className="text-[11px] font-bold text-slate-500 mb-3 flex items-center gap-1">
-                            <Building size={12} /> {job.company}
+                            <Building size={12} /> {job.company_name} • {job.location}
                           </p>
 
                           <div className="flex flex-wrap items-center gap-2 mb-5">
-                            {(job.skills || []).slice(0, 3).map((tag: string, idx: number) => (
-                              <Badge key={idx} variant="secondary" className="bg-slate-100 text-slate-600 hover:bg-slate-200 border-none font-bold text-[9px] px-2 py-0.5 rounded-md shadow-sm">{tag}</Badge>
-                            ))}
+                            {job.is_featured && (
+                              <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-none font-bold text-[9px] px-2 py-0.5 rounded-md shadow-sm">Featured</Badge>
+                            )}
                           </div>
 
                           <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
                             <div>
-                              <div className="text-xs font-extrabold text-emerald-600 mb-0.5">{job.salary}</div>
+                              <div className="text-xs font-extrabold text-emerald-600 mb-0.5">
+                                {job.hide_salary ? 'Undisclosed' : job.salary_min ? `₹${job.salary_min.toLocaleString()} - ₹${job.salary_max.toLocaleString()}` : 'Not Specified'}
+                              </div>
                               <div className="text-[9px] text-slate-400 font-bold flex items-center gap-1">
-                                <Clock size={10} /> POSTED {job.postedAt.toUpperCase()}
+                                <Clock size={10} /> POSTED {job.posted_at?.toUpperCase()}
                               </div>
                             </div>
-                            <Link href={`/apply/job/${job.slug}`}>
+                            <Link href={`/apply/job/${job.id}`}>
                               <Button variant="outline" className="h-7 text-xs font-bold border-slate-200 text-slate-700 bg-slate-50 group-hover:bg-[#1B2A6B] group-hover:text-white group-hover:border-[#1B2A6B] transition-colors shadow-sm rounded-lg px-3">
                                 Apply
                               </Button>
@@ -181,10 +209,10 @@ export default function JobsPage() {
                       </Card>
                     ))}
                   </div>
-                  {Math.ceil(sortedJobs.length / 6) > 1 && (
+                  {totalPages > 1 && (
                     <Pagination
                       currentPage={currentPage}
-                      totalPages={Math.ceil(sortedJobs.length / 6)}
+                      totalPages={totalPages}
                       onPageChange={setCurrentPage}
                       className="mt-12"
                     />

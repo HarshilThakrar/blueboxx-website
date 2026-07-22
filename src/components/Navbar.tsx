@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion, Variants } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useStore } from '../store/useStore';
+import { useGlobalSettings } from '../contexts/SettingsContext';
 
 import { ShoppingCart } from 'lucide-react';
 
@@ -14,6 +15,7 @@ export default function Navbar() {
 
   const { user, isAuthenticated, logout } = useAuthStore();
   const cartItemCount = useStore((state) => state.cart.length);
+  const { settings } = useGlobalSettings();
 
   // Monitor scrolling to apply premium visual effects to Navbar
   useEffect(() => {
@@ -92,8 +94,8 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
             <img
-              src="/logoblue.png"
-              alt="BB Logo"
+              src={settings.main_logo || "/logoblue.png"}
+              alt={settings.website_name || "BB Logo"}
               className="h-[48px] md:h-[56px] w-auto object-contain transition-transform duration-300 group-hover:scale-[1.03] drop-shadow-sm"
             />
           </Link>

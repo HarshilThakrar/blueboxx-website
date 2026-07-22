@@ -1,10 +1,21 @@
 import { InternDashboardLayout } from "../../../src/layout/InternDashboardLayout";
-import { Briefcase, BookOpen, UserCheck, Code, CheckCircle, ChevronRight, Activity, CodeSquare, Upload, X, Calendar, Clock } from "lucide-react";
+import { Briefcase, BookOpen, UserCheck, CheckCircle, ChevronRight, Activity, Upload, X, Calendar, Clock, Inbox } from "lucide-react";
 import Link from "next/link";
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import toast from "react-hot-toast";
+import axios from "axios";
+import { EmptyState } from "../../../src/components/common/EmptyState";
+
+interface DashboardData {
+  stats: {
+    applications: number;
+    tasks_completed: number;
+    hours_logged: number;
+  };
+  recent_applications: any[];
+}
 
 export default function InternDashboard() {
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
@@ -12,6 +23,37 @@ export default function InternDashboard() {
   const [isTimelineModalOpen, setIsTimelineModalOpen] = useState(false);
   const [isMentorModalOpen, setIsMentorModalOpen] = useState(false);
   const [uploadedResumeName, setUploadedResumeName] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState<DashboardData | null>(null);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/intern/dashboard`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        setData(res.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data", error);
+      toast.error("Failed to load dashboard data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setUploadedResumeName(e.target.files[0].name);
+      toast.success("Resume uploaded successfully!");
+      setIsResumeModalOpen(false);
+    }
+  };
 
   const handleJournalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,26 +61,18 @@ export default function InternDashboard() {
     setIsJournalModalOpen(false);
   };
 
-  const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setUploadedResumeName(e.target.files[0].name);
-      setIsResumeModalOpen(false);
-    }
-  };
+  const activeProjects = []; // Would be fetched from API in reality. Using empty for now to show EmptyState.
 
   return (
     <InternDashboardLayout>
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="text-3xl font-black text-[#0d1635] mb-2">Intern Portal</h1>
-          <p className="text-slate-500 font-medium text-sm">Manage live projects, track mentorship sessions, and build your career proof.</p>
+          <p className="text-slate-500 font-medium text-sm">Manage your internships, track hours, and submit your weekly tasks.</p>
         </div>
         <div className="flex gap-3">
-          <button onClick={() => setIsResumeModalOpen(true)} className="px-5 py-2.5 bg-white border border-slate-200 text-[#0d1635] rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-all flex items-center gap-2">
-            <Upload size={16} /> {uploadedResumeName ? uploadedResumeName.slice(0, 12) + "..." : "Upload Resume"}
-          </button>
-          <Link href="/intern/projects" className="px-5 py-2.5 bg-[#C9A227] text-[#0d1635] rounded-xl text-sm font-bold shadow-md hover:bg-[#b08d22] transition-all flex items-center gap-2">
-            <CodeSquare size={16} /> Browse Projects
+          <Link href="/internships" className="px-5 py-2.5 bg-[#1B2A6B] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#0d1635] transition-all flex items-center gap-2">
+            <Briefcase size={16} /> Find Internships
           </Link>
         </div>
       </div>
@@ -49,9 +83,9 @@ export default function InternDashboard() {
           {/* Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
-              { label: "Active Projects", value: "3", icon: Code, color: "text-blue-600", bg: "bg-blue-50" },
-              { label: "Tasks Completed", value: "24", icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50" },
-              { label: "Mentor Sessions", value: "5", icon: UserCheck, color: "text-purple-600", bg: "bg-purple-50" },
+              { label: "Applications", value: isLoading ? "-" : (data?.stats?.applications || 0).toString(), icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50" },
+              { label: "Tasks Completed", value: isLoading ? "-" : (data?.stats?.tasks_completed || 0).toString(), icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50" },
+              { label: "Hours Logged", value: isLoading ? "-" : (data?.stats?.hours_logged || 0).toString(), icon: Clock, color: "text-indigo-600", bg: "bg-indigo-50" },
             ].map((stat, i) => (
               <AnimatedContent key={i} direction="up" delay={i * 0.1} className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-shadow">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${stat.bg} ${stat.color} mb-3`}>
@@ -69,32 +103,43 @@ export default function InternDashboard() {
               <h2 className="text-lg font-black text-[#0d1635] flex items-center gap-2">
                 <Activity size={18} className="text-[#1B2A6B]" /> Live Projects Tracker
               </h2>
-              <button onClick={() => setIsTimelineModalOpen(true)} className="text-xs font-bold text-[#1B2A6B] hover:underline flex items-center">
-                View Timeline <ChevronRight size={14}/>
-              </button>
+              {activeProjects.length > 0 && (
+                <button onClick={() => setIsTimelineModalOpen(true)} className="text-xs font-bold text-[#1B2A6B] hover:underline flex items-center">
+                  View Timeline <ChevronRight size={14}/>
+                </button>
+              )}
             </div>
             
-            <div className="divide-y divide-slate-100">
-              {[
-                { name: "E-Commerce Rebrand", company: "RetailCo", status: "In Progress", progress: 65, due: "in 2 days" },
-                { name: "React Dashboard UI", company: "FinTech App", status: "Review", progress: 90, due: "tomorrow" },
-              ].map((proj, i) => (
-                <div key={i} className="p-6 hover:bg-slate-50 transition-colors">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-base font-bold text-[#0d1635]">{proj.name}</h3>
-                      <p className="text-xs font-semibold text-slate-500 mt-1">{proj.company} &bull; Due {proj.due}</p>
+            <div className="p-6">
+              {activeProjects.length > 0 ? (
+                <div className="divide-y divide-slate-100">
+                  {activeProjects.map((proj: any, i: number) => (
+                    <div key={i} className="py-4 hover:bg-slate-50 transition-colors">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-base font-bold text-[#0d1635]">{proj.name}</h3>
+                          <p className="text-xs font-semibold text-slate-500 mt-1">{proj.company} &bull; Due {proj.due}</p>
+                        </div>
+                        <span className={`px-2 py-1 text-[9px] font-black uppercase tracking-wider rounded-md ${proj.status === 'Review' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
+                          {proj.status}
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-100 rounded-full h-1.5 mb-2">
+                        <div className={`h-1.5 rounded-full ${proj.status === 'Review' ? 'bg-amber-500' : 'bg-[#1B2A6B]'}`} style={{ width: `${proj.progress}%` }}></div>
+                      </div>
+                      <p className="text-right text-[10px] font-bold text-slate-400">{proj.progress}% Completed</p>
                     </div>
-                    <span className={`px-2 py-1 text-[9px] font-black uppercase tracking-wider rounded-md ${proj.status === 'Review' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
-                      {proj.status}
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-1.5 mb-2">
-                    <div className={`h-1.5 rounded-full ${proj.status === 'Review' ? 'bg-amber-500' : 'bg-[#1B2A6B]'}`} style={{ width: `${proj.progress}%` }}></div>
-                  </div>
-                  <p className="text-right text-[10px] font-bold text-slate-400">{proj.progress}% Completed</p>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <EmptyState 
+                  icon={Inbox}
+                  title="No Live Projects"
+                  description="You are not currently assigned to any active internship projects. Once you are hired, your projects will appear here."
+                  actionText="Find Internships"
+                  onAction={() => window.location.href = '/internships'}
+                />
+              )}
             </div>
           </AnimatedContent>
         </div>
@@ -194,19 +239,8 @@ export default function InternDashboard() {
               </div>
               <div className="p-6 space-y-6">
                 <div className="relative border-l-2 border-[#1B2A6B] ml-3 space-y-6">
-                  {[
-                    { step: "Project Assigned", desc: "Requirements gathered", date: "Oct 1", active: false },
-                    { step: "Design Phase", desc: "Wireframes approved", date: "Oct 5", active: false },
-                    { step: "Development", desc: "Frontend implementation", date: "Oct 15", active: true },
-                    { step: "Final Review", desc: "Pending mentor approval", date: "Oct 20", active: false },
-                  ].map((t, i) => (
-                    <div key={i} className="relative pl-6">
-                      <div className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-4 border-white ${t.active ? 'bg-[#C9A227]' : 'bg-[#1B2A6B]'}`}></div>
-                      <h4 className={`text-sm font-bold ${t.active ? 'text-[#0d1635]' : 'text-slate-700'}`}>{t.step}</h4>
-                      <p className="text-xs text-slate-500 font-medium">{t.desc}</p>
-                      <span className="text-[10px] font-bold text-slate-400 mt-1 block">{t.date}</span>
-                    </div>
-                  ))}
+                  {/* Empty state for timeline too since we removed mock data */}
+                  <p className="text-sm text-slate-500">No active timelines.</p>
                 </div>
               </div>
             </motion.div>
@@ -249,28 +283,6 @@ export default function InternDashboard() {
                   Confirm Booking
                 </button>
               </form>
-            </motion.div>
-          </div>
-        )}
-
-        {isResumeModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsResumeModalOpen(false)} />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-2xl shadow-xl w-full max-w-md z-10 relative overflow-hidden">
-              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                <h3 className="text-lg font-black text-[#0d1635] flex items-center gap-2"><Upload size={18} className="text-[#1B2A6B]"/> Upload Resume</h3>
-                <button onClick={() => setIsResumeModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20}/></button>
-              </div>
-              <div className="p-6">
-                <label className="border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 hover:border-[#1B2A6B] transition-colors group">
-                  <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                    <Upload size={24} />
-                  </div>
-                  <p className="text-sm font-bold text-slate-700 mb-1">Click to browse or drag file here</p>
-                  <p className="text-xs text-slate-500 font-medium">Supports PDF, DOCX (Max 5MB)</p>
-                  <input type="file" className="hidden" accept=".pdf,.doc,.docx" onChange={handleResumeUpload} />
-                </label>
-              </div>
             </motion.div>
           </div>
         )}

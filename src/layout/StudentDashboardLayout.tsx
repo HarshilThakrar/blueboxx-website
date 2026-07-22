@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthContext";
+import api from "../lib/axios";
 import {
   LayoutDashboard, BookOpen, Briefcase, Settings, LogOut,
-  Menu, X, Search, Bell,
+  Menu, X, Search, MessageSquare,
   FileText, ClipboardList,
   Award, Trophy, Users
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { NotificationDropdown } from "../components/NotificationDropdown";
 
 const SIDEBAR_CATEGORIES = [
   {
@@ -17,6 +19,7 @@ const SIDEBAR_CATEGORIES = [
       { name: "My Dashboard",   href: "/student/dashboard",   icon: LayoutDashboard },
       { name: "My Courses",     href: "/student/courses",     icon: BookOpen },
       { name: "Assignments",    href: "/student/assignments",  icon: FileText },
+      { name: "Messages",       href: "/student/messages",    icon: MessageSquare },
     ],
   },
   {
@@ -44,28 +47,27 @@ const SIDEBAR_CATEGORIES = [
 
 export const StudentDashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated, isAuthReady } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
-
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: "Your assignment for 'React Basics' has been graded.", time: "2 hours ago", read: false },
-    { id: 2, text: "New internship opportunity at Google matches your profile.", time: "1 day ago", read: false },
-    { id: 3, text: "Mock interview scheduled for tomorrow at 3 PM.", time: "3 hours ago", read: false },
-  ]);
 
   const handleLogout = () => {
     logout();
     router.push("/login");
   };
 
-  const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  // Auth guard — redirect unauthenticated users to login
+  useEffect(() => {
+    if (!isAuthReady) return;
+    if (!isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, isAuthReady, router]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setIsSearchOpen(true); }
-      if (e.key === "Escape") { setIsSearchOpen(false); setIsNotifOpen(false); }
+      if (e.key === "Escape") { setIsSearchOpen(false); }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -75,7 +77,6 @@ export const StudentDashboardLayout = ({ children }: { children: React.ReactNode
     setIsSidebarOpen(false);
   }, [router.pathname]);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
   const initials = user?.name?.split(" ").map(w => w[0]).join("").toUpperCase() ?? "S";
 
   return (
@@ -175,54 +176,8 @@ export const StudentDashboardLayout = ({ children }: { children: React.ReactNode
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Bell */}
-            <div className="relative">
-              <button
-                onClick={() => setIsNotifOpen(!isNotifOpen)}
-                className="relative p-2 text-slate-500 hover:text-[#1B2A6B] bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors border border-slate-200"
-              >
-                <Bell size={18} />
-                {unreadCount > 0 && (
-                  <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
-
-              <AnimatePresence>
-                {isNotifOpen && (
-                  <>
-                    <div className="fixed inset-0 z-30" onClick={() => setIsNotifOpen(false)} />
-                    <motion.div
-                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                      className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl z-40 overflow-hidden"
-                    >
-                      <div className="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                        <span className="text-xs font-black text-slate-700">Notifications</span>
-                        {unreadCount > 0 && (
-                          <button onClick={markAllRead} className="text-[10px] font-black text-[#1B2A6B] hover:underline">
-                            Mark all read
-                          </button>
-                        )}
-                      </div>
-                      <div className="divide-y divide-slate-100 max-h-72 overflow-y-auto">
-                        {notifications.map(notif => (
-                          <div key={notif.id} className={`p-4 flex gap-3 hover:bg-slate-50 transition-colors ${!notif.read ? "bg-blue-50/40" : ""}`}>
-                            <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!notif.read ? "bg-blue-500" : "bg-slate-300"}`} />
-                            <div>
-                              <p className={`text-xs font-semibold leading-relaxed ${!notif.read ? "text-slate-800" : "text-slate-500"}`}>{notif.text}</p>
-                              <p className="text-[10px] text-slate-400 font-bold mt-1">{notif.time}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
-            </div>
+            {/* Bell / Notifications */}
+            <NotificationDropdown />
 
             {/* Avatar */}
             <div className="w-8 h-8 rounded-full bg-[#1B2A6B] flex items-center justify-center text-white font-black text-xs">

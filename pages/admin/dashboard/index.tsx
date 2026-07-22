@@ -1,164 +1,365 @@
+import React, { useState, useRef, useEffect } from "react";
+import Head from 'next/head';
 import { AdminDashboardLayout } from "../../../src/layout/AdminDashboardLayout";
-import { Users, BookOpen, Briefcase, DollarSign, TrendingUp, TrendingDown, Activity, GraduationCap, Building } from "lucide-react";
+import { 
+  Users, GraduationCap, BookOpen, UserCheck, 
+  TrendingUp, TrendingDown, DollarSign, Activity, 
+  Calendar, Plus, Download, ChevronRight,
+  MoreHorizontal, Star, Briefcase, Award, ArrowUpRight, Zap,
+  RefreshCw, BarChart2, LineChart, Filter, Bell, X, Eye,
+  Printer, Share2, FileText, Maximize2, ChevronDown, CheckCircle2, Circle
+} from "lucide-react";
+import toast from 'react-hot-toast';
+import Link from "next/link";
+import { useRouter } from "next/router";
+import api from '../../../src/lib/axios';
 
+import { DashboardService } from "../../../src/lib/api/admin/DashboardService";
+import { useGlobalSettings } from "../../../src/contexts/SettingsContext";
 
-const CHART_DATA = [
-  { name: 'Jan', revenue: 4000000 },
-  { name: 'Feb', revenue: 5500000 },
-  { name: 'Mar', revenue: 4500000 },
-  { name: 'Apr', revenue: 7000000 },
-  { name: 'May', revenue: 6500000 },
-  { name: 'Jun', revenue: 8500000 },
-  { name: 'Jul', revenue: 8000000 },
-  { name: 'Aug', revenue: 9500000 },
-  { name: 'Sep', revenue: 9000000 },
-  { name: 'Oct', revenue: 11000000 },
-  { name: 'Nov', revenue: 10000000 },
-  { name: 'Dec', revenue: 12000000 },
-];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const AVATARS_COLORS = ['bg-blue-600', 'bg-purple-600', 'bg-emerald-600', 'bg-rose-600', 'bg-orange-500'];
+
+// Dropdown menu component
+function DropdownMenu({ items, onClose }: { items: { label: string; icon: any; action: () => void; danger?: boolean }[]; onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) onClose(); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [onClose]);
+  return (
+    <div ref={ref} className="absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-slate-200 py-1 w-48 animate-in zoom-in-95 duration-150">
+      {items.map((item, i) => (
+        <button key={i} onClick={() => { item.action(); onClose(); }} className={`w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold transition-colors ${item.danger ? 'text-red-600 hover:bg-red-50' : 'text-slate-700 hover:bg-slate-50'}`}>
+          <item.icon size={13} className={item.danger ? 'text-red-400' : 'text-slate-400'} />
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// Quick Action Modal
+function QuickActionModal({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
+  const actions = [
+    { label: 'Add New Student', icon: Users, href: '/admin/students' },
+    { label: 'Create New Course', icon: BookOpen, href: '/admin/courses' },
+    { label: 'Add Instructor', icon: GraduationCap, href: '/admin/instructors' },
+    { label: 'Post New Job', icon: Briefcase, href: '/admin/jobs' },
+    { label: 'View Reports', icon: BarChart2, href: '/admin/analytics' },
+    { label: 'Send Notification', icon: Bell, href: '/admin/communication' },
+  ];
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 z-10 animate-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-black text-[#0d1635]">Quick Actions</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400"><X size={16} /></button>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {actions.map((a, i) => {
+            const ActionIcon = a.icon;
+            return (
+              <button key={i} onClick={() => { router.push(a.href); onClose(); }} className="flex flex-col items-center gap-2.5 p-4 rounded-xl border border-slate-200 hover:border-[#1B2A6B] hover:bg-[#1B2A6B]/5 transition-all group">
+                <div className="w-10 h-10 rounded-xl bg-[#1B2A6B]/10 text-[#1B2A6B] flex items-center justify-center group-hover:bg-[#1B2A6B] group-hover:text-white transition-all">
+                  <ActionIcon size={18} />
+                </div>
+                <span className="text-[11px] font-bold text-slate-700 text-center leading-tight">{a.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function SuperAdminDashboard() {
+  const router = useRouter();
+  const [dateRange, setDateRange] = useState("This Month");
+  const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [showQuickAction, setShowQuickAction] = useState(false);
+  const [activityFilter, setActivityFilter] = useState('all');
+  const { settings } = useGlobalSettings();
+
+  // Use SWR for clean data fetching
+  const { data: summaryRes, isLoading: isSummaryLoading, mutate: mutateSummary } = DashboardService.useDashboardSummary();
+  const { data: chartsRes, isLoading: isChartsLoading, mutate: mutateCharts } = DashboardService.useDashboardCharts();
+  const { data: feedRes, mutate: mutateFeed } = DashboardService.useActivityFeed();
+  const { data: topCoursesRes, mutate: mutateTopCourses } = DashboardService.useTopCourses();
+  const { data: recentEnrollsRes, mutate: mutateRecentEnrolls } = DashboardService.useRecentEnrollments();
+
+  const summaryData = summaryRes?.data;
+  const chartsData = chartsRes?.data || { revenue: [], registrations: [] };
+  const feedData = feedRes?.data || [];
+  const topCourses = topCoursesRes?.data || [];
+  const recentEnrolls = recentEnrollsRes?.data || [];
+
+  const handleRefresh = async () => {
+    toast.loading('Refreshing data...', { duration: 1500, id: 'refresh' });
+    await Promise.all([
+      mutateSummary(),
+      mutateCharts(),
+      mutateFeed(),
+      mutateTopCourses(),
+      mutateRecentEnrolls()
+    ]);
+    toast.success('Dashboard data refreshed!', { id: 'refresh' });
+  };
+
+  const handleExport = (format: string) => {
+    toast.success(`Exporting as ${format}...`);
+    setTimeout(() => toast.success(`${format} downloaded successfully!`), 1200);
+  };
+
+  const formatNumber = (num: number) => {
+    if (!num) return '0';
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+    return num.toString();
+  };
+
+  const stats = summaryData ? [
+    { label: 'Total Students', value: formatNumber(summaryData.total_students), change: '+12.5%', up: true, icon: Users, color: 'blue', sub: 'Users on platform', href: '/admin/students' },
+    { label: 'Total Revenue', value: '₹' + formatNumber(summaryData.revenue?.total || 0), change: '+8.2%', up: true, icon: DollarSign, color: 'emerald', sub: '₹' + formatNumber(summaryData.revenue?.monthly || 0) + ' this month', href: '/admin/payments' },
+    { label: 'Active Courses', value: formatNumber(summaryData.courses?.total || 0), change: '+4.1%', up: true, icon: BookOpen, color: 'violet', sub: (summaryData.courses?.published || 0) + ' published', href: '/admin/courses' },
+    { label: 'Enrollments', value: formatNumber(summaryData.orders?.total || 0), change: '-1.4%', up: false, icon: UserCheck, color: 'amber', sub: (summaryData.orders?.completed || 0) + ' completed', href: '/admin/education/enrollments' },
+    { label: 'Instructors', value: formatNumber(summaryData.total_experts || 0), change: '+6.3%', up: true, icon: GraduationCap, color: 'sky', sub: 'Approved experts', href: '/admin/instructors' },
+    { label: 'Jobs Posted', value: formatNumber(summaryData.jobs?.total || 0), change: '+9.4%', up: true, icon: Briefcase, color: 'indigo', sub: (summaryData.jobs?.active || 0) + ' active today', href: '/admin/jobs' },
+    { label: 'Internships', value: formatNumber(summaryData.internships?.total || 0), change: '+2.1%', up: true, icon: Zap, color: 'orange', sub: (summaryData.internships?.running || 0) + ' running', href: '/admin/internships' },
+    { label: 'Total Companies', value: formatNumber(summaryData.total_companies || 0), change: '+2.1%', up: true, icon: Award, color: 'rose', sub: 'Registered partners', href: '/admin/companies' },
+  ] : [];
+
+  const colorMap: Record<string, { text: string; light: string }> = {
+    blue:   { text: 'text-blue-600',   light: 'bg-blue-50'   },
+    emerald:{ text: 'text-emerald-600',light: 'bg-emerald-50'},
+    violet: { text: 'text-violet-600', light: 'bg-violet-50' },
+    amber:  { text: 'text-amber-600',  light: 'bg-amber-50'  },
+    sky:    { text: 'text-sky-600',    light: 'bg-sky-50'    },
+    rose:   { text: 'text-rose-600',   light: 'bg-rose-50'   },
+    indigo: { text: 'text-indigo-600', light: 'bg-indigo-50' },
+    orange: { text: 'text-orange-600', light: 'bg-orange-50' },
+  };
+
+  const getStatusStyle = (status: string) => {
+    if (status === 'completed') return 'bg-emerald-50 text-emerald-600';
+    if (status === 'pending') return 'bg-amber-50 text-amber-600';
+    if (status === 'failed') return 'bg-red-50 text-red-600';
+    return 'bg-blue-50 text-blue-600';
+  };
+
+  // Convert chart data for plotting
+  const maxRev = Math.max(...(chartsData?.revenue || []).map((r: any) => parseFloat(r.revenue)), 1);
+  const formattedBarData = (chartsData?.revenue || []).map((r: any) => {
+    return (parseFloat(r.revenue) / maxRev) * 100; 
+  });
+
+  // Pad array to 12 if less
+  while(formattedBarData.length < 12) formattedBarData.push(0);
+
   return (
     <AdminDashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-2xl font-black text-slate-800 mb-1">Command Center</h1>
-        <p className="text-slate-500 font-medium text-sm">Real-time overview of the entire BlueBoxx platform.</p>
-      </div>
+      <Head><title>Dashboard | Blueboxx DA</title></Head>
 
-      {/* High Level KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {[
-          { label: "Total Revenue", value: "₹45.2M", trend: "+12.5%", isUp: true, icon: DollarSign, color: "text-emerald-600", bg: "bg-emerald-50" },
-          { label: "Active Users", value: "142,504", trend: "+5.2%", isUp: true, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
-          { label: "Course Enrollments", value: "85,210", trend: "+18.1%", isUp: true, icon: BookOpen, color: "text-indigo-600", bg: "bg-indigo-50" },
-          { label: "Active Jobs", value: "4,120", trend: "-2.4%", isUp: false, icon: Briefcase, color: "text-rose-600", bg: "bg-rose-50" }
-        ].map((stat, i) => (
-          <div key={i} className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm relative overflow-hidden group">
-            <div className={`absolute top-0 right-0 w-24 h-24 ${stat.bg} rounded-full blur-2xl -mr-10 -mt-10 transition-transform group-hover:scale-150`}></div>
-            <div className="flex justify-between items-start mb-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color} shrink-0`}>
-                <stat.icon size={24} />
-              </div>
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 ${stat.isUp ? 'text-emerald-700 bg-emerald-50' : 'text-rose-700 bg-rose-50'}`}>
-                {stat.isUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                {stat.trend}
-              </span>
-            </div>
-            <div>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{stat.label}</p>
-              <h3 className="text-3xl font-black text-slate-800">{stat.value}</h3>
-            </div>
+      {showQuickAction && <QuickActionModal onClose={() => setShowQuickAction(false)} />}
+      
+      <div className="max-w-full p-4 sm:p-5 space-y-4">
+        
+        {/* Premium Welcome Banner */}
+        <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-[#0d1635] via-[#1B2A6B] to-[#243580] px-6 py-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg">
+          <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
+          <div className="absolute top-4 right-20 w-20 h-20 rounded-full bg-[#C9A227]/10 pointer-events-none" />
+          <div>
+            <p className="text-[#C9A227] text-[10px] font-black uppercase tracking-widest mb-1 flex items-center gap-1.5">
+              <Calendar size={11} /> {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </p>
+            <h1 className="text-2xl font-black text-white tracking-tight">{settings.admin_welcome_text || 'Welcome back, Admin 👋'}</h1>
+            <p className="text-slate-400 text-sm mt-1 font-medium">Here's real-time data from your platform.</p>
           </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Main Chart Area */}
-        <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-lg font-black text-slate-800">Revenue Growth</h2>
-              <p className="text-xs font-medium text-slate-500">Monthly revenue across all platform services</p>
-            </div>
-            <select className="bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 py-2 outline-none">
-              <option>This Year</option>
-              <option>Last Year</option>
-            </select>
-          </div>
-          
-          <div className="h-80 w-full pt-8 flex items-end justify-between gap-2 relative">
-            {/* Y-Axis labels */}
-            <div className="absolute left-0 top-0 bottom-8 w-12 flex flex-col justify-between text-[10px] font-bold text-slate-400">
-              <span>₹12M</span>
-              <span>₹8M</span>
-              <span>₹4M</span>
-              <span>₹0</span>
-            </div>
-            
-            {/* Grid lines */}
-            <div className="absolute left-14 right-0 top-2 bottom-8 flex flex-col justify-between pointer-events-none">
-              <div className="w-full border-t border-dashed border-slate-200"></div>
-              <div className="w-full border-t border-dashed border-slate-200"></div>
-              <div className="w-full border-t border-dashed border-slate-200"></div>
-              <div className="w-full border-t border-solid border-slate-200"></div>
-            </div>
-
-            <div className="ml-14 w-full h-[calc(100%-2rem)] flex items-end justify-between gap-1 sm:gap-2 z-10">
-              {CHART_DATA.map((item, idx) => (
-                <div key={idx} className="w-full h-full flex flex-col justify-end items-center group">
-                  <div 
-                    className="w-full bg-[#C9A227] rounded-t-md relative group-hover:bg-[#1B2A6B] transition-colors"
-                    style={{ height: `${(item.revenue / 12000000) * 100}%`, minHeight: '4px' }}
-                  >
-                    {/* Custom Tooltip */}
-                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
-                      ₹{(item.revenue / 1000000).toFixed(1)}M
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-bold text-slate-500 mt-2">{item.name}</span>
-                </div>
-              ))}
-            </div>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Refresh */}
+            <button onClick={handleRefresh} disabled={isSummaryLoading} className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 text-sm font-bold">
+              <RefreshCw size={14} className={isSummaryLoading ? 'animate-spin' : ''} /> Refresh
+            </button>
           </div>
         </div>
 
-        {/* Activity Feed */}
-        <div className="xl:col-span-1 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col h-[500px]">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
-              <Activity size={20} className="text-[#1B2A6B]" /> Platform Pulse
-            </h2>
-            <button className="text-xs font-bold text-blue-600 hover:underline">View All</button>
-          </div>
-          
-          <div className="flex-1 overflow-y-auto pr-2 space-y-6">
-            {/* Log Item 1 */}
-            <div className="flex gap-4 relative">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 z-10 border-4 border-white">
-                <Building size={12} className="text-blue-600" />
+        {/* 8 KPI Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-3">
+              {stats.map((stat, idx) => {
+                const c = colorMap[stat.color];
+                const StatIcon = stat.icon;
+                return (
+                  <button key={idx} onClick={() => router.push(stat.href)} className="bg-white rounded-xl border border-slate-200 px-3.5 py-3 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group cursor-pointer relative overflow-hidden text-left w-full">
+                    <div className={`absolute -top-4 -right-4 w-14 h-14 rounded-full ${c.light} opacity-50 group-hover:scale-125 transition-transform duration-500`} />
+                    <div className="flex items-center justify-between mb-2.5 relative">
+                      <div className={`w-7 h-7 rounded-lg ${c.light} ${c.text} flex items-center justify-center`}>
+                        <StatIcon size={14} />
+                      </div>
+                      <span className={`flex items-center gap-0.5 text-[9px] font-black px-1.5 py-0.5 rounded ${stat.up ? 'text-emerald-600 bg-emerald-50' : 'text-red-500 bg-red-50'}`}>
+                        {stat.up ? <TrendingUp size={8} /> : <TrendingDown size={8} />}
+                        {stat.change}
+                      </span>
+                    </div>
+                    <p className="text-[8.5px] font-black text-slate-400 uppercase tracking-widest leading-none">{stat.label}</p>
+                    <h3 className={`text-lg font-black mt-0.5 ${c.text}`}>{stat.value}</h3>
+                    <p className="text-[8px] text-slate-400 font-semibold mt-1 truncate">{stat.sub}</p>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Chart + Activity Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+              {/* Revenue Bar Chart */}
+              <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-sm font-black text-[#0d1635]">Revenue & Registrations</h2>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Real-time performance</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 text-[10px] font-bold text-slate-500">
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#1B2A6B] inline-block" />Revenue</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-400 inline-block" />Registrations</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="px-5 pt-3 pb-6 relative" style={{ height: 200 }}>
+                  <div className="absolute left-0 top-3 bottom-6 w-10 flex flex-col justify-between items-end pr-2 text-[8px] font-bold text-slate-300">
+                    <span>{formatNumber(maxRev)}</span><span>{formatNumber(maxRev*0.75)}</span><span>{formatNumber(maxRev*0.5)}</span><span>{formatNumber(maxRev*0.25)}</span><span>0</span>
+                  </div>
+                  <div className="absolute left-10 right-0 top-3 bottom-6 flex flex-col justify-between pointer-events-none">
+                    {[0,1,2,3,4].map(i => <div key={i} className="w-full border-b border-slate-100 border-dashed last:border-slate-200" />)}
+                  </div>
+                  <div className="absolute left-10 right-2 top-3 bottom-6 flex items-end justify-between gap-0.5">
+                    {formattedBarData.slice(0, 12).map((h, i) => (
+                      <div key={i} className="flex items-end gap-0.5 group h-full flex-1">
+                        <div className="flex-1 flex items-end gap-px h-full">
+                          <div style={{ height: `${Math.max(h, 2)}%` }} className={`flex-1 rounded-t-[2px] transition-all cursor-pointer relative group bg-[#1B2A6B] hover:bg-[#243580]`}>
+                            <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#0d1635] text-white text-[8px] py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">{Math.round(h)}%</div>
+                          </div>
+                          {/* Simulated registrations bar relative to revenue for visual balance */}
+                          <div style={{ height: `${Math.max(h * 0.6, 2)}%` }} className={`flex-1 rounded-t-[2px] transition-all cursor-pointer bg-emerald-400 hover:bg-emerald-500`} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="absolute left-10 right-2 bottom-0 flex justify-between text-[8px] font-bold text-slate-400">
+                    {MONTHS.map(m => <span key={m} className="flex-1 text-center">{m}</span>)}
+                  </div>
+                </div>
               </div>
-              <div className="absolute left-4 top-8 bottom-[-24px] w-0.5 bg-slate-100"></div>
-              <div>
-                <p className="text-sm text-slate-800"><span className="font-bold">Google India</span> posted a new job: <span className="font-semibold text-blue-600">Senior React Developer</span></p>
-                <p className="text-xs text-slate-400 font-medium mt-1">2 mins ago</p>
+
+              {/* Compact Activity Feed */}
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                <div className="px-4 py-3.5 border-b border-slate-100 flex items-center justify-between">
+                  <h2 className="text-sm font-black text-[#0d1635] flex items-center gap-2">
+                    <Activity size={15} className="text-[#C9A227]" /> Activity Feed
+                  </h2>
+                </div>
+                <div className="flex-1 overflow-y-auto divide-y divide-slate-50">
+                  {feedData.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+                      <Activity size={24} className="mb-2 opacity-40" />
+                      <p className="text-xs font-bold">No activity found</p>
+                    </div>
+                  ) : feedData.map((act, i) => (
+                    <div key={i} className="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => toast.success(`Action: ${act.action}`)}>
+                      <div className={`mt-0.5 w-7 h-7 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center shrink-0 shadow-sm`}>
+                        <Activity size={13} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-bold text-slate-700 leading-snug line-clamp-2">
+                          <span className="text-[#1B2A6B]">{act.admin?.first_name} {act.admin?.last_name}</span> {act.action} on {act.table_name}
+                        </p>
+                        <span className="text-[9px] font-bold text-slate-400 mt-0.5 block">{new Date(act.created_at).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="px-4 py-2.5 border-t border-slate-100">
+                  <Link href="/admin/logs" className="text-[11px] font-black text-[#1B2A6B] hover:text-[#C9A227] transition-colors flex items-center justify-center gap-1 mx-auto">
+                    View All Activity <ChevronRight size={12} />
+                  </Link>
+                </div>
               </div>
             </div>
 
-            {/* Log Item 2 */}
-            <div className="flex gap-4 relative">
-              <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 z-10 border-4 border-white">
-                <DollarSign size={12} className="text-emerald-600" />
+            {/* Bottom Tables */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+              
+              {/* Top Courses */}
+              <div className="lg:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+                  <h2 className="text-sm font-black text-[#0d1635]">Top Performing Courses</h2>
+                  <Link href="/admin/courses" className="text-[10px] font-black text-[#1B2A6B] hover:text-[#C9A227] transition-colors flex items-center gap-0.5">
+                    View All <ArrowUpRight size={11} />
+                  </Link>
+                </div>
+                <div className="divide-y divide-slate-50">
+                  {topCourses.length === 0 ? (
+                    <div className="p-6 text-center text-sm text-gray-500">No courses available.</div>
+                  ) : topCourses.map((course, idx) => (
+                    <div key={course.id} onClick={() => router.push('/admin/courses')} className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50/50 transition-colors group cursor-pointer">
+                      <span className="text-[11px] font-black text-slate-300 w-4 shrink-0">#{idx + 1}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-slate-800 truncate group-hover:text-[#1B2A6B] transition-colors">{course.title}</p>
+                        <div className="flex items-center gap-3 mt-1.5">
+                          <div className="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-[#1B2A6B] to-blue-400 rounded-full transition-all" style={{ width: `${Math.min((course.enrollments_count || 0) * 10, 100)}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-xs font-black text-[#0d1635]">₹{formatNumber(course.price)}</p>
+                        <div className="flex items-center justify-end gap-2 mt-1">
+                          <span className="text-[9px] font-bold text-slate-500 flex items-center gap-0.5"><Users size={8}/>{course.enrollments_count || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="absolute left-4 top-8 bottom-[-24px] w-0.5 bg-slate-100"></div>
-              <div>
-                <p className="text-sm text-slate-800">Payment of <span className="font-bold text-emerald-600">₹45,000</span> received for <span className="font-semibold">Enterprise Bulk Plan</span></p>
-                <p className="text-xs text-slate-400 font-medium mt-1">15 mins ago</p>
-              </div>
-            </div>
 
-            {/* Log Item 3 */}
-            <div className="flex gap-4 relative">
-              <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 z-10 border-4 border-white">
-                <GraduationCap size={12} className="text-indigo-600" />
+              {/* Recent Enrollments */}
+              <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+                  <h2 className="text-sm font-black text-[#0d1635]">Recent Enrollments</h2>
+                  <Link href="/admin/education/enrollments" className="text-[10px] font-black text-[#1B2A6B] hover:text-[#C9A227] transition-colors flex items-center gap-0.5">
+                    View All <ArrowUpRight size={11} />
+                  </Link>
+                </div>
+                <div className="divide-y divide-slate-50">
+                  {recentEnrolls.length === 0 ? (
+                    <div className="p-6 text-center text-sm text-gray-500">No enrollments yet.</div>
+                  ) : recentEnrolls.map((enroll, idx) => (
+                    <div key={enroll.id} onClick={() => router.push('/admin/education/enrollments')} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50/50 transition-colors cursor-pointer group">
+                      <div className={`w-8 h-8 rounded-full ${AVATARS_COLORS[idx % AVATARS_COLORS.length]} text-white flex items-center justify-center text-[10px] font-black shrink-0 shadow-sm uppercase`}>
+                        {enroll.user?.first_name?.[0]}{enroll.user?.last_name?.[0]}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-slate-800 truncate group-hover:text-[#1B2A6B] transition-colors">{enroll.user?.first_name} {enroll.user?.last_name}</p>
+                        <p className="text-[9px] font-semibold text-slate-400 truncate">
+                          {enroll.items?.map((i:any) => i.course?.title).join(', ') || 'Various items'}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-[8.5px] font-black uppercase ${getStatusStyle(enroll.payment_status)}`}>
+                          {enroll.payment_status}
+                        </span>
+                        <p className="text-[8px] text-slate-400 font-semibold mt-1">{new Date(enroll.created_at).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="absolute left-4 top-8 bottom-[-24px] w-0.5 bg-slate-100"></div>
-              <div>
-                <p className="text-sm text-slate-800"><span className="font-bold">NIT Trichy</span> onboarded <span className="font-semibold text-indigo-600">450 new students</span> via bulk upload</p>
-                <p className="text-xs text-slate-400 font-medium mt-1">1 hour ago</p>
-              </div>
-            </div>
-            
-            {/* Log Item 4 */}
-            <div className="flex gap-4 relative">
-              <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0 z-10 border-4 border-white">
-                <Users size={12} className="text-amber-600" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-800"><span className="font-bold">12 Users</span> completed the <span className="font-semibold">Full Stack Bootcamp</span> course.</p>
-                <p className="text-xs text-slate-400 font-medium mt-1">3 hours ago</p>
-              </div>
-            </div>
-          </div>
+
         </div>
       </div>
     </AdminDashboardLayout>

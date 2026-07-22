@@ -3,18 +3,21 @@ import { DollarSign, ArrowUpRight, ArrowDownRight, Download, History, CreditCard
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function ExpertEarnings() {
   const [filter, setFilter] = useState("All Time");
 
-  const transactions = [
-    { id: "TXN-001", date: "Oct 15, 2023", description: "Mentorship Session - Rahul S.", amount: 50.00, status: "Completed", month: "Oct" },
-    { id: "TXN-002", date: "Oct 14, 2023", description: "Code Review - Priya P.", amount: 35.00, status: "Completed", month: "Oct" },
-    { id: "TXN-003", date: "Sep 28, 2023", description: "Platform Payout", amount: -450.00, status: "Processed", month: "Sep" },
-    { id: "TXN-004", date: "Sep 15, 2023", description: "Mock Interview - Amit K.", amount: 75.00, status: "Completed", month: "Sep" },
-  ];
+  const { data: metricsRes, isLoading: isLoadingMetrics } = useSWR("/expert/metrics", fetcher);
+  const { data: txRes, isLoading: isLoadingTx } = useSWR("/expert/transactions", fetcher);
 
-  const filteredTransactions = transactions.filter(t => {
+  const metrics = metricsRes?.data || { pending_payout: 0, hours_mentored: 0 };
+  const transactions = txRes?.data || [];
+
+  const filteredTransactions = transactions.filter((t: any) => {
     if (filter === "This Month") return t.month === "Oct";
     if (filter === "Last Month") return t.month === "Sep";
     return true; // All Time
@@ -47,7 +50,7 @@ export default function ExpertEarnings() {
         <AnimatedContent direction="up" delay={0.1} className="bg-gradient-to-br from-[#1B2A6B] to-[#0d1635] text-white rounded-2xl p-6 shadow-lg relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
           <p className="text-white/70 font-bold text-xs uppercase tracking-wider mb-2 flex items-center gap-2"><DollarSign size={14} /> Available Balance</p>
-          <h2 className="text-4xl font-black mb-4">$450.00</h2>
+          <h2 className="text-4xl font-black mb-4">{isLoadingMetrics ? "..." : `$${metrics.pending_payout.toFixed(2)}`}</h2>
           <button onClick={handleWithdrawal} className="w-full py-2.5 bg-[#C9A227] text-[#0d1635] text-sm font-bold rounded-xl shadow-md hover:bg-[#b08d22] transition-colors">
             Withdraw Funds
           </button>
@@ -61,7 +64,7 @@ export default function ExpertEarnings() {
             <ArrowUpRight size={20} />
           </div>
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Total Earned (This Month)</p>
-          <h3 className="text-2xl font-black text-[#0d1635]">$85.00</h3>
+          <h3 className="text-2xl font-black text-[#0d1635]">{isLoadingMetrics ? "..." : `$${(metrics.pending_payout).toFixed(2)}`}</h3>
         </AnimatedContent>
 
         <AnimatedContent direction="up" delay={0.3} className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-center hover:shadow-md transition-shadow">
@@ -69,7 +72,7 @@ export default function ExpertEarnings() {
             <CreditCard size={20} />
           </div>
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Next Payout Date</p>
-          <h3 className="text-2xl font-black text-[#0d1635]">Oct 25, 2023</h3>
+          <h3 className="text-2xl font-black text-[#0d1635]">TBD</h3>
         </AnimatedContent>
       </div>
 
@@ -99,12 +102,21 @@ export default function ExpertEarnings() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredTransactions.length === 0 && (
+              {isLoadingTx ? (
                 <tr>
-                  <td colSpan={4} className="p-8 text-center text-slate-500 font-medium">No transactions found for this period.</td>
+                  <td colSpan={4} className="p-8 text-center text-slate-500 font-medium">Loading transactions...</td>
                 </tr>
-              )}
-              {filteredTransactions.map((txn, i) => (
+              ) : filteredTransactions.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="p-12 text-center text-slate-500 font-medium">
+                    <div className="flex flex-col items-center justify-center">
+                      <History size={32} className="text-slate-300 mb-3" />
+                      <p className="font-bold text-slate-700">No transactions found for this period.</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredTransactions.map((txn: any, i: number) => (
                 <tr key={txn.id} className="hover:bg-slate-50/80 transition-colors">
                   <td className="px-6 py-4">
                     <p className="text-sm font-bold text-slate-800">{txn.description}</p>
@@ -121,7 +133,7 @@ export default function ExpertEarnings() {
                     {txn.amount > 0 ? '+' : ''}${Math.abs(txn.amount).toFixed(2)}
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

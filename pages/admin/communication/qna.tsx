@@ -54,7 +54,7 @@ export default function AdminQnAPage() {
 
         <AnimatedContent direction="up" delay={0.2} className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex h-[600px]">
            {/* Left Sidebar - Question List */}
-           <div className="w-96 border-r border-slate-100 flex flex-col bg-slate-50/50 hidden md:flex">
+           <div className="w-96 border-r border-slate-100 flex flex-col bg-slate-50 hidden md:flex">
               <div className="p-4 border-b border-slate-100 bg-white space-y-3">
                  <div className="flex gap-2">
                     <Button variant="primary" className="flex-1 h-8 text-xs font-bold">All Questions</Button>
@@ -100,7 +100,7 @@ export default function AdminQnAPage() {
                      </div>
                   </div>
                   
-                  <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 flex flex-col">
+                  <div className="flex-1 overflow-y-auto p-6 bg-slate-50 flex flex-col">
                       {activeQuestion.replies.length === 0 ? (
                         <div className="flex flex-col items-center justify-center text-center h-full text-slate-400">
                           <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-4"><HelpCircle size={24}/></div>

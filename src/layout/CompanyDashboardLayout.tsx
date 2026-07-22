@@ -9,12 +9,14 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCompanyStore } from "../store/useCompanyStore";
+import { NotificationDropdown } from "../components/NotificationDropdown";
 
 const SIDEBAR_CATEGORIES = [
   {
     title: "Overview",
     links: [
       { name: "Dashboard", href: "/company/dashboard", icon: LayoutDashboard },
+      { name: "Messages", href: "/company/messages", icon: MessageSquare },
     ]
   },
   {
@@ -44,23 +46,23 @@ const SIDEBAR_CATEGORIES = [
 
 export const CompanyDashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const { logout } = useAuth();
+  const { logout, isAuthenticated, isAuthReady } = useAuth();
   const profile = useCompanyStore(s => s.profile);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [, setIsSearchOpen] = useState(false);
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
-  
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: "New applicant for 'Frontend Developer' role.", time: "10 mins ago", read: false },
-    { id: 2, text: "Jane Doe accepted the interview invitation.", time: "1 hour ago", read: false },
-  ]);
 
   const handleLogout = () => {
     logout();
     router.push("/login");
   };
 
-  const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  // Auth guard — redirect unauthenticated users to login
+  useEffect(() => {
+    if (!isAuthReady) return;
+    if (!isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, isAuthReady, router]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -70,14 +72,11 @@ export const CompanyDashboardLayout = ({ children }: { children: React.ReactNode
       }
       if (e.key === "Escape") {
         setIsSearchOpen(false);
-        setIsNotifOpen(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
-
-  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -186,52 +185,7 @@ export const CompanyDashboardLayout = ({ children }: { children: React.ReactNode
             </Link>
 
             {/* Notification Area */}
-            <div className="relative">
-              <button 
-                onClick={() => setIsNotifOpen(!isNotifOpen)}
-                className="relative p-2.5 text-slate-500 hover:text-[#1B2A6B] bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors border border-slate-200"
-              >
-                <Bell size={20} />
-                {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white animate-bounce">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
-
-              {/* Notification Dropdown Panel */}
-              <AnimatePresence>
-                {isNotifOpen && (
-                  <>
-                    <div className="fixed inset-0 z-30" onClick={() => setIsNotifOpen(false)} />
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-                      className="absolute right-0 mt-3 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl z-40 py-2 overflow-hidden text-left"
-                    >
-                      <div className="px-4 py-2.5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                        <span className="text-xs font-black text-slate-600">Notifications</span>
-                        {unreadCount > 0 && (
-                          <button onClick={markAllRead} className="text-[10px] font-black text-[#3b82f6] hover:underline">
-                            Mark all as read
-                          </button>
-                        )}
-                      </div>
-                      <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto">
-                        {notifications.map(notif => (
-                          <div key={notif.id} className={`p-4 hover:bg-slate-50 transition-colors flex gap-3 ${!notif.read ? 'bg-blue-50/50' : ''}`}>
-                            <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!notif.read ? 'bg-blue-500' : 'bg-slate-300'}`} />
-                            <div className="flex-1 min-w-0">
-                              <p className={`text-xs font-semibold leading-normal ${!notif.read ? 'text-slate-800' : 'text-slate-600'}`}>{notif.text}</p>
-                              <p className="text-[10px] text-slate-400 font-bold mt-1">{notif.time}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
-            </div>
+            <NotificationDropdown />
           </div>
         </header>
 

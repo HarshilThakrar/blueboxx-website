@@ -24,6 +24,13 @@ export default function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
+  useEffect(() => {
+    // If token exists, they already verified their OTP. Skip to role selection.
+    if (typeof window !== "undefined" && localStorage.getItem("auth_token")) {
+      setStep(2);
+    }
+  }, []);
+
   // File Upload Refs and State
   const expertFileInputRef = useRef<HTMLInputElement>(null);
   const collegeFileInputRef = useRef<HTMLInputElement>(null);

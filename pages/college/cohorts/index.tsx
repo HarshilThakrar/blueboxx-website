@@ -2,14 +2,10 @@ import { CollegeDashboardLayout } from "../../../src/layout/CollegeDashboardLayo
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
 import { GraduationCap, Users, BookOpen, TrendingUp, Clock, ChevronRight, Plus } from "lucide-react";
 import toast from "react-hot-toast";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
 
-const COHORTS = [
-  { id: 1, name: "B.Tech CSE — 3rd Year", students: 450, course: "Full Stack Web Development", progress: 65, mentor: "Dr. Kapoor", started: "Jan 2026", ends: "Dec 2026", status: "active" },
-  { id: 2, name: "B.Tech IT — Final Year", students: 320, course: "Data Structures & Algorithms", progress: 85, mentor: "Prof. Sharma", started: "Feb 2026", ends: "Nov 2026", status: "active" },
-  { id: 3, name: "MBA — 1st Year", students: 180, course: "Digital Marketing Essentials", progress: 42, mentor: "Dr. Mehta", started: "Mar 2026", ends: "Jan 2027", status: "active" },
-  { id: 4, name: "B.Com — 2nd Year", students: 300, course: "Accounting & Tally Prime", progress: 28, mentor: "Prof. Nair", started: "Apr 2026", ends: "Mar 2027", status: "active" },
-  { id: 5, name: "B.Tech ECE — 2nd Year", students: 210, course: "IoT & Embedded Systems", progress: 12, mentor: "Dr. Reddy", started: "Jun 2026", ends: "May 2027", status: "upcoming" },
-];
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-emerald-50 text-emerald-700 border-emerald-100",
@@ -20,6 +16,9 @@ const STATUS_COLORS: Record<string, string> = {
 const getProgressColor = (pct: number) => pct >= 70 ? "bg-emerald-500" : pct >= 40 ? "bg-[#1B2A6B]" : "bg-[#C9A227]";
 
 export default function CollegeCohortsPage() {
+  const { data, isLoading } = useSWR("/college/cohorts", fetcher);
+  const cohorts = data?.data || [];
+
   return (
     <CollegeDashboardLayout>
       {/* Header */}
@@ -57,8 +56,11 @@ export default function CollegeCohortsPage() {
       </div>
 
       {/* Cohort Cards */}
+      {isLoading ? (
+        <div className="py-12 text-center text-slate-400">Loading cohorts...</div>
+      ) : (
       <div className="space-y-4">
-        {COHORTS.map((cohort, i) => (
+        {cohorts.map((cohort: any, i: number) => (
           <AnimatedContent key={cohort.id} direction="up" delay={0.1 + i * 0.07} className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
             <div className="p-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
@@ -116,6 +118,7 @@ export default function CollegeCohortsPage() {
           </AnimatedContent>
         ))}
       </div>
+      )}
     </CollegeDashboardLayout>
   );
 }

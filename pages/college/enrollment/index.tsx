@@ -3,6 +3,10 @@ import { CollegeDashboardLayout } from "../../../src/layout/CollegeDashboardLayo
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
 import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, X, Download, Info, Users } from "lucide-react";
 import toast from "react-hot-toast";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 const SAMPLE_ROWS = [
   { name: "Akash Tiwari", id: "STU-2027-001", course: "B.Tech CSE", cgpa: "8.5", email: "akash@college.edu", status: "valid" },
@@ -16,6 +20,9 @@ export default function CollegeEnrollmentPage() {
   const [dragOver, setDragOver] = useState(false);
   const [uploaded, setUploaded] = useState(false);
   const [importing, setImporting] = useState(false);
+  
+  const { data, isLoading } = useSWR("/college/enrollment-stats", fetcher);
+  const stats = data?.data || [];
 
   const validCount = SAMPLE_ROWS.filter(r => r.status === "valid").length;
   const errorCount = SAMPLE_ROWS.filter(r => r.status === "error").length;
@@ -27,12 +34,17 @@ export default function CollegeEnrollmentPage() {
     toast.success("File uploaded! Preview loaded below.");
   };
 
-  const handleImport = () => {
+  const handleImport = async () => {
     setImporting(true);
-    setTimeout(() => {
-      setImporting(false);
+    try {
+      await api.post("/college/import");
       toast.success(`${validCount} students imported successfully!`);
-    }, 2000);
+      setUploaded(false);
+    } catch (error) {
+      toast.error("Failed to import students.");
+    } finally {
+      setImporting(false);
+    }
   };
 
   return (
@@ -180,13 +192,11 @@ export default function CollegeEnrollmentPage() {
               <Users size={18} className="text-[#C9A227]" />
             </div>
             <h3 className="font-black text-base mb-3">Current Enrollment</h3>
+            {isLoading ? (
+              <div className="py-4 text-center text-white/50 text-sm">Loading stats...</div>
+            ) : (
             <div className="space-y-3">
-              {[
-                { label: "B.Tech CSE", count: 450 },
-                { label: "B.Tech IT", count: 320 },
-                { label: "MBA", count: 180 },
-                { label: "B.Com", count: 300 },
-              ].map((c, i) => (
+              {stats.map((c: any, i: number) => (
                 <div key={i}>
                   <div className="flex justify-between text-[11px] font-bold mb-1">
                     <span className="text-white/70">{c.label}</span>
@@ -198,6 +208,7 @@ export default function CollegeEnrollmentPage() {
                 </div>
               ))}
             </div>
+            )}
           </AnimatedContent>
 
           {/* Requirements */}

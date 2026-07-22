@@ -5,16 +5,21 @@ import { Button } from "../src/components/ui/Button";
 import { Mail, Lock, User, ChevronRight, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { AuthBranding } from "../src/components/AuthBranding";
 import { motion } from "framer-motion";
+import { useAuth } from "../src/context/AuthContext";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [role, setRole] = useState("student");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   // Password strength calculation
   const getStrength = (pass: string) => {
@@ -37,16 +42,50 @@ export default function SignupPage() {
 
   const passwordsMatch = password && confirmPassword ? password === confirmPassword : true;
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!passwordsMatch || strength < 50) return;
     
     setIsLoading(true);
+    setError("");
 
-    setTimeout(() => {
+    try {
+      const api = (await import("../src/lib/axios")).default;
+      const response = await api.post("/register", {
+        name,
+        email,
+        phone,
+        password,
+        password_confirmation: confirmPassword,
+        role: role,
+      });
+
+      if (response.data.status === 'pending_approval') {
+        router.push('/pending-approval');
+      } else {
+        // Automatically login the student
+        localStorage.setItem("auth_token", response.data.token);
+        
+        // Extract user data from response to update AuthContext
+        const userData = response.data.user;
+        const userRole = userData.roles && userData.roles.length > 0 ? userData.roles[0].name : "student";
+        
+        const mappedUser = {
+          name: userData.name || `${userData.first_name} ${userData.last_name}`.trim(),
+          email: userData.email,
+          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(userData.name || userData.first_name)}`,
+          role: userRole
+        };
+        
+        // Update global auth state before redirecting
+        login(mappedUser);
+        
+        router.push("/student/dashboard");
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || "An error occurred during signup.");
       setIsLoading(false);
-      router.push("/onboarding");
-    }, 1500);
+    }
   };
 
   const container = {
@@ -84,9 +123,30 @@ export default function SignupPage() {
             <motion.p variants={item} className="text-sm text-slate-500 font-medium">Join BlueBoxx and start building your career.</motion.p>
           </motion.div>
 
+          {error && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 p-3 rounded-lg bg-rose-50 text-rose-600 text-sm font-semibold border border-rose-200">
+              {error}
+            </motion.div>
+          )}
+
           <motion.form variants={container} initial="hidden" animate="show" onSubmit={handleSignup} className="space-y-4">
 
-
+            <motion.div variants={item} className="mb-4">
+              <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest ml-1 mb-2 block">I am a</label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="w-full h-11 px-4 rounded-xl border border-slate-200 focus:border-[#1B2A6B] focus:ring-2 focus:ring-[#1B2A6B]/20 outline-none transition-all font-semibold text-slate-800 text-sm bg-white appearance-none cursor-pointer"
+                style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394A3B8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px top 50%', backgroundSize: '12px auto' }}
+              >
+                <option value="student">Student</option>
+                <option value="expert">Expert</option>
+                <option value="company">Company</option>
+                <option value="college">College</option>
+                <option value="intern">Intern</option>
+                <option value="job-seeker">Job Seeker</option>
+              </select>
+            </motion.div>
 
             <motion.div variants={item} className="space-y-1.5">
               <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
@@ -102,6 +162,23 @@ export default function SignupPage() {
                 />
               </div>
             </motion.div>
+
+            <motion.div variants={item} className="space-y-1.5">
+              <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest ml-1">Phone Number</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">+91</span>
+                <input
+                  type="tel"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="9876543210"
+                  className="w-full h-11 pl-11 pr-4 rounded-xl border border-slate-200 focus:border-[#1B2A6B] focus:ring-2 focus:ring-[#1B2A6B]/20 outline-none transition-all font-semibold text-slate-800 text-sm bg-white"
+                />
+              </div>
+            </motion.div>
+
+
 
             <motion.div variants={item} className="space-y-1.5">
               <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest ml-1">Email Address</label>

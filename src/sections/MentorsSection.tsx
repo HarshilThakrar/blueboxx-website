@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 import { staggerContainer, staggerItem } from "../animations/variants";
 import { Star, Video, MessageSquare, Shield, UserCircle2, ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
+import useSWR from "swr";
+import api from "../lib/axios";
 
 const mentors = [
   {
@@ -31,6 +33,10 @@ const mentors = [
 ];
 
 export const MentorsSection = () => {
+  const fetcher = (url: string) => api.get(url).then(res => res.data.data);
+  const { data: mentorsData } = useSWR('/public/experts-cms', fetcher, { revalidateOnFocus: false });
+  const currentMentors = mentorsData?.length ? mentorsData : mentors;
+
   return (
     <section className="py-24 border-y border-slate-200 relative overflow-hidden bg-slate-50">
       {/* Soft Light Background with Subtle Orbs */}
@@ -75,7 +81,7 @@ export const MentorsSection = () => {
           viewport={{ once: true, margin: "-40px" }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto"
         >
-          {mentors.map((mentor) => (
+          {currentMentors.map((mentor: any) => (
             <Link key={mentor.id} href={`/experts/${mentor.slug}`}>
               <motion.div
                 variants={staggerItem}
@@ -129,7 +135,7 @@ export const MentorsSection = () => {
                   </div>
 
                   <div className="flex flex-wrap gap-1.5 mb-6">
-                    {mentor.skills.map((s) => (
+                    {mentor.skills?.map((s: string) => (
                       <span key={s} className="px-2.5 py-0.5 bg-[#1B2A6B]/6 text-[#1B2A6B] text-xs font-medium rounded-md border border-[#1B2A6B]/12">
                         {s}
                       </span>

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { MainLayout } from "../../src/layout/MainLayout";
 import { Button } from "../../src/components/ui/Button";
@@ -5,44 +6,66 @@ import { Card, CardContent } from "../../src/components/ui/Card";
 import { Badge } from "../../src/components/ui/Badge";
 import { 
   MapPin, Briefcase, DollarSign, Clock, Users, Building2, 
-  CheckCircle2, ChevronRight, Share2, Bookmark, FileText
+  CheckCircle2, ChevronRight, Share2, Bookmark, FileText, Loader2
 } from "lucide-react";
+import api from "../../src/lib/axios";
+import Link from "next/link";
+import toast from "react-hot-toast";
 
 export default function JobDetailPage() {
   const router = useRouter();
   const { id } = router.query;
+  const [job, setJob] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data for the job
-  const job = {
-    title: "Frontend Developer (React.js)",
-    company: "TechCorp Inc.",
-    logo: "https://ui-avatars.com/api/?name=TechCorp&background=0d1635&color=fff",
-    type: "Full-Time",
-    location: "Mumbai, India (Hybrid)",
-    salary: "₹12,00,000 - ₹18,00,000 / year",
-    experience: "2-4 Years",
-    postedAt: "2 days ago",
-    applicants: 145,
-    tags: ["React", "TypeScript", "Next.js", "Tailwind CSS"],
-    aboutCompany: "TechCorp is a leading product company building the next generation of financial tools for small businesses. We are a team of 500+ passionate engineers, designers, and product managers.",
+  useEffect(() => {
+    if (!id) return;
+    const fetchJob = async () => {
+      try {
+        const res = await api.get(`/public/jobs/${id}`);
+        if (res.data.success) {
+          setJob(res.data.data);
+        }
+      } catch (err) {
+        toast.error("Failed to load job details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJob();
+  }, [id]);
+
+  const handleBookmark = async () => {
+    try {
+      const res = await api.post(`/public/jobs/${id}/bookmark`);
+      if (res.data.success) {
+        setJob({ ...job, is_bookmarked: res.data.bookmarked });
+        toast.success(res.data.bookmarked ? "Job bookmarked!" : "Bookmark removed");
+      }
+    } catch (err) {
+      toast.error("Please login to bookmark jobs");
+    }
   };
 
-  const responsibilities = [
-    "Develop new user-facing features using React.js and Next.js.",
-    "Build reusable components and front-end libraries for future use.",
-    "Translate designs and wireframes into high-quality code.",
-    "Optimize components for maximum performance across a vast array of web-capable devices and browsers.",
-    "Collaborate with backend engineers to integrate RESTful APIs."
-  ];
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen flex items-center justify-center pt-20">
+          <Loader2 className="w-10 h-10 animate-spin text-[#1B2A6B]" />
+        </div>
+      </MainLayout>
+    );
+  }
 
-  const requirements = [
-    "2+ years of professional experience with React.js.",
-    "Strong proficiency in JavaScript, including DOM manipulation and the JavaScript object model.",
-    "Experience with TypeScript and modern React patterns (Hooks, Context).",
-    "Familiarity with RESTful APIs and GraphQL.",
-    "Experience with popular React workflows (such as Redux or Zustand).",
-    "Familiarity with modern front-end build pipelines and tools (Webpack, Vite)."
-  ];
+  if (!job) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen flex items-center justify-center pt-20">
+          <h2 className="text-xl font-bold text-slate-800">Job not found.</h2>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -53,22 +76,22 @@ export default function JobDetailPage() {
             
             <div className="flex flex-col md:flex-row gap-6 items-start">
               <div className="w-24 h-24 bg-white rounded-2xl p-2 shadow-md border border-slate-100 shrink-0">
-                <img src={job.logo} alt={job.company} className="w-full h-full rounded-xl object-cover" />
+                <img src={job.company_logo || `https://ui-avatars.com/api/?name=${job.company_name}&background=random`} alt={job.company_name} className="w-full h-full rounded-xl object-cover" />
               </div>
               
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <h1 className="text-2xl md:text-3xl font-black text-slate-800">{job.title}</h1>
-                  <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-none ml-2 shadow-sm font-extrabold uppercase tracking-wider text-[10px]">{job.type}</Badge>
+                  <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-none ml-2 shadow-sm font-extrabold uppercase tracking-wider text-[10px]">{job.job_type}</Badge>
                 </div>
                 <div className="text-lg font-bold text-[#1B2A6B] mb-4 flex items-center gap-2">
-                  <Building2 size={20} /> {job.company}
+                  <Building2 size={20} /> {job.company_name}
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-4 text-sm font-semibold text-slate-500">
                   <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm"><MapPin size={16} className="text-slate-400"/> {job.location}</span>
-                  <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm"><DollarSign size={16} className="text-emerald-500"/> {job.salary}</span>
-                  <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm"><Briefcase size={16} className="text-amber-500"/> {job.experience}</span>
+                  <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm"><DollarSign size={16} className="text-emerald-500"/> {job.hide_salary ? 'Undisclosed' : `₹${job.salary_min} - ₹${job.salary_max}`}</span>
+                  <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm"><Briefcase size={16} className="text-amber-500"/> {job.experience_level}</span>
                 </div>
               </div>
             </div>
@@ -77,12 +100,20 @@ export default function JobDetailPage() {
               <Button variant="outline" className="w-12 h-12 p-0 rounded-xl border-slate-200 text-slate-400 hover:text-[#1B2A6B] hover:bg-slate-100 shrink-0">
                 <Share2 size={20} />
               </Button>
-              <Button variant="outline" className="w-12 h-12 p-0 rounded-xl border-slate-200 text-slate-400 hover:text-[#C9A227] hover:bg-amber-50 shrink-0">
-                <Bookmark size={20} />
+              <Button onClick={handleBookmark} variant="outline" className={`w-12 h-12 p-0 rounded-xl border-slate-200 shrink-0 ${job.is_bookmarked ? 'text-[#C9A227] bg-amber-50' : 'text-slate-400 hover:text-[#C9A227] hover:bg-amber-50'}`}>
+                <Bookmark size={20} className={job.is_bookmarked ? 'fill-current' : ''} />
               </Button>
-              <Button className="flex-1 lg:w-48 bg-[#1B2A6B] hover:bg-[#0d1635] text-white font-black h-12 rounded-xl text-sm shadow-[0_4px_15px_rgba(27,42,107,0.2)] transition-all gap-2 uppercase tracking-wider">
-                Apply Now <ChevronRight size={16} />
-              </Button>
+              {job.has_applied ? (
+                <Button disabled className="flex-1 lg:w-48 bg-emerald-600 text-white font-black h-12 rounded-xl text-sm shadow-[0_4px_15px_rgba(16,185,129,0.2)] transition-all gap-2 uppercase tracking-wider">
+                  <CheckCircle2 size={16} /> Applied
+                </Button>
+              ) : (
+                <Link href={`/apply/job/${job.id}`}>
+                  <Button className="flex-1 lg:w-48 bg-[#1B2A6B] hover:bg-[#0d1635] text-white font-black h-12 rounded-xl text-sm shadow-[0_4px_15px_rgba(27,42,107,0.2)] transition-all gap-2 uppercase tracking-wider">
+                    Apply Now <ChevronRight size={16} />
+                  </Button>
+                </Link>
+              )}
             </div>
 
           </div>
@@ -96,58 +127,71 @@ export default function JobDetailPage() {
           {/* Left Column (Job Details) */}
           <div className="flex-1 lg:max-w-3xl space-y-12">
             
-            {/* Required Skills */}
-            <div>
-              <h2 className="text-lg font-black text-slate-800 mb-4">Required Skills</h2>
-              <div className="flex flex-wrap gap-2">
-                {job.tags.map((tag) => (
-                  <span key={tag} className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-[#1B2A6B] transition-colors cursor-default">
-                    {tag}
-                  </span>
-                ))}
+            {job.required_skills?.length > 0 && (
+              <div>
+                <h2 className="text-lg font-black text-slate-800 mb-4">Required Skills</h2>
+                <div className="flex flex-wrap gap-2">
+                  {job.required_skills.map((tag: string) => (
+                    <span key={tag} className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-[#1B2A6B] transition-colors cursor-default">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Responsibilities */}
-            <div>
-              <h2 className="text-xl font-black text-slate-800 mb-6">Key Responsibilities</h2>
-              <ul className="space-y-4">
-                {responsibilities.map((item, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-                      <div className="w-2 h-2 rounded-full bg-[#1B2A6B]"></div>
-                    </div>
-                    <span className="text-sm font-semibold text-slate-600 leading-relaxed">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {job.description && (
+              <div>
+                <h2 className="text-xl font-black text-slate-800 mb-6">Job Description</h2>
+                <p className="text-sm font-semibold text-slate-600 leading-relaxed whitespace-pre-line">
+                  {job.description}
+                </p>
+              </div>
+            )}
 
-            {/* Requirements */}
-            <div>
-              <h2 className="text-xl font-black text-slate-800 mb-6">What We're Looking For</h2>
-              <div className="bg-slate-50 border border-slate-200 rounded-3xl p-8 shadow-sm">
+            {job.responsibilities?.length > 0 && (
+              <div>
+                <h2 className="text-xl font-black text-slate-800 mb-6">Key Responsibilities</h2>
                 <ul className="space-y-4">
-                  {requirements.map((item, i) => (
+                  {job.responsibilities.map((item: string, i: number) => (
                     <li key={i} className="flex items-start gap-3">
-                      <CheckCircle2 size={20} className="text-emerald-500 shrink-0 mt-0.5" />
+                      <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="w-2 h-2 rounded-full bg-[#1B2A6B]"></div>
+                      </div>
                       <span className="text-sm font-semibold text-slate-600 leading-relaxed">{item}</span>
                     </li>
                   ))}
                 </ul>
               </div>
-            </div>
+            )}
 
-            {/* About Company */}
-            <div>
-              <h2 className="text-xl font-black text-slate-800 mb-4">About {job.company}</h2>
-              <p className="text-sm text-slate-600 font-medium leading-relaxed mb-6">
-                {job.aboutCompany}
-              </p>
-              <Button variant="outline" className="border-[#1B2A6B]/20 text-[#1B2A6B] h-10 text-[11px] font-extrabold uppercase tracking-wider rounded-lg px-6 hover:bg-blue-50">
-                View Company Profile
-              </Button>
-            </div>
+            {job.requirements?.length > 0 && (
+              <div>
+                <h2 className="text-xl font-black text-slate-800 mb-6">What We're Looking For</h2>
+                <div className="bg-slate-50 border border-slate-200 rounded-3xl p-8 shadow-sm">
+                  <ul className="space-y-4">
+                    {job.requirements.map((item: string, i: number) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <CheckCircle2 size={20} className="text-emerald-500 shrink-0 mt-0.5" />
+                        <span className="text-sm font-semibold text-slate-600 leading-relaxed">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {job.company_description && (
+              <div>
+                <h2 className="text-xl font-black text-slate-800 mb-4">About {job.company_name}</h2>
+                <p className="text-sm text-slate-600 font-medium leading-relaxed mb-6">
+                  {job.company_description}
+                </p>
+                <Button variant="outline" className="border-[#1B2A6B]/20 text-[#1B2A6B] h-10 text-[11px] font-extrabold uppercase tracking-wider rounded-lg px-6 hover:bg-blue-50">
+                  View Company Profile
+                </Button>
+              </div>
+            )}
 
           </div>
 
@@ -160,18 +204,26 @@ export default function JobDetailPage() {
                   <div className="space-y-4 mb-8">
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-bold text-slate-500 flex items-center gap-2"><Clock size={16}/> Posted</span>
-                      <span className="font-black text-slate-800">{job.postedAt}</span>
+                      <span className="font-black text-slate-800">{job.posted_at}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-bold text-slate-500 flex items-center gap-2"><Users size={16}/> Applicants</span>
-                      <span className="font-black text-slate-800">{job.applicants} applied</span>
+                      <span className="font-black text-slate-800">{job.application_count} applied</span>
                     </div>
                   </div>
 
                   <div className="space-y-3">
-                    <Button className="w-full bg-[#1B2A6B] hover:bg-[#0d1635] text-white font-black h-14 rounded-xl text-sm shadow-[0_8px_20px_rgba(27,42,107,0.2)] transition-all hover:-translate-y-1 gap-2 uppercase tracking-wider">
-                      <FileText size={18} /> Apply with Profile
-                    </Button>
+                    {job.has_applied ? (
+                      <Button disabled className="w-full bg-emerald-600 text-white font-black h-14 rounded-xl text-sm shadow-[0_8px_20px_rgba(16,185,129,0.2)] transition-all gap-2 uppercase tracking-wider">
+                        <CheckCircle2 size={18} /> You Have Applied
+                      </Button>
+                    ) : (
+                      <Link href={`/apply/job/${job.id}`}>
+                        <Button className="w-full bg-[#1B2A6B] hover:bg-[#0d1635] text-white font-black h-14 rounded-xl text-sm shadow-[0_8px_20px_rgba(27,42,107,0.2)] transition-all hover:-translate-y-1 gap-2 uppercase tracking-wider">
+                          <FileText size={18} /> Apply with Profile
+                        </Button>
+                      </Link>
+                    )}
                     <p className="text-center text-[11px] font-bold text-slate-400 mt-2">
                       Uses your BlueBoxx student profile & resume.
                     </p>

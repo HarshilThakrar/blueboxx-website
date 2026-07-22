@@ -4,37 +4,20 @@ import { AnimatedContent } from "../../../src/components/reactbits/AnimatedConte
 import { useState } from "react";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
 
-const COHORTS = [
-  { name: "B.Tech CSE — 3rd Year", students: 450, course: "Full Stack Web Development", progress: 65, color: "bg-[#1B2A6B]" },
-  { name: "B.Tech IT — Final Year", students: 320, course: "Data Structures & Algorithms", progress: 85, color: "bg-emerald-500" },
-  { name: "MBA — 1st Year", students: 180, course: "Digital Marketing Essentials", progress: 42, color: "bg-[#0d1635]" },
-  { name: "B.Com — 2nd Year", students: 300, course: "Accounting & Tally Prime", progress: 28, color: "bg-[#C9A227]" },
-];
-
-const TOP_STUDENTS = [
-  { name: "Priya Sharma", id: "CS21045", dept: "CSE", score: "98%", rank: 1 },
-  { name: "Rahul Verma", id: "CS21089", dept: "CSE", score: "95%", rank: 2 },
-  { name: "Anjali Gupta", id: "IT21012", dept: "IT", score: "94%", rank: 3 },
-  { name: "Karthik N.", id: "EC21055", dept: "ECE", score: "92%", rank: 4 },
-  { name: "Divya R.", id: "MBA21003", dept: "MBA", score: "90%", rank: 5 },
-];
-
-const PLACEMENTS = [
-  { company: "Google India", role: "SDE Intern", count: 4, logo: "G" },
-  { company: "Microsoft", role: "Product Intern", count: 6, logo: "M" },
-  { company: "Deloitte", role: "Business Analyst", count: 12, logo: "D" },
-  { company: "Amazon", role: "SDE-1", count: 3, logo: "A" },
-];
-
-const ALERTS = [
-  { msg: "Priya Sharma hasn't logged in for 5 days.", type: "warn" },
-  { msg: "B.Tech CSE batch midterm report is due.", type: "info" },
-  { msg: "12 students completed Full Stack course.", type: "success" },
-];
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function CollegeDashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
+  const { data, isLoading } = useSWR("/college/dashboard", fetcher);
+
+  const kpis = data?.data?.kpis || { total_enrolled: 0, active_cohorts: 0, avg_completion: 0, placements: 0 };
+  const cohorts = data?.data?.cohorts || [];
+  const topStudents = data?.data?.top_students || [];
+  const placements = data?.data?.placements || [];
+  const alerts = data?.data?.alerts || [];
 
   const handleBulkImport = () => toast("Opening bulk import wizard...", { icon: "📥" });
 
@@ -59,10 +42,10 @@ export default function CollegeDashboardPage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Total Enrolled", value: "1,250", icon: Users, color: "text-[#1B2A6B] bg-blue-50", trend: "+180 this term" },
-          { label: "Active Cohorts", value: "4", icon: GraduationCap, color: "text-[#0d1635] bg-slate-100", trend: "4 courses running" },
-          { label: "Avg. Completion", value: "78%", icon: TrendingUp, color: "text-emerald-600 bg-emerald-50", trend: "+6% from last term" },
-          { label: "Placements", value: "450+", icon: Briefcase, color: "text-[#C9A227] bg-[#C9A227]/10", trend: "25 companies hired" },
+          { label: "Total Enrolled", value: kpis.total_enrolled.toLocaleString(), icon: Users, color: "text-[#1B2A6B] bg-blue-50", trend: "" },
+          { label: "Active Cohorts", value: kpis.active_cohorts, icon: GraduationCap, color: "text-[#0d1635] bg-slate-100", trend: "" },
+          { label: "Avg. Completion", value: `${kpis.avg_completion}%`, icon: TrendingUp, color: "text-emerald-600 bg-emerald-50", trend: "" },
+          { label: "Placements", value: `${kpis.placements}`, icon: Briefcase, color: "text-[#C9A227] bg-[#C9A227]/10", trend: "" },
         ].map((stat, i) => (
           <AnimatedContent key={i} direction="up" delay={i * 0.07} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
             <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${stat.color} mb-4`}>
@@ -104,8 +87,11 @@ export default function CollegeDashboardPage() {
                 </h2>
                 <button onClick={() => setActiveTab("cohorts")} className="text-xs font-bold text-[#1B2A6B] flex items-center gap-1 hover:underline">View All <ChevronRight size={14} /></button>
               </div>
-              <div className="space-y-4">
-                {COHORTS.slice(0, 3).map((cohort, i) => (
+              {isLoading ? (
+                <div className="py-8 text-center text-slate-400 text-sm">Loading cohorts...</div>
+              ) : (
+                <div className="space-y-4">
+                  {cohorts.slice(0, 3).map((cohort: any, i: number) => (
                   <div key={i} className="flex items-center gap-4">
                     <div className={`w-2 h-2 rounded-full ${cohort.color} shrink-0`} />
                     <div className="flex-1 min-w-0">
@@ -121,6 +107,7 @@ export default function CollegeDashboardPage() {
                   </div>
                 ))}
               </div>
+            )}
             </AnimatedContent>
 
             {/* Alerts */}
@@ -128,8 +115,11 @@ export default function CollegeDashboardPage() {
               <h2 className="text-base font-black text-slate-800 mb-4 flex items-center gap-2">
                 <Bell size={16} className="text-amber-500" /> Alerts & Notifications
               </h2>
-              <div className="space-y-2">
-                {ALERTS.map((a, i) => (
+              {isLoading ? (
+                <div className="py-4 text-center text-slate-400 text-sm">Loading alerts...</div>
+              ) : (
+                <div className="space-y-2">
+                  {alerts.map((a: any, i: number) => (
                   <div key={i} className={`flex items-start gap-3 p-3 rounded-xl ${a.type === "warn" ? "bg-amber-50 border border-amber-100" : a.type === "success" ? "bg-emerald-50 border border-emerald-100" : "bg-blue-50 border border-blue-100"}`}>
                     {a.type === "warn" && <AlertCircle size={15} className="text-amber-600 shrink-0 mt-0.5" />}
                     {a.type === "success" && <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />}
@@ -138,6 +128,7 @@ export default function CollegeDashboardPage() {
                   </div>
                 ))}
               </div>
+              )}
             </AnimatedContent>
           </div>
 
@@ -150,8 +141,12 @@ export default function CollegeDashboardPage() {
                   <Award size={15} className="text-[#C9A227]" /> Top Performers
                 </h2>
               </div>
-              <div className="divide-y divide-slate-100">
-                {TOP_STUDENTS.map((s, i) => (
+              {isLoading ? (
+                <div className="py-8 text-center text-slate-400 text-sm">Loading performers...</div>
+              ) : (
+                <>
+                  <div className="divide-y divide-slate-100">
+                    {topStudents.map((s: any, i: number) => (
                   <div key={i} className="p-3 flex items-center justify-between hover:bg-slate-50 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black ${i === 0 ? "bg-[#C9A227]/20 text-[#C9A227]" : i === 1 ? "bg-slate-200 text-slate-600" : "bg-orange-100 text-orange-700"}`}>
@@ -171,7 +166,9 @@ export default function CollegeDashboardPage() {
                   View Full Leaderboard
                 </button>
               </div>
-            </AnimatedContent>
+            </>
+          )}
+        </AnimatedContent>
 
             {/* Quick Actions */}
             <AnimatedContent direction="up" delay={0.35} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
@@ -197,8 +194,11 @@ export default function CollegeDashboardPage() {
       )}
 
       {activeTab === "cohorts" && (
+        isLoading ? (
+          <div className="py-12 text-center text-slate-400">Loading cohorts...</div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {COHORTS.map((cohort, i) => (
+          {cohorts.map((cohort: any, i: number) => (
             <AnimatedContent key={i} direction="up" delay={i * 0.08} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -222,16 +222,17 @@ export default function CollegeDashboardPage() {
             </AnimatedContent>
           ))}
         </div>
+        )
       )}
 
       {activeTab === "placements" && (
         <div className="space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-2">
             {[
-              { label: "Students Placed", value: "450" },
-              { label: "Companies Recruited", value: "25" },
-              { label: "Avg. Package", value: "₹8.5 LPA" },
-              { label: "Highest Package", value: "₹28 LPA" },
+              { label: "Students Placed", value: "0" },
+              { label: "Companies Recruited", value: "0" },
+              { label: "Avg. Package", value: "TBD" },
+              { label: "Highest Package", value: "TBD" },
             ].map((s, i) => (
               <AnimatedContent key={i} direction="up" delay={i * 0.07} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
                 <h3 className="text-2xl font-black text-slate-800 mb-1">{s.value}</h3>
@@ -245,8 +246,11 @@ export default function CollegeDashboardPage() {
                 <Building size={16} className="text-[#1B2A6B]" /> Recruiting Companies
               </h2>
             </div>
-            <div className="divide-y divide-slate-100">
-              {PLACEMENTS.map((p, i) => (
+            {isLoading ? (
+              <div className="py-8 text-center text-slate-400 text-sm">Loading placements...</div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {placements.map((p: any, i: number) => (
                 <div key={i} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-[#1B2A6B] flex items-center justify-center text-white font-black text-lg">
@@ -264,6 +268,7 @@ export default function CollegeDashboardPage() {
                 </div>
               ))}
             </div>
+            )}
           </AnimatedContent>
         </div>
       )}

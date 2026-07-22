@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { Facebook, Twitter, Instagram, Linkedin, BookOpen, Users, Briefcase, Award, MapPin, Mail, Phone, Send } from "lucide-react";
+import { useState } from "react";
+import { Facebook, Twitter, Instagram, Linkedin, BookOpen, Users, Briefcase, Award, MapPin, Mail, Phone, Send, Loader2 } from "lucide-react";
+import { useGlobalSettings } from "../contexts/SettingsContext";
+import toast from "react-hot-toast";
+import api from "../lib/axios";
 
 const footerLinks = {
   companyInfo: [
@@ -41,6 +45,26 @@ const stats = [
 ];
 
 export const Footer = () => {
+  const { settings } = useGlobalSettings();
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setIsLoading(true);
+    try {
+      await api.post("/public/newsletter/subscribe", { email });
+      toast.success("Thank you for subscribing to our newsletter!");
+      setEmail("");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to subscribe. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   return (
     <footer id="footer" className="relative overflow-hidden bg-[#0d1635] text-slate-300 pt-0 pb-0">
 
@@ -117,24 +141,27 @@ export const Footer = () => {
           <div className="lg:w-2/5 flex flex-col justify-between">
             <div>
               <Link href="/" className="inline-block mb-6">
-                <img src="logowhite.png" alt="BlueBoxx logo" className="h-14 w-auto object-contain rounded-md shadow-sm" />
+                <img src={settings.footer_logo || "logowhite.png"} alt={settings.website_name || "BlueBoxx logo"} className="h-14 w-auto object-contain rounded-md shadow-sm" />
               </Link>
 
               <div className="mb-4">
                 <h3 className="text-lg font-bold text-white mb-1.5">Never Miss A Post!</h3>
                 <p className="text-slate-400 text-xs mb-3">Choose the most powerful courses and always be on demand.</p>
-                <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
+                <form className="flex gap-2" onSubmit={handleSubscribe}>
                   <div className="relative flex-1">
                     <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                       type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter e-mail Address"
                       className="w-full bg-[#1B2A6B]/30 border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-[#C9A227] focus:ring-1 focus:ring-[#C9A227] transition-all"
                       required
+                      disabled={isLoading}
                     />
                   </div>
-                  <button type="submit" className="bg-[#C9A227] text-[#0d1635] px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-[#d8b02c] transition-colors flex items-center justify-center shrink-0">
-                    <Send size={16} />
+                  <button type="submit" disabled={isLoading} className="bg-[#C9A227] text-[#0d1635] px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-[#d8b02c] transition-colors flex items-center justify-center shrink-0 disabled:opacity-70 disabled:cursor-not-allowed">
+                    {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                   </button>
                 </form>
               </div>
@@ -142,13 +169,13 @@ export const Footer = () => {
 
             {/* Contact info */}
             <div className="flex flex-col gap-3">
-              <a href="mailto:info.blueboxx@gmail.com" className="flex items-center gap-3 text-sm text-slate-400 hover:text-[#C9A227] transition-colors">
+              <a href={`mailto:${settings.support_email || 'info.blueboxx@gmail.com'}`} className="flex items-center gap-3 text-sm text-slate-400 hover:text-[#C9A227] transition-colors">
                 <Mail size={16} className="text-[#C9A227]/80 flex-shrink-0" />
-                info.blueboxx@gmail.com
+                {settings.support_email || 'info.blueboxx@gmail.com'}
               </a>
-              <a href="tel:+919023512853" className="flex items-center gap-3 text-sm text-slate-400 hover:text-[#C9A227] transition-colors">
+              <a href={`tel:${settings.support_phone || '+919023512853'}`} className="flex items-center gap-3 text-sm text-slate-400 hover:text-[#C9A227] transition-colors">
                 <Phone size={16} className="text-[#C9A227]/80 flex-shrink-0" />
-                +91 90235 12853
+                {settings.support_phone || '+91 90235 12853'}
               </a>
               <div className="flex items-start gap-3 text-sm text-slate-400 max-w-sm">
                 <MapPin size={16} className="text-[#C9A227]/80 flex-shrink-0 mt-0.5" />
@@ -223,7 +250,7 @@ export const Footer = () => {
         {/* Bottom bar */}
         <div className="border-t border-white/10 pt-4 pb-10 flex flex-col xl:flex-row items-center justify-between gap-4 text-center xl:text-left">
           <div className="flex flex-col sm:flex-row items-center justify-center xl:justify-start gap-3 sm:gap-4 text-slate-500 text-xs w-full xl:w-auto">
-            <span>&copy; {new Date().getFullYear()} BlueBoxx. All rights reserved.</span>
+            <span>&copy; {new Date().getFullYear()} {settings.footer_copyright || 'BlueBoxx. All rights reserved.'}</span>
             <span className="hidden sm:inline">|</span>
             <div className="flex flex-wrap justify-center items-center gap-3">
               {footerLinks.legal.map((link) => (
@@ -238,11 +265,12 @@ export const Footer = () => {
             {/* Social icons */}
             <div className="flex items-center gap-3">
               {[
-                { Icon: Twitter, label: "Twitter", href: "https://x.com/BlueboxxDnA" },
-                { Icon: Linkedin, label: "LinkedIn", href: "https://www.linkedin.com/in/blueboxx-da-ab509428/" },
-                { Icon: Instagram, label: "Instagram", href: "https://www.instagram.com/blueboxxda_/" },
-                { Icon: Facebook, label: "Facebook", href: "https://www.facebook.com/profile.php?id=100091587679727" },
-              ].map(({ Icon, label, href }) => (
+                { Icon: Twitter, label: "Twitter", href: settings.twitter_url || "https://x.com/BlueboxxDnA" },
+                { Icon: Linkedin, label: "LinkedIn", href: settings.linkedin_url || "https://www.linkedin.com/in/blueboxx-da-ab509428/" },
+                { Icon: Instagram, label: "Instagram", href: settings.instagram_url || "https://www.instagram.com/blueboxxda_/" },
+                { Icon: Facebook, label: "Facebook", href: settings.facebook_url || "https://www.facebook.com/profile.php?id=100091587679727" },
+                { Icon: Send, label: "YouTube", href: settings.youtube_url } // Reusing Send icon if Youtube isn't imported
+              ].filter(s => !!s.href).map(({ Icon, label, href }) => (
                 <a
                   key={label}
                   href={href}
