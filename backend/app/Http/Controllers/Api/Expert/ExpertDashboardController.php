@@ -31,8 +31,8 @@ class ExpertDashboardController extends Controller
         // Pending Payout (example: $50 per hour)
         $pendingPayout = $hoursMentored * 50;
 
-        // Average Rating (from expert profile or reviews)
-        $averageRating = 4.9; // Hardcoded for now, can be updated later
+        // Average Rating (from expert reviews)
+        $averageRating = \App\Models\ExpertReview::where('expert_id', $expertId)->avg('rating') ?? 0;
 
         return response()->json([
             'success' => true,
@@ -40,7 +40,8 @@ class ExpertDashboardController extends Controller
                 'active_mentees' => $activeMentees,
                 'hours_mentored' => $hoursMentored,
                 'pending_payout' => $pendingPayout,
-                'average_rating' => 0 // Dynamic rating TBD            ]
+                'average_rating' => round($averageRating, 1)
+            ]
         ]);
     }
 
@@ -64,6 +65,7 @@ class ExpertDashboardController extends Controller
                     'mentee' => $session->student->name ?? 'Mentee',
                     'time' => $session->scheduled_at->format('M d, g:i A'),
                     'topic' => $session->notes ?? 'Mentorship Session',
+                    'meeting_link' => $session->meeting_link,
                 ];
             });
 
@@ -199,6 +201,57 @@ class ExpertDashboardController extends Controller
         return response()->json([
             'success' => true,
             'data' => $schedule
+        ]);
+    }
+
+    /**
+     * Accept a mentee session request
+     */
+    public function acceptRequest(Request $request, $id)
+    {
+        $expertId = $request->user()->id;
+        $session = MentorSession::where('expert_id', $expertId)->where('id', $id)->firstOrFail();
+        $session->status = 'scheduled';
+        $session->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mentee request accepted. Session scheduled.'
+        ]);
+    }
+
+    public function declineRequest(Request $request, $id)
+    {
+        $expertId = $request->user()->id;
+        $session = MentorSession::where('expert_id', $expertId)->where('id', $id)->firstOrFail();
+        $session->status = 'cancelled';
+        $session->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mentee request declined.'
+        ]);
+    }
+
+    /**
+     * Update meeting link for a session
+     */
+    public function updateMeetingLink(Request $request, $id)
+    {
+        $request->validate([
+            'meeting_link' => 'required|url'
+        ]);
+
+        $expertId = $request->user()->id;
+        $session = MentorSession::where('expert_id', $expertId)->where('id', $id)->firstOrFail();
+        
+        $session->meeting_link = $request->meeting_link;
+        $session->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Meeting link updated successfully.',
+            'data' => $session
         ]);
     }
 }

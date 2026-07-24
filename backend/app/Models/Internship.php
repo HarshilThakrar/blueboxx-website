@@ -26,6 +26,11 @@ class Internship extends Model
         return $this->belongsTo(User::class, 'company_id');
     }
 
+    public function college()
+    {
+        return $this->belongsTo(User::class, 'college_id');
+    }
+
     public function applications()
     {
         return $this->hasMany(InternshipApplication::class);

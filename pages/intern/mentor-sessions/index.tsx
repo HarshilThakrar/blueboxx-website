@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 
 import useSWR from "swr";
 import api from "../../../src/lib/axios";
-import { EmptyState } from "../../../src/components/ui/EmptyState";
+import { EmptyState } from "../../../src/components/common/EmptyState";
 import { Users } from "lucide-react";
 
 const fetcher = (url: string) => api.get(url).then(res => res.data);

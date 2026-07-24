@@ -1,20 +1,34 @@
 import { CollegeDashboardLayout } from "../../../src/layout/CollegeDashboardLayout";
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
 import { Settings, Building, Phone, Mail, Globe, Save, Camera } from "lucide-react";
-import { useState } from "react";
+import { useAuth } from "../../../src/context/AuthContext";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 export default function CollegeSettingsPage() {
+  const { user } = useAuth();
+  
   const [form, setForm] = useState({
-    collegeName: "NIT Trichy",
-    contactName: "Dr. Rajesh Kumar",
-    email: "placements@nittrichy.ac.in",
-    phone: "+91 431-250-0000",
-    website: "https://www.nitt.edu",
-    address: "National Highway 67, Tanjore Main Road, Tiruchirappalli, Tamil Nadu 620015",
+    collegeName: "",
+    contactName: "",
+    email: "",
+    phone: "",
+    website: "",
+    address: "",
     placementDrive: "2026 Batch",
     targetPlacement: "90",
   });
+
+  useEffect(() => {
+    if (user) {
+      setForm(prev => ({
+        ...prev,
+        collegeName: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+      }));
+    }
+  }, [user]);
 
   const handleSave = () => toast.success("Settings saved successfully!");
 
@@ -31,16 +45,16 @@ export default function CollegeSettingsPage() {
         <AnimatedContent direction="up" delay={0.05} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-center">
           <div className="relative inline-block mb-4">
             <div className="w-20 h-20 rounded-2xl bg-[#0d1635] flex items-center justify-center mx-auto text-white font-black text-2xl shadow-lg">
-              N
+              {form.collegeName.charAt(0).toUpperCase() || 'C'}
             </div>
             <button className="absolute -bottom-1 -right-1 w-7 h-7 bg-[#C9A227] rounded-full flex items-center justify-center shadow-md hover:bg-[#d8b02c] transition-colors">
               <Camera size={13} className="text-[#0d1635]" />
             </button>
           </div>
-          <h3 className="text-lg font-black text-slate-800 mb-0.5">{form.collegeName}</h3>
-          <p className="text-xs font-semibold text-slate-400 mb-1">Placement Cell</p>
-          <span className="inline-flex items-center text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full border border-emerald-100">
-            ✓ Verified Partner
+          <h3 className="text-lg font-black text-slate-800 mb-0.5">{form.collegeName || 'College Name'}</h3>
+          <p className="text-xs font-semibold text-slate-400 mb-1">College Profile</p>
+          <span className="inline-flex items-center text-[10px] font-bold bg-slate-50 text-slate-600 px-2.5 py-1 rounded-full border border-slate-200">
+            Registered
           </span>
 
           <div className="mt-5 pt-5 border-t border-slate-100 space-y-3 text-left">

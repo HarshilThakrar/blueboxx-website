@@ -21,7 +21,7 @@ class ContactInquiryAdminNotification extends Notification implements ShouldQueu
 
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -45,6 +45,12 @@ class ContactInquiryAdminNotification extends Notification implements ShouldQueu
 
     public function toArray(object $notifiable): array
     {
-        return [];
+        return [
+            'type' => 'new_lead',
+            'title' => 'New ' . ($this->lead->type ?? 'Inquiry'),
+            'message' => $this->lead->name . ' submitted a new inquiry.',
+            'link' => '/admin/crm',
+            'lead_id' => $this->lead->id
+        ];
     }
 }

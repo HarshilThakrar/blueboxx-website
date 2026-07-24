@@ -174,11 +174,11 @@ export default function SuperAdminDashboard() {
           <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
           <div className="absolute top-4 right-20 w-20 h-20 rounded-full bg-[#C9A227]/10 pointer-events-none" />
           <div>
-            <p className="text-[#C9A227] text-[10px] font-black uppercase tracking-widest mb-1 flex items-center gap-1.5">
-              <Calendar size={11} /> {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            <p className="text-[#C9A227] text-xs font-black uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+              <Calendar size={13} /> {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
-            <h1 className="text-2xl font-black text-white tracking-tight">{settings.admin_welcome_text || 'Welcome back, Admin 👋'}</h1>
-            <p className="text-slate-400 text-sm mt-1 font-medium">Here's real-time data from your platform.</p>
+            <h1 className="text-[32px] md:text-[36px] font-black text-white tracking-tight leading-tight">{settings.admin_welcome_text || 'Welcome back, Admin'}</h1>
+            <p className="text-slate-400 text-[15px] mt-1 font-medium">Here's real-time data from your platform.</p>
           </div>
           <div className="flex items-center gap-2.5 flex-wrap">
             {/* Refresh */}
@@ -194,20 +194,20 @@ export default function SuperAdminDashboard() {
                 const c = colorMap[stat.color];
                 const StatIcon = stat.icon;
                 return (
-                  <button key={idx} onClick={() => router.push(stat.href)} className="bg-white rounded-xl border border-slate-200 px-3.5 py-3 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group cursor-pointer relative overflow-hidden text-left w-full">
-                    <div className={`absolute -top-4 -right-4 w-14 h-14 rounded-full ${c.light} opacity-50 group-hover:scale-125 transition-transform duration-500`} />
-                    <div className="flex items-center justify-between mb-2.5 relative">
-                      <div className={`w-7 h-7 rounded-lg ${c.light} ${c.text} flex items-center justify-center`}>
-                        <StatIcon size={14} />
+                  <button key={idx} onClick={() => router.push(stat.href)} className="bg-white rounded-xl border border-slate-200 px-5 py-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group cursor-pointer relative overflow-hidden text-left w-full">
+                    <div className={`absolute -top-4 -right-4 w-20 h-20 rounded-full ${c.light} opacity-50 group-hover:scale-125 transition-transform duration-500`} />
+                    <div className="flex items-center justify-between mb-3.5 relative">
+                      <div className={`w-9 h-9 rounded-xl ${c.light} ${c.text} flex items-center justify-center`}>
+                        <StatIcon size={18} />
                       </div>
-                      <span className={`flex items-center gap-0.5 text-[9px] font-black px-1.5 py-0.5 rounded ${stat.up ? 'text-emerald-600 bg-emerald-50' : 'text-red-500 bg-red-50'}`}>
-                        {stat.up ? <TrendingUp size={8} /> : <TrendingDown size={8} />}
+                      <span className={`flex items-center gap-0.5 text-[10px] font-black px-2 py-1 rounded-md ${stat.up ? 'text-emerald-600 bg-emerald-50' : 'text-red-500 bg-red-50'}`}>
+                        {stat.up ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
                         {stat.change}
                       </span>
                     </div>
-                    <p className="text-[8.5px] font-black text-slate-400 uppercase tracking-widest leading-none">{stat.label}</p>
-                    <h3 className={`text-lg font-black mt-0.5 ${c.text}`}>{stat.value}</h3>
-                    <p className="text-[8px] text-slate-400 font-semibold mt-1 truncate">{stat.sub}</p>
+                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{stat.label}</p>
+                    <h3 className={`text-[28px] font-black mt-0.5 leading-none ${c.text}`}>{stat.value}</h3>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-2 truncate">{stat.sub}</p>
                   </button>
                 );
               })}
@@ -218,10 +218,10 @@ export default function SuperAdminDashboard() {
 
               {/* Revenue Bar Chart */}
               <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+                <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
                   <div>
-                    <h2 className="text-sm font-black text-[#0d1635]">Revenue & Registrations</h2>
-                    <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Real-time performance</p>
+                    <h2 className="text-[20px] font-black text-[#0d1635]">Revenue & Registrations</h2>
+                    <p className="text-[12px] text-slate-400 font-semibold mt-1">Real-time performance</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-3 text-[10px] font-bold text-slate-500">
@@ -230,8 +230,8 @@ export default function SuperAdminDashboard() {
                     </div>
                   </div>
                 </div>
-                <div className="px-5 pt-3 pb-6 relative" style={{ height: 200 }}>
-                  <div className="absolute left-0 top-3 bottom-6 w-10 flex flex-col justify-between items-end pr-2 text-[8px] font-bold text-slate-300">
+                <div className="px-6 pt-5 pb-8 relative" style={{ height: 320 }}>
+                  <div className="absolute left-0 top-5 bottom-8 w-12 flex flex-col justify-between items-end pr-3 text-[11px] font-bold text-slate-300">
                     <span>{formatNumber(maxRev)}</span><span>{formatNumber(maxRev*0.75)}</span><span>{formatNumber(maxRev*0.5)}</span><span>{formatNumber(maxRev*0.25)}</span><span>0</span>
                   </div>
                   <div className="absolute left-10 right-0 top-3 bottom-6 flex flex-col justify-between pointer-events-none">
@@ -250,7 +250,7 @@ export default function SuperAdminDashboard() {
                       </div>
                     ))}
                   </div>
-                  <div className="absolute left-10 right-2 bottom-0 flex justify-between text-[8px] font-bold text-slate-400">
+                  <div className="absolute left-12 right-2 bottom-0 flex justify-between text-[11px] font-bold text-slate-400">
                     {MONTHS.map(m => <span key={m} className="flex-1 text-center">{m}</span>)}
                   </div>
                 </div>
@@ -258,9 +258,9 @@ export default function SuperAdminDashboard() {
 
               {/* Compact Activity Feed */}
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-                <div className="px-4 py-3.5 border-b border-slate-100 flex items-center justify-between">
-                  <h2 className="text-sm font-black text-[#0d1635] flex items-center gap-2">
-                    <Activity size={15} className="text-[#C9A227]" /> Activity Feed
+                <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+                  <h2 className="text-[20px] font-black text-[#0d1635] flex items-center gap-2">
+                    <Activity size={20} className="text-[#C9A227]" /> Activity Feed
                   </h2>
                 </div>
                 <div className="flex-1 overflow-y-auto divide-y divide-slate-50">
@@ -270,15 +270,15 @@ export default function SuperAdminDashboard() {
                       <p className="text-xs font-bold">No activity found</p>
                     </div>
                   ) : feedData.map((act, i) => (
-                    <div key={i} className="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => toast.success(`Action: ${act.action}`)}>
-                      <div className={`mt-0.5 w-7 h-7 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center shrink-0 shadow-sm`}>
-                        <Activity size={13} />
+                    <div key={i} className="flex items-start gap-4 px-6 py-4 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => toast.success(`Action: ${act.action}`)}>
+                      <div className={`mt-0.5 w-9 h-9 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center shrink-0 shadow-sm`}>
+                        <Activity size={16} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-bold text-slate-700 leading-snug line-clamp-2">
+                        <p className="text-[14px] font-bold text-slate-700 leading-snug line-clamp-2">
                           <span className="text-[#1B2A6B]">{act.admin?.first_name} {act.admin?.last_name}</span> {act.action} on {act.table_name}
                         </p>
-                        <span className="text-[9px] font-bold text-slate-400 mt-0.5 block">{new Date(act.created_at).toLocaleString()}</span>
+                        <span className="text-[11px] font-bold text-slate-400 mt-1 block uppercase tracking-widest">{new Date(act.created_at).toLocaleString()}</span>
                       </div>
                     </div>
                   ))}
@@ -296,30 +296,30 @@ export default function SuperAdminDashboard() {
               
               {/* Top Courses */}
               <div className="lg:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
-                  <h2 className="text-sm font-black text-[#0d1635]">Top Performing Courses</h2>
-                  <Link href="/admin/courses" className="text-[10px] font-black text-[#1B2A6B] hover:text-[#C9A227] transition-colors flex items-center gap-0.5">
-                    View All <ArrowUpRight size={11} />
+                <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+                  <h2 className="text-[20px] font-black text-[#0d1635]">Top Performing Courses</h2>
+                  <Link href="/admin/courses" className="text-[13px] font-black text-[#1B2A6B] hover:text-[#C9A227] transition-colors flex items-center gap-0.5">
+                    View All <ArrowUpRight size={14} />
                   </Link>
                 </div>
                 <div className="divide-y divide-slate-50">
                   {topCourses.length === 0 ? (
-                    <div className="p-6 text-center text-sm text-gray-500">No courses available.</div>
+                    <div className="p-8 text-center text-sm text-gray-500">No courses available.</div>
                   ) : topCourses.map((course, idx) => (
-                    <div key={course.id} onClick={() => router.push('/admin/courses')} className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50/50 transition-colors group cursor-pointer">
-                      <span className="text-[11px] font-black text-slate-300 w-4 shrink-0">#{idx + 1}</span>
+                    <div key={course.id} onClick={() => router.push('/admin/courses')} className="flex items-center gap-5 px-6 py-4 hover:bg-slate-50/50 transition-colors group cursor-pointer">
+                      <span className="text-[13px] font-black text-slate-300 w-4 shrink-0">#{idx + 1}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-slate-800 truncate group-hover:text-[#1B2A6B] transition-colors">{course.title}</p>
-                        <div className="flex items-center gap-3 mt-1.5">
-                          <div className="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden">
+                        <p className="text-[14px] font-bold text-slate-800 truncate group-hover:text-[#1B2A6B] transition-colors">{course.title}</p>
+                        <div className="flex items-center gap-3 mt-2">
+                          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                             <div className="h-full bg-gradient-to-r from-[#1B2A6B] to-blue-400 rounded-full transition-all" style={{ width: `${Math.min((course.enrollments_count || 0) * 10, 100)}%` }} />
                           </div>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-xs font-black text-[#0d1635]">₹{formatNumber(course.price)}</p>
+                        <p className="text-[14px] font-black text-[#0d1635]">₹{formatNumber(course.price)}</p>
                         <div className="flex items-center justify-end gap-2 mt-1">
-                          <span className="text-[9px] font-bold text-slate-500 flex items-center gap-0.5"><Users size={8}/>{course.enrollments_count || 0}</span>
+                          <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1"><Users size={12}/>{course.enrollments_count || 0}</span>
                         </div>
                       </div>
                     </div>
@@ -329,31 +329,31 @@ export default function SuperAdminDashboard() {
 
               {/* Recent Enrollments */}
               <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
-                  <h2 className="text-sm font-black text-[#0d1635]">Recent Enrollments</h2>
-                  <Link href="/admin/education/enrollments" className="text-[10px] font-black text-[#1B2A6B] hover:text-[#C9A227] transition-colors flex items-center gap-0.5">
-                    View All <ArrowUpRight size={11} />
+                <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+                  <h2 className="text-[20px] font-black text-[#0d1635]">Recent Enrollments</h2>
+                  <Link href="/admin/education/enrollments" className="text-[13px] font-black text-[#1B2A6B] hover:text-[#C9A227] transition-colors flex items-center gap-0.5">
+                    View All <ArrowUpRight size={14} />
                   </Link>
                 </div>
                 <div className="divide-y divide-slate-50">
                   {recentEnrolls.length === 0 ? (
-                    <div className="p-6 text-center text-sm text-gray-500">No enrollments yet.</div>
+                    <div className="p-8 text-center text-sm text-gray-500">No enrollments yet.</div>
                   ) : recentEnrolls.map((enroll, idx) => (
-                    <div key={enroll.id} onClick={() => router.push('/admin/education/enrollments')} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50/50 transition-colors cursor-pointer group">
-                      <div className={`w-8 h-8 rounded-full ${AVATARS_COLORS[idx % AVATARS_COLORS.length]} text-white flex items-center justify-center text-[10px] font-black shrink-0 shadow-sm uppercase`}>
+                    <div key={enroll.id} onClick={() => router.push('/admin/education/enrollments')} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50/50 transition-colors cursor-pointer group">
+                      <div className={`w-10 h-10 rounded-full ${AVATARS_COLORS[idx % AVATARS_COLORS.length]} text-white flex items-center justify-center text-[13px] font-black shrink-0 shadow-sm uppercase`}>
                         {enroll.user?.first_name?.[0]}{enroll.user?.last_name?.[0]}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-slate-800 truncate group-hover:text-[#1B2A6B] transition-colors">{enroll.user?.first_name} {enroll.user?.last_name}</p>
-                        <p className="text-[9px] font-semibold text-slate-400 truncate">
+                        <p className="text-[14px] font-bold text-slate-800 truncate group-hover:text-[#1B2A6B] transition-colors">{enroll.user?.first_name} {enroll.user?.last_name}</p>
+                        <p className="text-[11px] font-semibold text-slate-400 truncate mt-0.5">
                           {enroll.items?.map((i:any) => i.course?.title).join(', ') || 'Various items'}
                         </p>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className={`inline-flex px-2 py-0.5 rounded-full text-[8.5px] font-black uppercase ${getStatusStyle(enroll.payment_status)}`}>
+                        <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${getStatusStyle(enroll.payment_status)}`}>
                           {enroll.payment_status}
                         </span>
-                        <p className="text-[8px] text-slate-400 font-semibold mt-1">{new Date(enroll.created_at).toLocaleDateString()}</p>
+                        <p className="text-[10px] text-slate-400 font-bold mt-1.5">{new Date(enroll.created_at).toLocaleDateString()}</p>
                       </div>
                     </div>
                   ))}

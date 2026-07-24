@@ -13,36 +13,90 @@ import {
   Sparkles, Building2, Play, Plus, Trash2, Upload, Video, MessageSquare,
   MessageCircle, Megaphone, Palette, FolderOpen, Link2, PieChart, HardDrive, Lock, History, Fingerprint,
   Hammer, Loader, MapPin, AlertOctagon, ShieldBan, Wrench, RotateCcw, BarChart, Layout, Moon, Sun, Maximize, Minimize,
-  Code, TrendingUp, RefreshCcw
+  Code, TrendingUp, RefreshCcw, Handshake, Compass, Send
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NotificationService } from "../lib/api/admin/RealtimeNotificationService";
 import { MessageService } from "../lib/api/admin/MessageService";
+import { LeadService } from "../lib/api/admin/LeadService";
 import api from '../lib/axios';
 import { useGlobalSettings } from "../contexts/SettingsContext";
 
-const SIDEBAR_CATEGORIES = [
-  {
-    title: "Dashboard",
-    icon: LayoutDashboard,
-    href: "/admin/dashboard",
-    isStandalone: true,
-  },
-  {
-    title: "Media Manager",
-    icon: FolderOpen,
-    href: "/admin/media",
-    isStandalone: true,
-  },
+const getSidebarCategories = (crmSettingsStr?: string) => {
+  let crmLinks = [
+    { name: "CRM Overview", href: "/admin/crm", icon: Briefcase }
+  ];
+
+  let dynamicSubjects = [
+    "Course Information",
+    "Internship Inquiry",
+    "Job Opportunities",
+    "Mentorship",
+    "Career Guidance",
+    "Book Consultation",
+    "Corporate Training",
+    "Partnership / Collaboration",
+    "Campus Hiring"
+  ];
+
+  try {
+    if (crmSettingsStr) {
+      const parsed = JSON.parse(crmSettingsStr);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        dynamicSubjects = parsed;
+      }
+    }
+  } catch (e) {}
+
+  dynamicSubjects.forEach((subject) => {
+    // Generate slug for href (e.g., "Course Information" -> "course-information")
+    const slug = subject.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    
+    // Default fallback icon is Users
+    let Icon = Users;
+    if (slug.includes('course') || slug.includes('training')) Icon = BookOpen;
+    else if (slug.includes('job') || slug.includes('hiring') || slug.includes('internship') || slug.includes('career')) Icon = Briefcase;
+    else if (slug.includes('consultation') || slug.includes('mentorship') || slug.includes('guidance')) Icon = Compass;
+    else if (slug.includes('partner') || slug.includes('collaboration')) Icon = Handshake;
+
+    crmLinks.push({
+      name: subject,
+      href: `/admin/crm/${slug}`,
+      icon: Icon,
+    });
+  });
+
+  return [
+    {
+      title: "Dashboard",
+      icon: LayoutDashboard,
+      href: "/admin/dashboard",
+      isStandalone: true,
+    },
+    {
+      title: "Media Manager",
+      icon: FolderOpen,
+      href: "/admin/media",
+      isStandalone: true,
+    },
+    {
+      title: "CRM",
+      isHeader: true,
+    },
+    {
+      title: "Leads & CRM",
+      icon: Briefcase,
+      links: crmLinks
+    },
+    {
+      title: "Pending Approvals",
+      icon: UserCheck,
+      href: "/admin/approvals",
+      isStandalone: true,
+    },
   {
     title: "USERS",
     isHeader: true,
-  },
-  {
-    title: "Pending Approvals",
-    icon: UserCheck,
-    href: "/admin/approvals",
-    isStandalone: true,
   },
 
   {
@@ -172,6 +226,7 @@ const SIDEBAR_CATEGORIES = [
     href: "/admin/communication",
     isStandalone: true,
   },
+
   {
     title: "ADMINISTRATION",
     isHeader: true,
@@ -228,8 +283,8 @@ const SIDEBAR_CATEGORIES = [
       { name: "Ip Block", href: "/admin/utility/ip-block", icon: ShieldBan },
     ]
   },
-
 ];
+};
 
 export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
@@ -243,15 +298,28 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
     if (!isAuthReady) return;
     if (!isAuthenticated) {
       router.replace('/login');
+    } else if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+      // Strict Role-Based Redirect: Kick non-admins out of the Admin panel
+      if (user.role === 'intern') router.replace('/intern/dashboard');
+      else if (user.role === 'company') router.replace('/company/dashboard');
+      else if (user.role === 'expert') router.replace('/expert/dashboard');
+      else if (user.role === 'college') router.replace('/college/dashboard');
+      else if (user.role === 'job-seeker') router.replace('/jobseeker/dashboard');
+      else if (user.role === 'student') router.replace('/student/dashboard');
+      else router.replace('/login');
     }
-  }, [isAuthenticated, isAuthReady, router]);
+  }, [isAuthenticated, isAuthReady, user, router]);
 
-  // Real-Time Notifications — only poll when authenticated
-  const { notifications, unreadCount, markAllRead } = NotificationService.useNotifications(isAuthenticated);
+  // Real-Time Notifications & Badges
+  const { notifications, unreadCount, markAllRead, markAsRead } = NotificationService.useNotifications(isAuthenticated);
+  const { badges } = NotificationService.useBadges(isAuthenticated);
   
   // Real-Time Messages — only poll when authenticated
   const { data: messagesData } = MessageService.useUnreadSummary(isAuthenticated);
   const unreadMessagesCount = messagesData.unread_count || 0;
+
+  // Notification Bell Dropdown State
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   // Derive user initials from name for avatar display
   const userInitials = user?.name
@@ -320,7 +388,8 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
   ];
   
   const allLinks = React.useMemo(() => {
-    const links = SIDEBAR_CATEGORIES.reduce((acc, cat) => {
+    const dynamicSidebar = getSidebarCategories(settings?.crm_lead_categories);
+    const links = dynamicSidebar.reduce((acc, cat) => {
       if (cat.href && cat.title) acc.push({ name: cat.title, href: cat.href, category: cat.title });
       if (cat.links) {
         cat.links.forEach(link => {
@@ -330,7 +399,7 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
       return acc;
     }, [] as { name: string, href: string, category: string }[]);
     return [...links, ...dummyDataLinks];
-  }, []);
+  }, [settings?.crm_lead_categories]);
 
   const searchResults = searchQuery
     ? allLinks.filter(l => l.name.toLowerCase().includes(searchQuery.toLowerCase()) || l.category.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 5)
@@ -394,7 +463,8 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
     const currentPath = router.asPath.split("?")[0];
     let activeCategory = "";
 
-    SIDEBAR_CATEGORIES.forEach(category => {
+    const dynamicSidebar = getSidebarCategories(settings?.crm_lead_categories);
+    dynamicSidebar.forEach(category => {
       if (category.links) {
         const hasActive = category.links.some(link => {
           const linkPath = link.href.split("?")[0];
@@ -478,10 +548,10 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
         </div>
 
         <div id="admin-sidebar-scroll" className="flex-1 overflow-y-auto py-6 px-4 space-y-4 admin-scrollbar pb-24">
-          {SIDEBAR_CATEGORIES.map((category, idx) => {
+          {getSidebarCategories(settings?.crm_lead_categories).map((category, idx) => {
             if (category.isHeader) {
               return (
-                <p key={idx} className="text-[10px] font-black text-slate-500 uppercase tracking-widest pt-4 pb-1 px-3">
+                <p key={idx} className="text-[11px] font-black text-slate-500 uppercase tracking-widest pt-5 pb-2 px-4">
                   {category.title}
                 </p>
               );
@@ -491,17 +561,29 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
               const categoryPath = (category.href || "").split("?")[0];
               const isActive = currentUrlPath === categoryPath;
               const Icon = category.icon;
+              
+              // Determine if this category needs a badge
+              let badgeCount = 0;
+              if (category.title === 'Pending Approvals') badgeCount = badges['Pending Approvals'] || 0;
+
               return (
                 <Link
                   key={category.title}
                   href={category.href || "#"}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${isActive
+                  className={`flex items-center justify-between px-4 py-3 rounded-xl font-bold text-[15px] transition-all ${isActive
                     ? "bg-[#C9A227] text-[#0d1635] shadow-lg shadow-[#C9A227]/20"
                     : "text-slate-400 hover:bg-white/5 hover:text-white"
                     }`}
                 >
-                  {Icon && <Icon size={18} className={isActive ? "text-[#0d1635]" : "text-slate-500"} />}
-                  <span>{category.title}</span>
+                  <div className="flex items-center gap-3.5">
+                    {Icon && <Icon size={20} className={isActive ? "text-[#0d1635]" : "text-slate-500"} />}
+                    <span>{category.title}</span>
+                  </div>
+                  {badgeCount > 0 && (
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${isActive ? 'bg-[#0d1635] text-[#C9A227]' : 'bg-red-500 text-white'}`}>
+                      {badgeCount}
+                    </span>
+                  )}
                 </Link>
               );
             }
@@ -520,14 +602,21 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
                 {/* Header Collapsible Trigger */}
                 <button
                   onClick={() => toggleGroup(category.title)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${hasActiveChild ? "text-[#C9A227]" : "text-slate-400 hover:bg-white/5 hover:text-white"
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-[15px] transition-all ${hasActiveChild ? "text-[#C9A227]" : "text-slate-400 hover:bg-white/5 hover:text-white"
                     }`}
                 >
-                  <div className="flex items-center gap-3">
-                    {Icon && <Icon size={18} className={hasActiveChild ? "text-[#C9A227]" : "text-slate-500"} />}
+                  <div className="flex items-center gap-3.5">
+                    {Icon && <Icon size={20} className={hasActiveChild ? "text-[#C9A227]" : "text-slate-500"} />}
                     <span>{category.title}</span>
                   </div>
-                  {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                  <div className="flex items-center gap-2">
+                    {badges[category.title] > 0 && (
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${hasActiveChild ? 'bg-[#0d1635] text-[#C9A227]' : 'bg-red-500 text-white'}`}>
+                        {badges[category.title]}
+                      </span>
+                    )}
+                    {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                  </div>
                 </button>
 
                 {/* Collapsible Content */}
@@ -560,17 +649,31 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
                       }
 
                       const SubIcon = link.icon;
+                      
+                      let badgeCount = 0;
+                      // Match exactly by link.name vs Lead types
+                      if (link.name !== 'CRM Overview') {
+                        badgeCount = badges[link.name] || 0;
+                      }
+
                       return (
                         <Link
                           key={link.name}
                           href={link.href}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-xl font-bold text-xs transition-all ${isActive
+                          className={`flex items-center justify-between px-4 py-2.5 rounded-xl font-bold text-[14px] transition-all ${isActive
                             ? "bg-[#C9A227] text-[#0d1635] shadow-lg shadow-[#C9A227]/20"
                             : "text-slate-400 hover:bg-white/5 hover:text-white"
                             }`}
                         >
-                          {SubIcon && <SubIcon size={14} className={isActive ? "text-[#0d1635]" : "text-slate-500"} />}
-                          <span>{link.name}</span>
+                          <div className="flex items-center gap-3">
+                            {SubIcon && <SubIcon size={16} className={isActive ? "text-[#0d1635]" : "text-slate-500"} />}
+                            <span>{link.name}</span>
+                          </div>
+                          {badgeCount > 0 && (
+                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${isActive ? 'bg-[#0d1635] text-[#C9A227]' : 'bg-red-500 text-white'}`}>
+                              {badgeCount}
+                            </span>
+                          )}
                         </Link>
                       );
                     })}
@@ -602,9 +705,9 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
                 placeholder="Global search (⌘ K)..."
-                className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#C9A227]/50 focus:border-[#C9A227] w-80 font-medium text-slate-700 transition-all shadow-inner"
+                className="pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[15px] focus:outline-none focus:ring-2 focus:ring-[#C9A227]/50 focus:border-[#C9A227] w-96 font-medium text-slate-700 transition-all shadow-inner"
               />
-              {!searchQuery && <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-bold text-slate-400 border border-slate-200 rounded px-1.5 py-0.5">⌘ K</div>}
+              {!searchQuery && <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 border border-slate-200 rounded px-2 py-0.5">⌘ K</div>}
               
               {/* Inline Search Results Dropdown */}
               <AnimatePresence>
@@ -642,17 +745,18 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
 
           <div className="flex items-center gap-1 sm:gap-2 relative">
             {/* Action Icons Row */}
-            <Link href="/" target="_blank" className="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-[#1B2A6B] hover:bg-[#1B2A6B]/5 transition-all" title="View Frontend">
-              <Globe size={22} strokeWidth={1.5} />
+            <Link href="/" target="_blank" className="w-11 h-11 rounded-full flex items-center justify-center text-slate-500 hover:text-[#1B2A6B] hover:bg-[#1B2A6B]/5 transition-all" title="View Frontend">
+              <Globe size={24} strokeWidth={1.5} />
             </Link>
 
             {/* Quick Actions */}
             <div className="relative hidden sm:block">
               <button
                 onClick={() => setIsQuickActionOpen(!isQuickActionOpen)}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isQuickActionOpen ? 'bg-[#1B2A6B]/10 text-[#1B2A6B]' : 'text-slate-500 hover:text-[#1B2A6B] hover:bg-[#1B2A6B]/5'}`}
+                title="Quick Actions"
+                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${isQuickActionOpen ? 'bg-[#1B2A6B]/10 text-[#1B2A6B]' : 'text-slate-500 hover:text-[#1B2A6B] hover:bg-[#1B2A6B]/5'}`}
               >
-                <Plus size={22} strokeWidth={1.5} />
+                <Plus size={24} strokeWidth={1.5} />
               </button>
               
               <AnimatePresence>
@@ -692,10 +796,11 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
             <div className="relative">
               <button
                 onClick={() => setIsNotifOpen(!isNotifOpen)}
-                className={`relative w-10 h-10 rounded-full flex items-center justify-center transition-all ${isNotifOpen ? 'bg-[#1B2A6B]/10 text-[#1B2A6B]' : 'text-slate-500 hover:text-[#1B2A6B] hover:bg-[#1B2A6B]/5'}`}
+                title="Notifications"
+                className={`relative w-11 h-11 rounded-full flex items-center justify-center transition-all ${isNotifOpen ? 'bg-[#1B2A6B]/10 text-[#1B2A6B]' : 'text-slate-500 hover:text-[#1B2A6B] hover:bg-[#1B2A6B]/5'}`}
               >
-                <Bell size={22} strokeWidth={1.5} />
-                <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white shadow-sm leading-none">
+                <Bell size={24} strokeWidth={1.5} />
+                <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 bg-rose-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center ring-2 ring-white shadow-sm leading-none">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               </button>
@@ -723,13 +828,22 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
                              <p className="text-xs font-bold">No notifications</p>
                           </div>
                         ) : notifications.map((notif: any) => (
-                          <div key={notif.id} className={`p-4 hover:bg-slate-50 transition-colors flex gap-3 ${!notif.read_at ? 'bg-rose-50/50' : ''}`}>
-                            <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!notif.read_at ? 'bg-rose-500' : 'bg-slate-300'}`} />
+                          <button
+                            key={notif.id}
+                            onClick={() => {
+                              markAsRead(notif.id);
+                              if (notif.data?.action_url) router.push(notif.data.action_url);
+                              setIsNotifOpen(false);
+                            }}
+                            className={`w-full text-left p-4 hover:bg-slate-50 transition-colors flex gap-3 border-b border-slate-50 last:border-0 ${!notif.read_at ? 'bg-rose-50/50' : ''}`}
+                          >
+                            <div className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${!notif.read_at ? 'bg-rose-500' : 'bg-slate-300'}`} />
                             <div className="flex-1 min-w-0">
-                              <p className={`text-xs font-semibold leading-normal ${!notif.read_at ? 'text-rose-700' : 'text-slate-600'}`}>{notif.data?.message || notif.title || "Notification"}</p>
-                              <p className="text-[10px] text-slate-400 font-bold mt-1">{new Date(notif.created_at).toLocaleString()}</p>
+                              <p className={`text-[14px] font-semibold leading-normal ${!notif.read_at ? 'text-rose-700' : 'text-slate-600'}`}>{notif.data?.title || "Notification"}</p>
+                              <p className="text-[12px] text-slate-500 mt-0.5 line-clamp-2">{notif.data?.message}</p>
+                              <p className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-widest">{new Date(notif.created_at).toLocaleString()}</p>
                             </div>
-                          </div>
+                          </button>
                         ))}
                       </div>
                     </motion.div>
@@ -740,9 +854,9 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
 
             {/* Messages Area */}
             <div className="relative">
-              <Link href="/admin/communication" className="relative w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-[#1B2A6B] hover:bg-[#1B2A6B]/5 transition-all">
-                <MessageSquare size={22} strokeWidth={1.5} />
-                <span className={`absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white shadow-sm leading-none ${unreadMessagesCount > 0 ? 'bg-[#C9A227]' : 'hidden'}`}>
+              <Link href="/admin/communication" title="Messages" className="relative w-11 h-11 rounded-full flex items-center justify-center text-slate-500 hover:text-[#1B2A6B] hover:bg-[#1B2A6B]/5 transition-all">
+                <MessageSquare size={24} strokeWidth={1.5} />
+                <span className={`absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 text-white text-[11px] font-bold rounded-full flex items-center justify-center ring-2 ring-white shadow-sm leading-none ${unreadMessagesCount > 0 ? 'bg-[#C9A227]' : 'hidden'}`}>
                   {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
                 </span>
               </Link>
@@ -754,12 +868,13 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
             <div className="relative">
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className={`w-10 h-10 rounded-full overflow-hidden transition-all focus:outline-none focus:ring-2 focus:ring-[#1B2A6B]/30 ${isProfileOpen ? 'ring-2 ring-[#1B2A6B]/30' : 'ring-2 ring-transparent hover:ring-[#1B2A6B]/20'}`}
+                title="Admin Profile"
+                className={`w-11 h-11 rounded-full overflow-hidden transition-all focus:outline-none focus:ring-2 focus:ring-[#1B2A6B]/30 ${isProfileOpen ? 'ring-2 ring-[#1B2A6B]/30' : 'ring-2 ring-transparent hover:ring-[#1B2A6B]/20'}`}
               >
                 {user?.avatar && !user.avatar.includes('dicebear') ? (
                   <img src={user.avatar} alt="Admin" className="w-full h-full object-cover bg-slate-100" />
                 ) : (
-                  <div className="w-full h-full bg-[#C9A227] text-[#0d1635] flex items-center justify-center font-black uppercase shadow-inner text-sm tracking-widest">
+                  <div className="w-full h-full bg-[#C9A227] text-[#0d1635] flex items-center justify-center font-black uppercase shadow-inner text-[15px] tracking-widest">
                     {userInitials}
                   </div>
                 )}

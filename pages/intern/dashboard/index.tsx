@@ -2,58 +2,19 @@ import { InternDashboardLayout } from "../../../src/layout/InternDashboardLayout
 import { Briefcase, BookOpen, UserCheck, CheckCircle, ChevronRight, Activity, Upload, X, Calendar, Clock, Inbox } from "lucide-react";
 import Link from "next/link";
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import toast from "react-hot-toast";
-import axios from "axios";
 import { EmptyState } from "../../../src/components/common/EmptyState";
-
-interface DashboardData {
-  stats: {
-    applications: number;
-    tasks_completed: number;
-    hours_logged: number;
-  };
-  recent_applications: any[];
-}
+import { DashboardService } from "../../../src/lib/api/intern/DashboardService";
 
 export default function InternDashboard() {
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
-  const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [isTimelineModalOpen, setIsTimelineModalOpen] = useState(false);
   const [isMentorModalOpen, setIsMentorModalOpen] = useState(false);
-  const [uploadedResumeName, setUploadedResumeName] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [data, setData] = useState<DashboardData | null>(null);
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/intern/dashboard`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.data.success) {
-        setData(res.data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching dashboard data", error);
-      toast.error("Failed to load dashboard data");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setUploadedResumeName(e.target.files[0].name);
-      toast.success("Resume uploaded successfully!");
-      setIsResumeModalOpen(false);
-    }
-  };
+  
+  const { data: dashboardRes, isLoading } = DashboardService.useDashboard();
+  const data = dashboardRes?.data || { stats: { applications: 0, tasks_completed: 0, hours_logged: 0 }, recent_applications: [] };
 
   const handleJournalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +22,7 @@ export default function InternDashboard() {
     setIsJournalModalOpen(false);
   };
 
-  const activeProjects = []; // Would be fetched from API in reality. Using empty for now to show EmptyState.
+  const activeProjects: any[] = []; // Replaced by real data later, keeping empty for "No Live Projects" state.
 
   return (
     <InternDashboardLayout>

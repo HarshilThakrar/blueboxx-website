@@ -72,28 +72,11 @@ export default function CareersPage() {
           <div className="mb-8">
             <h2 className="text-2xl font-extrabold text-slate-900 mb-6">Open Positions</h2>
             <div className="space-y-4">
-              {[
-                { role: "Senior Frontend Engineer", team: "Engineering", location: "Remote (India)", type: "Full-time" },
-                { role: "Product Manager", team: "Product", location: "Bangalore", type: "Full-time" },
-                { role: "Technical Instructor (DSA)", team: "Education", location: "Remote", type: "Contract" },
-                { role: "Growth Marketer", team: "Marketing", location: "Remote", type: "Full-time" }
-              ].map((job, i) => (
-                <div key={i} className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-white rounded-2xl border border-slate-200 shadow-sm hover:border-[#1B2A6B]/30 hover:shadow-md transition-all group">
-                  <div className="mb-4 md:mb-0">
-                    <h3 className="text-lg font-bold text-slate-900 group-hover:text-[#1B2A6B] transition-colors">{job.role}</h3>
-                    <div className="flex flex-wrap items-center gap-3 mt-2 text-sm font-semibold text-slate-500">
-                      <span className="bg-slate-100 px-2 py-1 rounded-md">{job.team}</span>
-                      <span>•</span>
-                      <span>{job.location}</span>
-                      <span>•</span>
-                      <span>{job.type}</span>
-                    </div>
-                  </div>
-                  <Button variant="outline" className="gap-2 shrink-0 group-hover:bg-[#1B2A6B] group-hover:text-white group-hover:border-[#1B2A6B]">
-                    Apply Now <ArrowRight size={16} />
-                  </Button>
-                </div>
-              ))}
+              <div className="p-10 bg-white rounded-2xl border border-slate-200 text-center shadow-sm">
+                <Briefcase size={32} className="mx-auto text-slate-300 mb-3" />
+                <h3 className="text-lg font-bold text-slate-800">No open roles at the moment</h3>
+                <p className="text-sm text-slate-500 mt-1">We're not actively hiring right now, but we're always looking for great talent. Check back later!</p>
+              </div>
             </div>
           </div>
           

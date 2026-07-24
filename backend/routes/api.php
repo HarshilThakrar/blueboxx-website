@@ -14,6 +14,31 @@ Route::get('/dev/migrate-fresh', function () {
     }
 });
 
+Route::get('/dev/db-check', function () {
+    try {
+        $columns = Illuminate\Support\Facades\Schema::getColumnListing('leads');
+        return response()->json(['success' => true, 'columns' => $columns]);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'error' => $e->getMessage()]);
+    }
+});
+
+// Remove old dev routes to avoid cache issues
+Route::get('/dev/clear', function() {
+    \Illuminate\Support\Facades\Artisan::call('route:clear');
+    \Illuminate\Support\Facades\Artisan::call('cache:clear');
+    app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+    return 'cleared';
+});
+
+Route::get('/dev/perms', function () {
+    return response()->json([
+        'super_admin' => \App\Models\User::whereHas('roles', fn($q) => $q->where('name', 'super_admin'))->with('roles.permissions')->first(),
+        'admin' => \App\Models\User::whereHas('roles', fn($q) => $q->where('name', 'admin'))->with('roles.permissions')->first(),
+        'all_permissions' => \Spatie\Permission\Models\Permission::pluck('name')
+    ]);
+});
+
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ApprovalController;
@@ -106,6 +131,16 @@ Route::get('/debug-dashboard', function (\App\Services\DashboardService $service
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/log-tail', function () {
+    $path = storage_path('logs/laravel.log');
+    if (!file_exists($path)) return 'No log file';
+    
+    $file = fopen($path, 'r');
+    fseek($file, -2000, SEEK_END);
+    $tail = fread($file, 2000);
+    fclose($file);
+    return response($tail)->header('Content-Type', 'text/plain');
+});
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::post('/social-login', [AuthController::class, 'socialLogin']);
@@ -255,13 +290,6 @@ Route::prefix('public')->group(function () {
         Route::post('/change-password', [AuthController::class, 'changePassword']);
         Route::get('/me', [AuthController::class, 'me']);
 
-        // Admin Approval Management
-        Route::middleware('role:super_admin|admin')->prefix('admin/approvals')->group(function () {
-            Route::get('/', [\App\Http\Controllers\Admin\ApprovalController::class, 'index']);
-            Route::put('/{id}/approve', [\App\Http\Controllers\Admin\ApprovalController::class, 'approve']);
-            Route::put('/{id}/reject', [\App\Http\Controllers\Admin\ApprovalController::class, 'reject']);
-            Route::put('/{id}/suspend', [\App\Http\Controllers\Admin\ApprovalController::class, 'suspend']);
-        });
 
     // Checkout Integration
     Route::prefix('checkout')->group(function () {
@@ -270,7 +298,7 @@ Route::prefix('public')->group(function () {
     });
 
     // Student Portal Integration
-    Route::middleware('role:student')->prefix('student')->group(function () {
+    Route::middleware('role:student,sanctum')->prefix('student')->group(function () {
         Route::get('/courses', [\App\Http\Controllers\Api\Student\StudentCourseController::class, 'index']);
         Route::post('/courses/{course_id}/lessons/{lesson_id}/complete', [\App\Http\Controllers\Api\Student\StudentCourseController::class, 'markLessonComplete']);
         Route::get('/dashboard', [\App\Http\Controllers\Api\Student\StudentDashboardController::class, 'index']);
@@ -286,52 +314,60 @@ Route::prefix('public')->group(function () {
     });
 
     // Company Portal Integration
-    Route::middleware('role:company')->prefix('company')->group(function () {
+    Route::middleware('role:company,sanctum')->prefix('company')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Api\Company\CompanyDashboardController::class, 'index']);
+        Route::get('/analytics', [\App\Http\Controllers\Api\Company\CompanyDashboardController::class, 'analytics']);
         Route::get('/jobs', [\App\Http\Controllers\Api\Company\CompanyJobController::class, 'index']);
         Route::post('/jobs', [\App\Http\Controllers\Api\Company\CompanyJobController::class, 'store']);
+        Route::put('/jobs/{id}/status', [\App\Http\Controllers\Api\Company\CompanyJobController::class, 'updateStatus']);
+        Route::delete('/jobs/{id}', [\App\Http\Controllers\Api\Company\CompanyJobController::class, 'destroy']);
         Route::get('/applicants', [\App\Http\Controllers\Api\Company\CompanyApplicantController::class, 'index']);
         Route::post('/applicants/{id}/status', [\App\Http\Controllers\Api\Company\CompanyApplicantController::class, 'updateStatus']);
         Route::get('/interviews', [\App\Http\Controllers\Api\Company\CompanyInterviewController::class, 'index']);
+        Route::post('/interviews', [\App\Http\Controllers\Api\Company\CompanyInterviewController::class, 'store']);
     });
 
     // Expert Portal Integration
-    Route::middleware('role:expert')->prefix('expert')->group(function () {
+    Route::middleware('role:expert,sanctum')->prefix('expert')->group(function () {
         Route::get('/metrics', [\App\Http\Controllers\Api\Expert\ExpertDashboardController::class, 'metrics']);
         Route::get('/sessions/upcoming', [\App\Http\Controllers\Api\Expert\ExpertDashboardController::class, 'upcomingSessions']);
+        Route::put('/sessions/{id}/meeting-link', [\App\Http\Controllers\Api\Expert\ExpertDashboardController::class, 'updateMeetingLink']);
         Route::get('/earnings/chart', [\App\Http\Controllers\Api\Expert\ExpertDashboardController::class, 'earningsChart']);
         Route::get('/mentees/requests', [\App\Http\Controllers\Api\Expert\ExpertDashboardController::class, 'menteeRequests']);
+        Route::post('/mentees/requests/{id}/accept', [\App\Http\Controllers\Api\Expert\ExpertDashboardController::class, 'acceptRequest']);
+        Route::post('/mentees/requests/{id}/decline', [\App\Http\Controllers\Api\Expert\ExpertDashboardController::class, 'declineRequest']);
         Route::get('/transactions', [\App\Http\Controllers\Api\Expert\ExpertDashboardController::class, 'transactions']);
         Route::get('/mentees', [\App\Http\Controllers\Api\Expert\ExpertDashboardController::class, 'mentees']);
         Route::get('/schedule', [\App\Http\Controllers\Api\Expert\ExpertDashboardController::class, 'schedule']);
     });
 
     // Job Seeker Portal Integration
-    Route::middleware('role:job-seeker|jobseeker')->prefix('jobseeker')->group(function () {
+    Route::middleware('role:job-seeker|jobseeker,sanctum')->prefix('jobseeker')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Api\JobseekerDashboardController::class, 'index']);
         Route::get('/applications', [\App\Http\Controllers\Api\JobseekerDashboardController::class, 'applications']);
+        Route::get('/profile', [\App\Http\Controllers\Api\JobseekerProfileController::class, 'show']);
+        Route::put('/profile', [\App\Http\Controllers\Api\JobseekerProfileController::class, 'update']);
+        Route::post('/resume', [\App\Http\Controllers\Api\JobseekerProfileController::class, 'uploadResume']);
     });
 
-    // College Portal Integration
-    Route::middleware('role:college')->prefix('college')->group(function () {
-        Route::get('/dashboard', [\App\Http\Controllers\Api\College\CollegeDashboardController::class, 'index']);
-        Route::get('/cohorts', [\App\Http\Controllers\Api\College\CollegeDashboardController::class, 'cohorts']);
-        Route::get('/students', [\App\Http\Controllers\Api\College\CollegeDashboardController::class, 'students']);
-        Route::get('/enrollment-stats', [\App\Http\Controllers\Api\College\CollegeDashboardController::class, 'enrollmentStats']);
-        Route::post('/import-students', [\App\Http\Controllers\Api\College\CollegeDashboardController::class, 'importStudents']);
-    });
 
     // Intern Portal Integration
-    Route::middleware('role:intern')->prefix('intern')->group(function () {
+    Route::middleware(['role:intern'])->prefix('intern')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Api\InternDashboardController::class, 'index']);
         Route::get('/applications', [\App\Http\Controllers\Api\InternDashboardController::class, 'applications']);
         Route::get('/mentor-sessions', [\App\Http\Controllers\Api\InternDashboardController::class, 'mentorSessions']);
+        Route::get('/settings', [\App\Http\Controllers\Api\InternDashboardController::class, 'settings']);
+        Route::put('/settings', [\App\Http\Controllers\Api\InternDashboardController::class, 'updateSettings']);
+        Route::get('/resume', [\App\Http\Controllers\Api\InternDashboardController::class, 'resume']);
+        Route::post('/resume', [\App\Http\Controllers\Api\InternDashboardController::class, 'uploadResume']);
     });
 
     // Profiles API
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::put('/profile', [ProfileController::class, 'update']);
     Route::put('/profile/role', [ProfileController::class, 'updateRole']);
+    // Alias for password change from profile pages
+    Route::put('/profile/password', [AuthController::class, 'changePassword']);
 
     // Checkout & Payments
     Route::post('/checkout/create-order', [\App\Http\Controllers\OrderController::class, 'store']);
@@ -421,13 +457,24 @@ Route::prefix('public')->group(function () {
         Route::get('/schedule', [\App\Http\Controllers\Api\Expert\ExpertDashboardController::class, 'schedule']);
     });
     
-    // College Dashboard API
-    Route::middleware('role:college')->prefix('college')->group(function () {
+    // College Portal API (Placement Cell)
+    Route::middleware('role:college,sanctum')->prefix('college')->group(function () {
+        // Dashboard & Students
         Route::get('/dashboard', [\App\Http\Controllers\Api\College\CollegeDashboardController::class, 'index']);
-        Route::get('/cohorts', [\App\Http\Controllers\Api\College\CollegeDashboardController::class, 'cohorts']);
         Route::get('/students', [\App\Http\Controllers\Api\College\CollegeDashboardController::class, 'students']);
-        Route::get('/enrollment-stats', [\App\Http\Controllers\Api\College\CollegeDashboardController::class, 'enrollmentStats']);
-        Route::post('/import', [\App\Http\Controllers\Api\College\CollegeDashboardController::class, 'importStudents']);
+        
+        // Placement & Internship Drives
+        Route::apiResource('/placement-drives', \App\Http\Controllers\Api\College\CollegePlacementDriveController::class);
+        Route::apiResource('/internship-drives', \App\Http\Controllers\Api\College\CollegeInternshipDriveController::class);
+        Route::apiResource('/campus-jobs', \App\Http\Controllers\Api\College\CollegeCampusJobController::class);
+        
+        // Events & Contests
+        Route::apiResource('/events', \App\Http\Controllers\Api\College\CollegeEventController::class);
+        
+        // Connected Companies
+        Route::get('/companies', [\App\Http\Controllers\Api\College\CollegeCompanyController::class, 'index']);
+        Route::post('/companies', [\App\Http\Controllers\Api\College\CollegeCompanyController::class, 'store']);
+        Route::delete('/companies/{id}', [\App\Http\Controllers\Api\College\CollegeCompanyController::class, 'destroy']);
     });
     
     // Auth Scholarships & Contests (Applying)
@@ -440,9 +487,19 @@ Route::prefix('public')->group(function () {
     Route::post('/reviews', [ReviewController::class, 'store']);
     
     // Admin API
-    Route::middleware(['role:super_admin|admin'])->prefix('admin')->group(function () {
-        // Dashboard APIs are now handled below (AdminDashboardController)
+    Route::middleware(['auth:sanctum', 'role:super_admin|admin'])->prefix('admin')->group(function () {
+        // Notifications & Badges
+        Route::get('notifications', [\App\Http\Controllers\Api\Admin\AdminNotificationController::class, 'index']);
+        Route::get('notifications/badges', [\App\Http\Controllers\Api\Admin\AdminNotificationController::class, 'badges']);
+        Route::put('notifications/read-all', [\App\Http\Controllers\Api\Admin\AdminNotificationController::class, 'markAllAsRead']);
+        Route::put('notifications/{id}/read', [\App\Http\Controllers\Api\Admin\AdminNotificationController::class, 'markAsRead']);
 
+        // Dashboard APIs are now handled below (AdminDashboardController)
+        Route::get('dashboard/summary', [AdminDashboardController::class, 'summary']);
+        Route::get('dashboard/charts', [AdminDashboardController::class, 'charts']);
+        Route::get('dashboard/feed', [AdminDashboardController::class, 'feed']);
+        Route::get('dashboard/top/courses', [AdminDashboardController::class, 'topCourses']);
+        Route::get('dashboard/recent/enrollments', [AdminDashboardController::class, 'recentEnrollments']);
         Route::get('users/export', [UserController::class, 'export']);
         Route::apiResource('users', UserController::class);
 
@@ -451,6 +508,13 @@ Route::prefix('public')->group(function () {
         Route::put('approvals/{id}/approve', [ApprovalController::class, 'approve']);
         Route::put('approvals/{id}/reject', [ApprovalController::class, 'reject']);
         Route::put('approvals/{id}/suspend', [ApprovalController::class, 'suspend']);
+        
+        // Leads & CRM API
+        Route::get('crm/dashboard', [\App\Http\Controllers\Api\Admin\AdminCRMController::class, 'dashboard']);
+        Route::apiResource('leads', \App\Http\Controllers\Api\Admin\AdminLeadController::class);
+        Route::post('leads/{id}/convert', [\App\Http\Controllers\Api\Admin\AdminLeadController::class, 'convertToStudent']);
+        Route::post('leads/{id}/convert-company', [\App\Http\Controllers\Api\Admin\AdminLeadController::class, 'convertToCompanyLead']);
+        Route::post('leads/{id}/convert-corporate', [\App\Http\Controllers\Api\Admin\AdminLeadController::class, 'convertToCorporateLead']);
 
 
         // User Manager (Delete Requests)
@@ -779,7 +843,7 @@ Route::prefix('public')->group(function () {
             Route::put('settings', [\App\Http\Controllers\Api\Admin\CertificateSettingController::class, 'update']);
         });
         Route::apiResource('certificates', \App\Http\Controllers\Api\Admin\CertificateController::class);
-        
+
         // ----- Course Q&A -----
         Route::prefix('course-qa')->group(function () {
             Route::get('stats', [\App\Http\Controllers\Api\Admin\AdminCourseQAController::class, 'stats']);
@@ -876,7 +940,7 @@ Route::prefix('public')->group(function () {
         });
         */
     });
-    
+
     // EdTech API
     Route::apiResource('course-categories', CourseCategoryController::class);
     

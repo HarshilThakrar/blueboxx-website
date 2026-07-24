@@ -10,6 +10,7 @@ class Lead extends Model
     use HasFactory;
 
     protected $fillable = [
+        'type',
         'name',
         'email',
         'phone',
@@ -18,9 +19,10 @@ class Lead extends Model
         'course_interested',
         'source',
         'source_page',
-        'status', // new, contacted, in_progress, converted, dead
+        'status', // new, contacted, in_progress, converted, closed, spam, dead
         'ip_address',
         'browser',
+        'internal_notes',
         'assigned_admin_id',
     ];
 

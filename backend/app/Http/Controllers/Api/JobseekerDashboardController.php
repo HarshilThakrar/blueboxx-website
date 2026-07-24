@@ -33,8 +33,9 @@ class JobseekerDashboardController extends Controller
             'data' => [
                 'stats' => [
                     'jobs_applied' => JobApplication::where('user_id', $userId)->count(),
-                    'profile_views' => 0, // TBD: Implement actual profile views count
+                    'saved_jobs' => \App\Models\SavedJob::where('user_id', $userId)->count(),
                     'interviews' => JobApplication::where('user_id', $userId)->where('status', 'interview')->count(),
+                    'offers' => JobApplication::where('user_id', $userId)->whereIn('status', ['offer', 'hired', 'offered'])->count(),
                 ],
                 'recent_applications' => $recentApps
             ]
@@ -45,10 +46,24 @@ class JobseekerDashboardController extends Controller
     {
         $userId = $request->user()->id;
         
-        $applications = JobApplication::with('job.companyProfile')
-            ->where('user_id', $userId)
-            ->latest()
-            ->get();
+        $query = JobApplication::with('job.companyProfile')
+            ->where('user_id', $userId);
+
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->whereHas('job', function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhereHas('companyProfile', function($profileQuery) use ($search) {
+                      $profileQuery->where('company_name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->has('status') && !empty($request->status) && $request->status !== 'All Status') {
+            $query->where('status', strtolower($request->status));
+        }
+            
+        $applications = $query->latest()->get();
             
         $apps = $applications->map(function ($app) {
             return [

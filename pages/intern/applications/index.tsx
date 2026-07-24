@@ -6,7 +6,7 @@ import Link from "next/link";
 
 import useSWR from "swr";
 import api from "../../../src/lib/axios";
-import { EmptyState } from "../../../src/components/ui/EmptyState";
+import { EmptyState } from "../../../src/components/common/EmptyState";
 
 const fetcher = (url: string) => api.get(url).then(res => res.data);
 

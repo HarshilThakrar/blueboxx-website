@@ -43,9 +43,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .then((response) => {
           const fetchedUser = response.data;
           // Map backend roles array/data to User interface
-          const role = fetchedUser.roles && fetchedUser.roles.length > 0
-            ? fetchedUser.roles[0].name
-            : null;
+          let role = null;
+          if (fetchedUser.roles && fetchedUser.roles.length > 0) {
+            const roleNames = fetchedUser.roles.map((r: any) => r.name);
+            if (roleNames.includes('super_admin')) role = 'super_admin';
+            else if (roleNames.includes('admin')) role = 'admin';
+            else role = roleNames[0];
+          }
 
           const mappedUser = {
             name: fetchedUser.name,

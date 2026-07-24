@@ -24,6 +24,8 @@ class JobSeekerProfile extends Model
         'linkedin',
         'github',
         'portfolio',
+        'headline',
+        'about_me',
         'profile_completion',
         'status',
     ];

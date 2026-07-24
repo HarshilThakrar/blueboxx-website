@@ -11,11 +11,10 @@ const footerLinks = {
     { label: "Contact us", href: "/contact" },
     { label: "Work With Us", href: "/careers" },
     { label: "Explore Services", href: "/courses" },
-    { label: "Careers", href: "/careers" },
   ],
   supportZone: [
     { label: "Help and Support", href: "/contact" },
-    { label: "Join Us", href: "/login" },
+    { label: "Join Us", href: "/signup" },
   ],
   unlockPotential: [
     { label: "Learn with Blueboxx", href: "/courses" },

@@ -109,18 +109,18 @@ export default function SignupPage() {
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="w-full lg:w-[450px] shrink-0 flex flex-col justify-center px-8 sm:px-12 py-6 relative overflow-y-auto custom-scrollbar z-10 shadow-[20px_0_40px_rgba(0,0,0,0.05)] bg-white font-inter"
+        className="w-full lg:w-[450px] shrink-0 flex flex-col justify-center px-8 sm:px-12 py-4 relative overflow-y-auto custom-scrollbar z-10 shadow-[20px_0_40px_rgba(0,0,0,0.05)] bg-white font-inter"
       >
-        <div className="w-full mx-auto max-w-sm py-4">
+        <div className="w-full mx-auto max-w-sm py-2">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 mb-6">
-            <img src="/Boxx logo.png" alt="BlueBoxx" className="h-10 w-auto object-contain" />
+          <Link href="/" className="flex items-center gap-3 mb-4">
+            <img src="/Boxx logo.png" alt="BlueBoxx" className="h-9 w-auto object-contain" />
           </Link>
 
-          <motion.div variants={container} initial="hidden" animate="show" className="mb-6">
-            <motion.h2 variants={item} className="text-2xl font-black text-slate-800 mb-1.5 font-sora">Create an account</motion.h2>
-            <motion.p variants={item} className="text-sm text-slate-500 font-medium">Join BlueBoxx and start building your career.</motion.p>
+          <motion.div variants={container} initial="hidden" animate="show" className="mb-4">
+            <motion.h2 variants={item} className="text-2xl font-black text-slate-800 mb-0.5 font-sora">Create an account</motion.h2>
+            <motion.p variants={item} className="text-xs text-slate-500 font-medium">Join BlueBoxx and start building your career.</motion.p>
           </motion.div>
 
           {error && (
@@ -129,10 +129,10 @@ export default function SignupPage() {
             </motion.div>
           )}
 
-          <motion.form variants={container} initial="hidden" animate="show" onSubmit={handleSignup} className="space-y-4">
+          <motion.form variants={container} initial="hidden" animate="show" onSubmit={handleSignup} className="space-y-3">
 
-            <motion.div variants={item} className="mb-4">
-              <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest ml-1 mb-2 block">I am a</label>
+            <motion.div variants={item} className="space-y-1">
+              <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest ml-1 mb-1 block">I am a</label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
@@ -148,7 +148,7 @@ export default function SignupPage() {
               </select>
             </motion.div>
 
-            <motion.div variants={item} className="space-y-1.5">
+            <motion.div variants={item} className="space-y-1">
               <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
               <div className="relative">
                 <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -163,7 +163,7 @@ export default function SignupPage() {
               </div>
             </motion.div>
 
-            <motion.div variants={item} className="space-y-1.5">
+            <motion.div variants={item} className="space-y-1">
               <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest ml-1">Phone Number</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">+91</span>
@@ -180,7 +180,7 @@ export default function SignupPage() {
 
 
 
-            <motion.div variants={item} className="space-y-1.5">
+            <motion.div variants={item} className="space-y-1">
               <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
               <div className="relative">
                 <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -195,7 +195,7 @@ export default function SignupPage() {
               </div>
             </motion.div>
 
-            <motion.div variants={item} className="space-y-1.5">
+            <motion.div variants={item} className="space-y-1">
               <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest ml-1">Password</label>
               <div className="relative">
                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -233,7 +233,7 @@ export default function SignupPage() {
               )}
             </motion.div>
 
-            <motion.div variants={item} className="space-y-1.5">
+            <motion.div variants={item} className="space-y-1">
               <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest ml-1">Confirm Password</label>
               <div className="relative">
                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -266,7 +266,7 @@ export default function SignupPage() {
               <Button
                 type="submit"
                 disabled={isLoading || !email || !password || !name || !passwordsMatch || strength < 50}
-                className="w-full h-11 bg-[#1B2A6B] hover:bg-[#0d1635] text-white font-black rounded-xl text-sm shadow-[0_4px_15px_rgba(27,42,107,0.2)] transition-all group disabled:opacity-70 disabled:cursor-not-allowed uppercase tracking-wider mt-2"
+                className="w-full h-11 bg-[#1B2A6B] hover:bg-[#0d1635] text-white font-black rounded-xl text-sm shadow-[0_4px_15px_rgba(27,42,107,0.2)] transition-all group disabled:opacity-70 disabled:cursor-not-allowed uppercase tracking-wider mt-1"
               >
                 {isLoading ? (
                   <div className="flex items-center gap-2">
@@ -281,11 +281,11 @@ export default function SignupPage() {
               </Button>
             </motion.div>
 
-            <motion.p variants={item} className="text-[10px] font-semibold text-slate-400 text-center mt-3">
-              By creating an account, you agree to our <a href="#" className="text-[#1B2A6B] hover:underline">Terms of Service</a> and <a href="#" className="text-[#1B2A6B] hover:underline">Privacy Policy</a>.
+            <motion.p variants={item} className="text-[10px] font-semibold text-slate-400 text-center pt-2">
+              By creating an account, you agree to our <a href="#" className="text-[#1B2A6B] hover:underline">Terms</a> and <a href="#" className="text-[#1B2A6B] hover:underline">Privacy</a>.
             </motion.p>
 
-            <motion.p variants={item} className="text-center text-xs font-medium text-slate-600 mt-4 pb-2">
+            <motion.p variants={item} className="text-center text-xs font-medium text-slate-600 mt-1">
               Already have an account? <Link href="/login" className="font-bold text-[#1B2A6B] hover:underline">Log in</Link>
             </motion.p>
 

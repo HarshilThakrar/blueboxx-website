@@ -17,6 +17,7 @@ class Contest extends Model
         'start_date',
         'end_date',
         'status',
+        'college_id',
     ];
 
     protected function casts(): array
@@ -25,6 +26,11 @@ class Contest extends Model
             'start_date' => 'datetime',
             'end_date' => 'datetime',
         ];
+    }
+
+    public function college()
+    {
+        return $this->belongsTo(User::class, 'college_id');
     }
 
     public function registrations(): HasMany

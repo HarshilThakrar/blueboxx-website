@@ -31,11 +31,22 @@ class AdminLeadController extends Controller
             $query->where('status', $status);
         }
 
+        if ($type = $request->query('type')) {
+            $query->where('type', $type);
+        }
+
         $leads = $query->latest()->paginate((int)$request->query('per_page', 20));
+
+        // Get unread counts for badges
+        $unreadCounts = Lead::select('type', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
+            ->where('status', 'new')
+            ->groupBy('type')
+            ->pluck('total', 'type');
 
         return response()->json([
             'success' => true,
             'data'    => $leads->items(),
+            'unread_counts' => $unreadCounts,
             'pagination' => [
                 'current_page' => $leads->currentPage(),
                 'last_page'    => $leads->lastPage(),
@@ -54,15 +65,17 @@ class AdminLeadController extends Controller
     }
 
     /**
-     * Update lead status or assign admin
+     * Update lead status or assign admin or internal notes
      */
     public function update(Request $request, $id)
     {
         $lead = Lead::findOrFail($id);
 
         $data = $request->validate([
-            'status' => 'nullable|in:new,contacted,in_progress,converted,dead',
+            'status' => 'nullable|in:new,contacted,in_progress,converted,dead,closed,spam',
+            'type'   => 'nullable|string|max:100',
             'assigned_admin_id' => 'nullable|exists:users,id',
+            'internal_notes'    => 'nullable|string',
         ]);
 
         $lead->update($data);
@@ -104,8 +117,11 @@ class AdminLeadController extends Controller
 
         if (!$user) {
             $password = Str::random(10);
+            $nameParts = explode(' ', $lead->name, 2);
+            
             $user = User::create([
-                'name' => $lead->name,
+                'first_name' => $nameParts[0] ?? 'Unknown',
+                'last_name' => $nameParts[1] ?? '',
                 'email' => $lead->email,
                 'phone' => $lead->phone,
                 'password' => Hash::make($password),
@@ -122,6 +138,85 @@ class AdminLeadController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Lead converted to student successfully!',
+            'data'    => ['user_id' => $user->id]
+        ]);
+    }
+
+    /**
+     * Convert Lead to Company / Placement Partner
+     */
+    public function convertToCompanyLead(Request $request, $id)
+    {
+        $lead = Lead::findOrFail($id);
+
+        if ($lead->status === 'converted') {
+            return response()->json(['success' => false, 'message' => 'Lead is already converted.'], 400);
+        }
+
+        $user = User::where('email', $lead->email)->first();
+
+        if (!$user) {
+            $password = Str::random(10);
+            $nameParts = explode(' ', $lead->name, 2);
+            
+            $user = User::create([
+                'first_name' => $nameParts[0] ?? 'Unknown',
+                'last_name' => $nameParts[1] ?? '',
+                'email' => $lead->email,
+                'phone' => $lead->phone,
+                'password' => Hash::make($password),
+                'status' => 'active',
+            ]);
+            $user->assignRole('company');
+        } else {
+            if (!$user->hasRole('company')) {
+                $user->assignRole('company');
+            }
+        }
+
+        $lead->update(['status' => 'converted']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Lead converted to Company Lead successfully!',
+            'data'    => ['user_id' => $user->id]
+        ]);
+    }
+
+    /**
+     * Convert Lead to Corporate Lead (Custom role or just Company for now)
+     */
+    public function convertToCorporateLead(Request $request, $id)
+    {
+        $lead = Lead::findOrFail($id);
+
+        if ($lead->status === 'converted') {
+            return response()->json(['success' => false, 'message' => 'Lead is already converted.'], 400);
+        }
+
+        $user = User::where('email', $lead->email)->first();
+
+        if (!$user) {
+            $password = Str::random(10);
+            $nameParts = explode(' ', $lead->name, 2);
+            
+            $user = User::create([
+                'first_name' => $nameParts[0] ?? 'Unknown',
+                'last_name' => $nameParts[1] ?? '',
+                'email' => $lead->email,
+                'phone' => $lead->phone,
+                'password' => Hash::make($password),
+                'status' => 'active',
+            ]);
+            // Assigning company role for corporate leads, as there is no 'corporate' role currently
+            $user->assignRole('company'); 
+        }
+
+        $lead->update(['status' => 'converted']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Lead converted to Corporate Lead successfully!',
             'data'    => ['user_id' => $user->id]
         ]);
     }

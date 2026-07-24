@@ -3,23 +3,44 @@ import { Search, Filter, MoreHorizontal, Briefcase, Building, MapPin, CheckCircl
 import toast from "react-hot-toast";
 import { Badge } from "../../../src/components/ui/Badge";
 
+import { useState } from "react";
 import useSWR from "swr";
 import api from "../../../src/lib/axios";
 
 const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 const getStatusBadge = (status: string) => {
-  switch (status) {
-    case 'Interviewing': return <Badge className="bg-blue-50 text-blue-700 border-none font-bold gap-1"><Clock size={12}/> Interviewing</Badge>;
-    case 'Applied': return <Badge className="bg-slate-100 text-slate-700 border-none font-bold gap-1"><Briefcase size={12}/> Applied</Badge>;
-    case 'Offered': return <Badge className="bg-emerald-50 text-emerald-700 border-none font-bold gap-1"><CheckCircle2 size={12}/> Offered</Badge>;
-    case 'Rejected': return <Badge className="bg-red-50 text-red-700 border-none font-bold gap-1"><XCircle size={12}/> Rejected</Badge>;
-    default: return <Badge>{status}</Badge>;
+  switch (status?.toLowerCase()) {
+    case 'interviewing':
+    case 'interview': return <Badge className="bg-blue-50 text-blue-700 border-none font-bold gap-1"><Clock size={12}/> Interviewing</Badge>;
+    case 'applied': return <Badge className="bg-slate-100 text-slate-700 border-none font-bold gap-1"><Briefcase size={12}/> Applied</Badge>;
+    case 'offered':
+    case 'offer': return <Badge className="bg-emerald-50 text-emerald-700 border-none font-bold gap-1"><CheckCircle2 size={12}/> Offered</Badge>;
+    case 'rejected': return <Badge className="bg-red-50 text-red-700 border-none font-bold gap-1"><XCircle size={12}/> Rejected</Badge>;
+    default: return <Badge>{status || 'Applied'}</Badge>;
   }
 };
 
 export default function JobseekerApplicationsPage() {
-  const { data, isLoading } = useSWR("/jobseeker/applications", fetcher);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All Status");
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Debounce search term before making API call
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  
+  import("react").then((React) => {
+    React.useEffect(() => {
+      const timer = setTimeout(() => setDebouncedSearch(searchTerm), 500);
+      return () => clearTimeout(timer);
+    }, [searchTerm]);
+  });
+
+  const queryParams = new URLSearchParams();
+  if (debouncedSearch) queryParams.append("search", debouncedSearch);
+  if (statusFilter && statusFilter !== "All Status") queryParams.append("status", statusFilter);
+
+  const { data, isLoading } = useSWR(`/jobseeker/applications?${queryParams.toString()}`, fetcher);
   const applications = data?.data || [];
   
   return (
@@ -34,13 +55,34 @@ export default function JobseekerApplicationsPage() {
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
               type="text" 
-              placeholder="Search applications..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by role or company..." 
               className="pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A6B] w-64 shadow-sm"
             />
           </div>
-          <button className="bg-white border border-slate-200 text-slate-700 p-2.5 rounded-xl shadow-sm hover:bg-slate-50 transition-colors">
-            <Filter size={18} />
-          </button>
+          <div className="relative">
+            <button onClick={() => setShowFilters(!showFilters)} className={`bg-white border border-slate-200 text-slate-700 p-2.5 rounded-xl shadow-sm hover:bg-slate-50 transition-colors ${showFilters || statusFilter !== 'All Status' ? 'border-[#1B2A6B] text-[#1B2A6B]' : ''}`}>
+              <Filter size={18} />
+            </button>
+            
+            {showFilters && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 z-10 py-2">
+                <div className="px-3 py-2 border-b border-slate-100 mb-2">
+                  <p className="text-xs font-black text-slate-800 uppercase tracking-wider">Status Filter</p>
+                </div>
+                {['All Status', 'Applied', 'Interviewing', 'Offered', 'Rejected'].map(status => (
+                  <button 
+                    key={status}
+                    onClick={() => { setStatusFilter(status); setShowFilters(false); }}
+                    className={`w-full text-left px-4 py-2 text-sm font-semibold hover:bg-slate-50 transition-colors ${statusFilter === status ? 'text-[#1B2A6B] bg-blue-50/50' : 'text-slate-600'}`}
+                  >
+                    {status}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
       

@@ -8,6 +8,7 @@ import {
   MessageSquare, BookOpen, BarChart4, Upload, ChevronRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { NotificationService } from "../lib/api/admin/RealtimeNotificationService";
 
 const SIDEBAR_CATEGORIES = [
   {
@@ -20,15 +21,22 @@ const SIDEBAR_CATEGORIES = [
     title: "Student Management",
     links: [
       { name: "Students", href: "/college/students", icon: Users },
-      { name: "Bulk Enrollment", href: "/college/enrollment", icon: Upload },
-      { name: "Cohorts", href: "/college/cohorts", icon: GraduationCap },
     ]
   },
   {
-    title: "Academics",
+    title: "Placements & Jobs",
     links: [
-      { name: "Partner Courses", href: "/college/courses", icon: BookOpen },
-      { name: "Performance", href: "/college/performance", icon: BarChart4 },
+      { name: "Placement Drives", href: "/college/placement-drives", icon: GraduationCap },
+      { name: "Internship Drives", href: "/college/internship-drives", icon: BookOpen },
+      { name: "Campus Jobs", href: "/college/campus-jobs", icon: BarChart4 },
+    ]
+  },
+  {
+    title: "Engagement",
+    links: [
+      { name: "Events & Contests", href: "/college/events", icon: Upload },
+      { name: "Companies", href: "/college/companies", icon: Users },
+      { name: "Reports", href: "/college/reports", icon: BarChart4 },
     ]
   },
   {
@@ -42,15 +50,12 @@ const SIDEBAR_CATEGORIES = [
 
 export const CollegeDashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const { logout, isAuthenticated, isAuthReady } = useAuth();
+  const { user, logout, isAuthenticated, isAuthReady } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [, setIsSearchOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: "Bulk student upload successful (450 rows).", time: "2 hours ago", read: false },
-    { id: 2, text: "Monthly performance report for Cohort 2026 is ready.", time: "1 day ago", read: false },
-  ]);
+  const { notifications, unreadCount, markAllRead } = NotificationService.useNotifications(isAuthenticated);
 
   const handleLogout = () => {
     logout();
@@ -62,11 +67,10 @@ export const CollegeDashboardLayout = ({ children }: { children: React.ReactNode
     if (!isAuthReady) return;
     if (!isAuthenticated) {
       router.replace('/login');
+    } else if (user && user.role !== 'college' && user.role !== 'super_admin') {
+      router.replace('/login'); // basic fallback redirect
     }
-  }, [isAuthenticated, isAuthReady, router]);
-
-  const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  const unreadCount = notifications.filter(n => !n.read).length;
+  }, [isAuthenticated, isAuthReady, user, router]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -142,8 +146,8 @@ export const CollegeDashboardLayout = ({ children }: { children: React.ReactNode
               <GraduationCap size={16} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-white leading-none mb-0.5 truncate">NIT Trichy</p>
-              <p className="text-[10px] text-slate-400 font-semibold leading-none truncate">Placement Cell</p>
+              <p className="text-sm font-bold text-white leading-none mb-0.5 truncate">{user?.name || "College User"}</p>
+              <p className="text-[10px] text-slate-400 font-semibold leading-none truncate">College Portal</p>
             </div>
           </div>
           <button
@@ -205,15 +209,19 @@ export const CollegeDashboardLayout = ({ children }: { children: React.ReactNode
                         )}
                       </div>
                       <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto">
-                        {notifications.map(notif => (
-                          <div key={notif.id} className={`p-4 flex gap-3 hover:bg-slate-50 transition-colors ${!notif.read ? 'bg-blue-50/40' : ''}`}>
-                            <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!notif.read ? 'bg-[#1B2A6B]' : 'bg-slate-300'}`} />
-                            <div>
-                              <p className={`text-xs font-semibold leading-snug ${!notif.read ? 'text-slate-800' : 'text-slate-500'}`}>{notif.text}</p>
-                              <p className="text-[10px] text-slate-400 font-medium mt-1">{notif.time}</p>
+                        {notifications.length === 0 ? (
+                          <div className="p-6 text-center text-slate-400 text-xs">No notifications yet</div>
+                        ) : (
+                          notifications.map((notif: any) => (
+                            <div key={notif.id} className={`p-4 flex gap-3 hover:bg-slate-50 transition-colors ${!notif.read_at ? 'bg-blue-50/40' : ''}`}>
+                              <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!notif.read_at ? 'bg-[#1B2A6B]' : 'bg-slate-300'}`} />
+                              <div>
+                                <p className={`text-xs font-semibold leading-snug ${!notif.read_at ? 'text-slate-800' : 'text-slate-500'}`}>{notif.data?.message || 'New notification'}</p>
+                                <p className="text-[10px] text-slate-400 font-medium mt-1">{new Date(notif.created_at).toLocaleString()}</p>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))
+                        )}
                       </div>
                     </motion.div>
                   </>

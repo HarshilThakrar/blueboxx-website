@@ -45,7 +45,13 @@ export default function LoginPage() {
       localStorage.setItem("auth_token", token);
       
       // Extract role
-      const userRole = user.roles && user.roles.length > 0 ? user.roles[0].name : "student";
+      let userRole = "student";
+      if (user.roles && user.roles.length > 0) {
+        const roleNames = user.roles.map((r: any) => r.name);
+        if (roleNames.includes('super_admin')) userRole = 'super_admin';
+        else if (roleNames.includes('admin')) userRole = 'admin';
+        else userRole = roleNames[0];
+      }
       
       // Map to context structure
       const mappedUser = {
@@ -118,21 +124,21 @@ export default function LoginPage() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-[390px] bg-white rounded-3xl border border-slate-200/80 shadow-2xl p-6 sm:p-8 z-10 flex flex-col relative font-inter"
+        className="w-full max-w-[390px] bg-white rounded-3xl border border-slate-200/80 shadow-2xl p-5 sm:p-6 z-10 flex flex-col relative font-inter"
       >
         {/* Logo */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4">
           <Link href="/">
-            <img src="/Boxx logo.png" alt="BlueBoxx" className="h-10 w-auto object-contain" />
+            <img src="/Boxx logo.png" alt="BlueBoxx" className="h-9 w-auto object-contain" />
           </Link>
         </div>
 
-        <div className="text-center mb-6">
+        <div className="text-center mb-4">
           <h2 className="text-xl font-black text-slate-800 leading-tight font-sora">Welcome back</h2>
-          <p className="text-xs text-slate-500 font-semibold mt-1">Please enter your details to sign in.</p>
+          <p className="text-xs text-slate-500 font-semibold mt-0.5">Please enter your details to sign in.</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-3">
           <div className="space-y-1.5">
             <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Email Address</label>
             <div className="relative">
@@ -188,14 +194,14 @@ export default function LoginPage() {
           </div>
 
           {lockoutTimer > 0 ? (
-            <div className="w-full h-11 bg-rose-50 border border-rose-200 text-rose-600 font-bold rounded-xl text-xs flex items-center justify-center gap-2 uppercase tracking-wider mt-4">
+            <div className="w-full h-11 bg-rose-50 border border-rose-200 text-rose-600 font-bold rounded-xl text-xs flex items-center justify-center gap-2 uppercase tracking-wider mt-3">
               <AlertCircle size={16} /> Locked out for {lockoutTimer}s
             </div>
           ) : (
             <Button 
               type="submit"
               disabled={isLoading || !email || !password || lockoutTimer > 0}
-              className="w-full h-11 bg-[#1B2A6B] hover:bg-[#0d1635] text-white font-bold rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full h-11 bg-[#1B2A6B] hover:bg-[#0d1635] text-white font-bold rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider mt-3 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <div className="flex items-center gap-1.5">
@@ -210,11 +216,11 @@ export default function LoginPage() {
             </Button>
           )}
 
-          <div className="flex justify-center items-center gap-1.5 mt-4 text-slate-400 text-[10px] font-bold tracking-wide">
+          <div className="flex justify-center items-center gap-1.5 mt-3 text-slate-400 text-[10px] font-bold tracking-wide">
             <ShieldCheck size={14} className="text-emerald-500" /> Secured via 256-bit SSL
           </div>
 
-          <p className="text-center text-xs font-medium text-slate-500 pt-4 border-t border-slate-100 mt-4">
+          <p className="text-center text-xs font-medium text-slate-500 pt-3 border-t border-slate-100 mt-3">
             Don't have an account? <Link href="/signup" className="font-bold text-[#1B2A6B] hover:underline">Sign up free</Link>
           </p>
         </form>

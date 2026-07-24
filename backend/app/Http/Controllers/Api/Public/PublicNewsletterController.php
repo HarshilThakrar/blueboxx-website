@@ -37,6 +37,17 @@ class PublicNewsletterController extends Controller
                 'ip_address' => $request->ip(),
             ]);
 
+            // Also create a Lead entry so it appears in the CRM Dashboard
+            \App\Models\Lead::create([
+                'type' => 'Newsletter Subscriber',
+                'name' => 'Subscriber', // Name isn't provided in newsletter form
+                'email' => $request->email,
+                'status' => 'new',
+                'source' => 'Website Footer',
+                'ip_address' => $request->ip(),
+                'browser' => substr($request->userAgent() ?? '', 0, 255),
+            ]);
+
             // Dispatch background queued welcome email
             \Illuminate\Support\Facades\Notification::route('mail', $subscriber->email)
                 ->notify(new \App\Notifications\NewsletterWelcomeNotification($subscriber));

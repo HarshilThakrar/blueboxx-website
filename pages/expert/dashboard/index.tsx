@@ -14,11 +14,13 @@ import api from "../../../src/lib/axios";
 const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function ExpertDashboard() {
-  const [activeModal, setActiveModal] = useState(false);
+  const [activeSession, setActiveSession] = useState<any | null>(null);
+  const [meetingLink, setMeetingLink] = useState("");
   const [chatUser, setChatUser] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState(false);
+  const [isSavingLink, setIsSavingLink] = useState(false);
   const { data: metricsRes, isLoading: isLoadingMetrics } = useSWR("/expert/metrics", fetcher);
-  const { data: sessionsRes, isLoading: isLoadingSessions } = useSWR("/expert/sessions/upcoming", fetcher);
+  const { data: sessionsRes, isLoading: isLoadingSessions, mutate: mutateSessions } = useSWR("/expert/sessions/upcoming", fetcher);
   const { data: chartRes, isLoading: isLoadingChart } = useSWR("/expert/earnings/chart", fetcher);
   const { data: requestsRes, mutate: mutateRequests } = useSWR("/expert/mentees/requests", fetcher);
 
@@ -27,14 +29,39 @@ export default function ExpertDashboard() {
   const earningsData = chartRes?.data || [];
   const menteeRequests = requestsRes?.data || [];
 
-  const handleJoinSession = () => {
+  const handleOpenJoinModal = (session: any) => {
+    setActiveSession(session);
+    setMeetingLink(session.meeting_link || "");
+  };
+
+  const handleSaveAndJoin = async () => {
+    if (!meetingLink) {
+      toast.error("Please enter a meeting link");
+      return;
+    }
+    
+    // Check if link needs to be saved/updated
+    if (meetingLink !== activeSession.meeting_link) {
+      setIsSavingLink(true);
+      try {
+        await api.put(`/expert/sessions/${activeSession.id}/meeting-link`, { meeting_link: meetingLink });
+        mutateSessions();
+      } catch (err) {
+        toast.error("Failed to save meeting link");
+        setIsSavingLink(false);
+        return;
+      }
+      setIsSavingLink(false);
+    }
+    
     setIsJoining(true);
     toast.loading("Connecting to secure video channel...", { id: "join" });
     setTimeout(() => {
       toast.success("Joined successfully!", { id: "join" });
       setIsJoining(false);
-      setActiveModal(false);
-    }, 2000);
+      setActiveSession(null);
+      window.open(meetingLink, "_blank"); // Open the actual link
+    }, 1500);
   };
 
   const handleRequestAction = async (id: number, action: "accept" | "decline") => {
@@ -42,11 +69,11 @@ export default function ExpertDashboard() {
     mutateRequests({ ...requestsRes, data: menteeRequests.filter((r: any) => r.id !== id) }, false);
     
     try {
-      // In real life, call API: await api.post(`/expert/mentees/requests/${id}/${action}`);
+      await api.post(`/expert/mentees/requests/${id}/${action}`);
       if (action === "accept") {
-        toast.success("Mentee request accepted!");
+        toast.success("Mentee request accepted! Session is now scheduled.");
       } else {
-        toast.error("Mentee request declined");
+        toast("Mentee request declined", { icon: "❌" });
       }
       mutateRequests();
     } catch (e) {
@@ -118,7 +145,7 @@ export default function ExpertDashboard() {
                       <button onClick={() => setChatUser(session.mentee)} className="flex-1 sm:flex-none p-2.5 bg-white border border-slate-200 text-slate-500 hover:text-[#1B2A6B] hover:bg-slate-50 rounded-xl transition-colors text-center flex justify-center">
                         <MessageSquare size={16} />
                       </button>
-                      <button onClick={() => setActiveModal(true)} className="flex-1 sm:flex-none px-5 py-2.5 bg-[#C9A227] text-[#0d1635] text-xs font-bold rounded-xl shadow-sm hover:bg-[#b08d22] transition-colors flex justify-center items-center gap-2">
+                      <button onClick={() => handleOpenJoinModal(session)} className="flex-1 sm:flex-none px-5 py-2.5 bg-[#C9A227] text-[#0d1635] text-xs font-bold rounded-xl shadow-sm hover:bg-[#b08d22] transition-colors flex justify-center items-center gap-2">
                         <Play size={14} /> Join Session
                       </button>
                     </div>
@@ -191,19 +218,31 @@ export default function ExpertDashboard() {
       </div>
 
       <AnimatePresence>
-        {activeModal && (
+        {activeSession && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => !isJoining && setActiveModal(false)} />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => !isJoining && setActiveSession(null)} />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-2xl shadow-xl w-full max-w-sm z-10 relative overflow-hidden text-center p-8">
               <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
                 <Play size={28} />
               </div>
               <h3 className="text-xl font-black text-slate-800 mb-2">Join Video Call</h3>
-              <p className="text-sm font-medium text-slate-500 mb-6">You are about to join the mentorship session via secure video.</p>
+              <p className="text-sm font-medium text-slate-500 mb-4">You are about to join the mentorship session with {activeSession.mentee}.</p>
+              
+              <div className="text-left mb-6">
+                <label className="block text-xs font-bold text-slate-700 mb-1">Meeting Link (Zoom, Meet, etc)</label>
+                <input 
+                  type="url" 
+                  value={meetingLink}
+                  onChange={(e) => setMeetingLink(e.target.value)}
+                  placeholder="https://zoom.us/j/..."
+                  className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1B2A6B]"
+                />
+              </div>
+
               <div className="flex gap-3 justify-center">
-                <button disabled={isJoining} onClick={() => setActiveModal(false)} className="px-6 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors disabled:opacity-50">Cancel</button>
-                <button disabled={isJoining} onClick={handleJoinSession} className="px-6 py-2.5 bg-[#1B2A6B] text-white font-bold rounded-xl hover:bg-[#0d1635] transition-colors shadow-md disabled:opacity-50">
-                  {isJoining ? "Connecting..." : "Join Now"}
+                <button disabled={isJoining || isSavingLink} onClick={() => setActiveSession(null)} className="px-6 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors disabled:opacity-50">Cancel</button>
+                <button disabled={isJoining || isSavingLink || !meetingLink} onClick={handleSaveAndJoin} className="px-6 py-2.5 bg-[#1B2A6B] text-white font-bold rounded-xl hover:bg-[#0d1635] transition-colors shadow-md disabled:opacity-50">
+                  {isJoining || isSavingLink ? "Connecting..." : "Join Now"}
                 </button>
               </div>
             </motion.div>

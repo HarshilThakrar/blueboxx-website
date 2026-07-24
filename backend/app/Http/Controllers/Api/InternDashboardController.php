@@ -79,12 +79,97 @@ class InternDashboardController extends Controller
     {
         $userId = $request->user()->id;
         
-        // Mock mentor sessions for now, but returning empty to align with "no mock data" policy.
-        // Once MentorSession model is linked to user, we fetch from DB.
-        
+        // Return empty array for now since MentorBooking isn't fully linked
         return response()->json([
             'success' => true,
             'data' => []
+        ]);
+    }
+
+    public function settings(Request $request)
+    {
+        $user = $request->user();
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'email' => $user->email,
+            ]
+        ]);
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $user = $request->user();
+        $validated = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+        ]);
+
+        $user->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile updated successfully',
+            'data' => [
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'email' => $user->email,
+            ]
+        ]);
+    }
+
+    public function resume(Request $request)
+    {
+        $user = $request->user();
+        $resume = $user->documents()->where('document_type', 'resume')->first();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $resume ? [
+                'name' => basename($resume->file_path),
+                'url' => asset('storage/' . $resume->file_path),
+                'size' => 'Unknown', // Could calculate from file
+                'uploaded_at' => $resume->created_at->format('M d, Y'),
+            ] : null
+        ]);
+    }
+
+    public function uploadResume(Request $request)
+    {
+        $request->validate([
+            'resume' => 'required|file|mimes:pdf,doc,docx|max:5120',
+        ]);
+
+        $user = $request->user();
+        $file = $request->file('resume');
+        
+        $path = $file->store('interns/resumes/' . $user->id, 'public');
+
+        // Delete old resume
+        $oldResume = $user->documents()->where('document_type', 'resume')->first();
+        if ($oldResume) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($oldResume->file_path);
+            $oldResume->update(['file_path' => $path]);
+            $resume = $oldResume;
+        } else {
+            $resume = $user->documents()->create([
+                'document_type' => 'resume',
+                'file_path' => $path,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Resume uploaded successfully',
+            'data' => [
+                'name' => basename($resume->file_path),
+                'url' => asset('storage/' . $resume->file_path),
+                'size' => round($file->getSize() / 1024 / 1024, 2) . ' MB',
+                'uploaded_at' => 'Just now',
+            ]
         ]);
     }
 }

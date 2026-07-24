@@ -36,7 +36,10 @@ class AuthController extends Controller
         ]);
 
         $roleName = $request->role;
-        $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => $roleName]);
+        $role = \Spatie\Permission\Models\Role::firstOrCreate([
+            'name' => $roleName,
+            'guard_name' => 'web'
+        ]);
         $user->assignRole($role);
 
         // Auto-provision profile based on role
@@ -65,6 +68,15 @@ class AuthController extends Controller
             ], 201);
         } else {
             $user->update(['status' => 'pending_approval']);
+            
+            // Notify all admins about the new pending user
+            $admins = User::whereHas('roles', function($q) {
+                $q->whereIn('name', ['admin', 'super_admin']);
+            })->get();
+            
+            if ($admins->isNotEmpty()) {
+                \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\NewUserPendingApproval($user));
+            }
             
             return response()->json([
                 'message' => 'Account created successfully. Your account is pending admin approval.',
@@ -303,4 +315,6 @@ class AuthController extends Controller
             'token' => $token,
         ]);
     }
+
+    // Duplicate method removed to fix fatal error
 }

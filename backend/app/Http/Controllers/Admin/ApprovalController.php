@@ -49,6 +49,8 @@ class ApprovalController extends Controller
             Log::error("Failed to send approval email to user {$user->id}: " . $e->getMessage());
         }
 
+        $user->notify(new \App\Notifications\AccountStatusUpdated('active', 'Your account has been approved by the administrator. You can now log in.'));
+
         return response()->json([
             'message' => 'User approved successfully.',
             'user' => $user->load('roles')
@@ -69,6 +71,8 @@ class ApprovalController extends Controller
         $user->update(['status' => 'rejected']);
         
         Log::info("Admin rejected user ID: {$user->id}");
+
+        $user->notify(new \App\Notifications\AccountStatusUpdated('rejected', 'Your account registration was rejected by the administrator.'));
 
         return response()->json([
             'message' => 'User rejected successfully.',
@@ -91,6 +95,8 @@ class ApprovalController extends Controller
         $user->tokens()->delete(); // Force logout
         
         Log::info("Admin suspended user ID: {$user->id}");
+
+        $user->notify(new \App\Notifications\AccountStatusUpdated('suspended', 'Your account has been suspended by the administrator. Please contact support.'));
 
         return response()->json([
             'message' => 'User suspended successfully.',

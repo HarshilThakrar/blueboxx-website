@@ -26,7 +26,10 @@ class PublicCRMController extends Controller
             'source_page'       => 'nullable|string|max:255', // e.g., URL where they submitted
         ]);
 
+        $type = $data['subject'] ?? 'Contact Inquiry';
+
         $lead = Lead::create([
+            'type'              => $type,
             'name'              => $data['name'],
             'email'             => $data['email'],
             'phone'             => $data['phone'] ?? null,
@@ -40,7 +43,7 @@ class PublicCRMController extends Controller
             'browser'           => substr($request->userAgent() ?? '', 0, 255),
         ]);
 
-        // Dispatch background queued emails (To Admin & To User)
+        // Dispatch background queued emails
         \Illuminate\Support\Facades\Notification::route('mail', 'info.blueboxx@gmail.com')
             ->notify(new \App\Notifications\ContactInquiryAdminNotification($lead));
         

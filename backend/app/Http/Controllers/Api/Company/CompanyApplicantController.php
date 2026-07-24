@@ -7,66 +7,50 @@ use Illuminate\Http\Request;
 
 class CompanyApplicantController extends Controller
 {
-    // Mock applicant data
-    private $mockApplicants = [
-        [
-            'id' => 'app-1',
-            'jobId' => 'job-1',
-            'jobTitle' => 'Frontend Developer',
-            'applicantName' => 'Rahul Sharma',
-            'email' => 'rahul@example.com',
-            'status' => 'New',
-            'appliedAt' => '2 hours ago',
-            'score' => 85,
-            'match' => 'High',
-            'avatar' => null
-        ],
-        [
-            'id' => 'app-2',
-            'jobId' => 'job-1',
-            'jobTitle' => 'Frontend Developer',
-            'applicantName' => 'Priya Patel',
-            'email' => 'priya@example.com',
-            'status' => 'Shortlisted',
-            'appliedAt' => '1 day ago',
-            'score' => 92,
-            'match' => 'Very High',
-            'avatar' => null
-        ],
-        [
-            'id' => 'app-3',
-            'jobId' => 'job-2',
-            'jobTitle' => 'Product Designer Intern',
-            'applicantName' => 'Amit Kumar',
-            'email' => 'amit@example.com',
-            'status' => 'Interview',
-            'appliedAt' => '3 days ago',
-            'score' => 78,
-            'match' => 'Medium',
-            'avatar' => null
-        ],
-        [
-            'id' => 'app-4',
-            'jobId' => 'job-2',
-            'jobTitle' => 'Product Designer Intern',
-            'applicantName' => 'Sneha Reddy',
-            'email' => 'sneha@example.com',
-            'status' => 'Rejected',
-            'appliedAt' => '1 week ago',
-            'score' => 45,
-            'match' => 'Low',
-            'avatar' => null
-        ]
-    ];
-
     /**
      * Get all applicants for the company's jobs
      */
     public function index(Request $request)
     {
+        $companyId = $request->user()->id;
+        
+        // Fetch all jobs belonging to this company
+        $jobIds = \App\Models\Job::where('company_id', $companyId)->pluck('id');
+        
+        // Fetch applications for these jobs
+        $applications = \App\Models\JobApplication::whereIn('job_id', $jobIds)
+            ->with(['job', 'user.profile'])
+            ->latest()
+            ->get()
+            ->map(function($app) {
+                // Ensure safe fallback if relation is missing
+                $jobTitle = $app->job ? $app->job->title : 'Unknown Job';
+                $applicantName = $app->user ? $app->user->name : 'Unknown Applicant';
+                $email = $app->user ? $app->user->email : '';
+                $phone = $app->user && $app->user->profile ? $app->user->profile->phone : '';
+                
+                return [
+                    'id' => $app->id,
+                    'jobId' => $app->job_id,
+                    'jobTitle' => $jobTitle,
+                    'role' => $jobTitle,
+                    'applicantName' => $applicantName,
+                    'name' => $applicantName,
+                    'email' => $email,
+                    'phone' => $phone,
+                    'status' => $app->status, // Map to frontend standard if needed
+                    'appliedAt' => $app->created_at->diffForHumans(),
+                    'appliedDate' => $app->created_at->format('M d, Y'),
+                    'score' => rand(70, 95), // Placeholder for AI match until implemented
+                    'match' => 'High', 
+                    'exp' => '1 Year', // Default placeholder if missing from profile
+                    'portfolio' => null
+                ];
+            });
+
         return response()->json([
             'success' => true,
-            'data' => $this->mockApplicants
+            'data' => $applications
         ]);
     }
 
@@ -78,14 +62,19 @@ class CompanyApplicantController extends Controller
         $validated = $request->validate([
             'status' => 'required|string|in:New,Shortlisted,Interview,Hired,Rejected'
         ]);
+        
+        $companyId = $request->user()->id;
+        $jobIds = \App\Models\Job::where('company_id', $companyId)->pluck('id');
+
+        $application = \App\Models\JobApplication::whereIn('job_id', $jobIds)->findOrFail($id);
+        
+        $application->status = $validated['status'];
+        $application->save();
 
         return response()->json([
             'success' => true,
             'message' => 'Applicant status updated successfully.',
-            'data' => [
-                'id' => $id,
-                'status' => $validated['status']
-            ]
+            'data' => $application
         ]);
     }
 }

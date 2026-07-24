@@ -1,60 +1,48 @@
 import React from "react";
 import { CompanyDashboardLayout } from "../../../src/layout/CompanyDashboardLayout";
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
-import { ArrowUpRight, Users, Eye, TrendingUp, Briefcase, Clock, CheckCircle2 } from "lucide-react";
-import { useApplicantStore } from "../../../src/store/useApplicantStore";
-import { useJobStore } from "../../../src/store/useJobStore";
-import { useInterviewStore } from "../../../src/store/useInterviewStore";
-import { useCompanyStore } from "../../../src/store/useCompanyStore";
+import { ArrowUpRight, Users, Eye, TrendingUp, Briefcase, Clock, CheckCircle2, Loader2 } from "lucide-react";
+import useSWR from "swr";
+import api from "../../../src/lib/axios";
+
+const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function CompanyAnalyticsPage() {
-  const companyProfile = useCompanyStore((s) => s.profile);
-  const jobs = useJobStore((s) => s.jobs);
-  const allApplicants = useApplicantStore((s) => s.applicants);
-  const interviews = useInterviewStore((s) => s.interviews);
+  const { data, isLoading } = useSWR("/company/analytics", fetcher);
 
-  // Filter applicants relevant to this company
-  const applicants = allApplicants.filter(
-    (a) =>
-      a.company.toLowerCase() === companyProfile.name.toLowerCase() ||
-      a.company.toLowerCase() === "google" ||
-      a.company.toLowerCase() === "acme corp"
-  );
+  if (isLoading) {
+    return (
+      <CompanyDashboardLayout>
+        <div className="flex h-full items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 text-[#1B2A6B] animate-spin" />
+        </div>
+      </CompanyDashboardLayout>
+    );
+  }
 
-  const companyJobs = jobs.filter(
-    (j) =>
-      j.postedBy === companyProfile.name ||
-      j.postedBy === "Acme Corp"
-  );
+  const analytics = data?.data || {
+    jobs: { active: 0, pending: 0, closed: 0, recent: [] },
+    applicants: { total: 0, pipeline: [], rates: { conversion: 0, interview: 0, avg_match: 0 }, top: [] },
+    interviews: { upcoming: 0, completed: 0 }
+  };
 
-  const activeJobs = companyJobs.filter((j) => j.status === "Active").length;
-  const pendingJobs = companyJobs.filter((j) => j.status === "Pending").length;
-  const totalApplicants = applicants.length;
-  const inReview = applicants.filter((a) => a.stage === "In Review").length;
-  const inInterview = applicants.filter((a) => a.stage === "Interview").length;
-  const offers = applicants.filter((a) => a.stage === "Offer").length;
-  const rejected = applicants.filter((a) => a.stage === "Rejected").length;
-  const conversionRate = totalApplicants > 0 ? ((offers / totalApplicants) * 100).toFixed(1) : "0.0";
-  const interviewRate = totalApplicants > 0 ? ((inInterview / totalApplicants) * 100).toFixed(1) : "0.0";
-  const avgMatch = applicants.length > 0
-    ? Math.round(applicants.reduce((sum, a) => sum + a.match, 0) / applicants.length)
-    : 0;
+  const { jobs, applicants, interviews } = analytics;
 
   const stats = [
-    { label: "Total Applicants", value: totalApplicants, trend: "+live", icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
-    { label: "Active Jobs", value: activeJobs, trend: pendingJobs > 0 ? `+${pendingJobs} pending` : "—", icon: Briefcase, color: "text-indigo-600", bg: "bg-indigo-50" },
-    { label: "Offer Rate", value: `${conversionRate}%`, trend: "+live", icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" },
-    { label: "Avg AI Match", value: `${avgMatch}%`, trend: "AI-scored", icon: Eye, color: "text-purple-600", bg: "bg-purple-50" },
+    { label: "Total Applicants", value: applicants.total, trend: "+live", icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
+    { label: "Active Jobs", value: jobs.active, trend: jobs.pending > 0 ? `+${jobs.pending} pending` : "—", icon: Briefcase, color: "text-indigo-600", bg: "bg-indigo-50" },
+    { label: "Offer Rate", value: `${applicants.rates.conversion}%`, trend: "+live", icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "Avg AI Match", value: `${applicants.rates.avg_match}%`, trend: "AI-scored", icon: Eye, color: "text-purple-600", bg: "bg-purple-50" },
   ];
 
-  const pipeline = [
-    { stage: "Applied", count: applicants.filter((a) => a.stage === "Applied").length, color: "bg-slate-400" },
-    { stage: "In Review", count: inReview, color: "bg-amber-400" },
-    { stage: "Interview", count: inInterview, color: "bg-blue-500" },
-    { stage: "Offer", count: offers, color: "bg-emerald-500" },
-    { stage: "Rejected", count: rejected, color: "bg-red-400" },
+  const pipeline = applicants.pipeline.length > 0 ? applicants.pipeline : [
+    { stage: "Applied", count: 0, color: "bg-slate-400" },
+    { stage: "In Review", count: 0, color: "bg-amber-400" },
+    { stage: "Interview", count: 0, color: "bg-blue-500" },
+    { stage: "Offer", count: 0, color: "bg-emerald-500" },
+    { stage: "Rejected", count: 0, color: "bg-red-400" },
   ];
-  const maxPipeline = Math.max(...pipeline.map((p) => p.count), 1);
+  const maxPipeline = Math.max(...pipeline.map((p: any) => p.count), 1);
 
   return (
     <CompanyDashboardLayout>
@@ -112,11 +100,11 @@ export default function CompanyAnalyticsPage() {
           </div>
           <div className="mt-6 pt-4 border-t border-slate-100 grid grid-cols-2 gap-4">
             <div className="text-center p-3 bg-slate-50 rounded-xl">
-              <div className="text-lg font-black text-slate-800">{interviewRate}%</div>
+              <div className="text-lg font-black text-slate-800">{applicants.rates.interview}%</div>
               <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1">Interview Rate</div>
             </div>
             <div className="text-center p-3 bg-slate-50 rounded-xl">
-              <div className="text-lg font-black text-slate-800">{conversionRate}%</div>
+              <div className="text-lg font-black text-slate-800">{applicants.rates.conversion}%</div>
               <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1">Offer Rate</div>
             </div>
           </div>
@@ -128,14 +116,14 @@ export default function CompanyAnalyticsPage() {
             <Briefcase size={16} className="text-[#1B2A6B]" /> Your Job Postings
           </h3>
 
-          {companyJobs.length === 0 ? (
+          {jobs.recent.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 text-slate-400">
               <Briefcase size={32} className="mb-3 opacity-50" />
               <p className="text-sm font-medium">No postings yet.</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {companyJobs.slice(0, 6).map((job) => (
+              {jobs.recent.map((job: any) => (
                 <div key={job.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
                   <div>
                     <p className="text-sm font-bold text-slate-800 leading-tight">{job.title}</p>
@@ -151,15 +139,15 @@ export default function CompanyAnalyticsPage() {
 
           <div className="mt-6 pt-4 border-t border-slate-100 grid grid-cols-3 gap-3 text-center">
             <div className="p-3 bg-emerald-50 rounded-xl">
-              <div className="text-xl font-black text-emerald-700">{activeJobs}</div>
+              <div className="text-xl font-black text-emerald-700">{jobs.active}</div>
               <div className="text-[10px] font-bold text-emerald-600 mt-1">Active</div>
             </div>
             <div className="p-3 bg-amber-50 rounded-xl">
-              <div className="text-xl font-black text-amber-700">{pendingJobs}</div>
+              <div className="text-xl font-black text-amber-700">{jobs.pending}</div>
               <div className="text-[10px] font-bold text-amber-600 mt-1">Pending</div>
             </div>
             <div className="p-3 bg-slate-50 rounded-xl">
-              <div className="text-xl font-black text-slate-700">{companyJobs.filter((j) => j.status === "Closed").length}</div>
+              <div className="text-xl font-black text-slate-700">{jobs.closed}</div>
               <div className="text-[10px] font-bold text-slate-500 mt-1">Closed</div>
             </div>
           </div>
@@ -173,14 +161,14 @@ export default function CompanyAnalyticsPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-blue-50 rounded-xl">
               <div>
-                <p className="text-2xl font-black text-blue-700">{interviews.filter((i) => i.status === "Upcoming").length}</p>
+                <p className="text-2xl font-black text-blue-700">{interviews.upcoming}</p>
                 <p className="text-xs font-bold text-blue-600 mt-1">Upcoming Interviews</p>
               </div>
               <Clock size={28} className="text-blue-400 opacity-60" />
             </div>
             <div className="flex items-center justify-between p-4 bg-emerald-50 rounded-xl">
               <div>
-                <p className="text-2xl font-black text-emerald-700">{interviews.filter((i) => i.status === "Completed").length}</p>
+                <p className="text-2xl font-black text-emerald-700">{interviews.completed}</p>
                 <p className="text-xs font-bold text-emerald-600 mt-1">Completed Interviews</p>
               </div>
               <CheckCircle2 size={28} className="text-emerald-400 opacity-60" />
@@ -193,23 +181,20 @@ export default function CompanyAnalyticsPage() {
           <h3 className="text-sm font-black text-slate-800 mb-6 border-b border-slate-100 pb-3 flex items-center gap-2">
             <ArrowUpRight size={16} className="text-[#1B2A6B]" /> Top Candidates by AI Match
           </h3>
-          {applicants.length === 0 ? (
+          {applicants.top.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 text-slate-400">
               <Users size={32} className="mb-3 opacity-50" />
               <p className="text-sm font-medium">No applicants yet.</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {[...applicants]
-                .sort((a, b) => b.match - a.match)
-                .slice(0, 5)
-                .map((app, i) => (
+              {applicants.top.map((app: any, i: number) => (
                   <div key={app.id} className="flex items-center gap-3">
                     <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[9px] font-black text-slate-500 shrink-0">
                       {i + 1}
                     </div>
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1B2A6B]/10 to-[#2E45A3]/10 flex items-center justify-center text-[#1B2A6B] font-black text-xs shrink-0">
-                      {app.name.split(" ").map((n) => n[0]).join("")}
+                      {app.name ? app.name.split(" ").map((n: string) => n[0]).join("") : "?"}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold text-slate-800 leading-tight truncate">{app.name}</p>

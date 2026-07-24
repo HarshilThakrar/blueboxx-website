@@ -58,8 +58,11 @@ export default function AdminApprovalsPage() {
 
     const loadingToast = toast.loading(`${isApprove ? 'Approving' : 'Rejecting'} user...`);
     try {
+      const token = localStorage.getItem('auth_token');
       const api = (await import('../../../src/lib/axios')).default;
-      await api.put(`/admin/approvals/${id}/${action}`);
+      await api.put(`/admin/approvals/${id}/${action}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       
       setUsers(users.filter(u => u.id !== id));
       toast.success(`User ${action}d successfully`, { id: loadingToast });

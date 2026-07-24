@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import toast from "react-hot-toast";
 import api from "../src/lib/axios";
+import { useGlobalSettings } from "../src/contexts/SettingsContext";
 
 const contactSchema = z.object({
   firstName: z.string().min(2, { message: "First name must be at least 2 characters" }),
@@ -21,10 +22,35 @@ const contactSchema = z.object({
 type ContactFormValues = z.infer<typeof contactSchema>;
 
 export default function ContactPage() {
+  const { settings } = useGlobalSettings();
+  
+  let subjects = [
+    "Course Information",
+    "Internship Inquiry",
+    "Job Opportunities",
+    "Mentorship",
+    "Career Guidance",
+    "Book Consultation",
+    "Corporate Training",
+    "Partnership / Collaboration",
+    "Campus Hiring"
+  ];
+  
+  try {
+    if (settings?.crm_lead_categories) {
+      const parsed = JSON.parse(settings.crm_lead_categories);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        subjects = parsed;
+      }
+    }
+  } catch (e) {
+    // Fallback to default
+  }
+
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
-      subject: "Course Inquiry"
+      subject: subjects[0]
     }
   });
 
@@ -202,10 +228,9 @@ export default function ContactPage() {
                         {...register("subject")}
                         className={`flex w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2A6B]/20 focus-visible:border-[#1B2A6B] transition-all shadow-sm ${errors.subject ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500' : ''}`}
                       >
-                        <option value="Course Inquiry">Course Inquiry</option>
-                        <option value="Mentorship Details">Mentorship Details</option>
-                        <option value="Corporate Training">Corporate Training</option>
-                        <option value="Other">Other</option>
+                        {subjects.map((sub, idx) => (
+                          <option key={idx} value={sub}>{sub}</option>
+                        ))}
                       </select>
                       {errors.subject && <p className="text-red-500 text-xs font-semibold">{errors.subject.message}</p>}
                     </div>

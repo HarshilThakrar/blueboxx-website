@@ -7,62 +7,35 @@ use Illuminate\Http\Request;
 
 class CompanyJobController extends Controller
 {
-    // Mock data for company jobs
-    private $mockJobs = [
-        [
-            'id' => 'job-1',
-            'title' => 'Frontend Developer',
-            'category' => 'Full-time',
-            'status' => 'Active',
-            'type' => 'Remote',
-            'location' => 'Bangalore, India',
-            'salary' => '₹12,00,000 - ₹18,00,000',
-            'applicants' => 45,
-            'posted' => '2 days ago'
-        ],
-        [
-            'id' => 'job-2',
-            'title' => 'Product Designer Intern',
-            'category' => 'Internship',
-            'status' => 'Active',
-            'type' => 'Hybrid',
-            'location' => 'Mumbai, India',
-            'salary' => '₹25,000 /mo',
-            'applicants' => 128,
-            'posted' => '5 days ago'
-        ],
-        [
-            'id' => 'job-3',
-            'title' => 'Backend Developer (Node.js)',
-            'category' => 'Full-time',
-            'status' => 'Pending',
-            'type' => 'On-site',
-            'location' => 'Pune, India',
-            'salary' => '₹15,000,000 - ₹22,000,000',
-            'applicants' => 0,
-            'posted' => 'Just now'
-        ],
-        [
-            'id' => 'job-4',
-            'title' => 'Marketing Specialist',
-            'category' => 'Full-time',
-            'status' => 'Closed',
-            'type' => 'Remote',
-            'location' => 'Remote',
-            'salary' => '₹8,000,000 - ₹12,00,000',
-            'applicants' => 215,
-            'posted' => '1 month ago'
-        ]
-    ];
-
     /**
      * Get all jobs for the company
      */
     public function index(Request $request)
     {
+        $companyId = $request->user()->id;
+        
+        $jobs = \App\Models\Job::where('company_id', $companyId)
+            ->latest()
+            ->withCount('applications')
+            ->get()
+            ->map(function($job) {
+                return [
+                    'id' => $job->id,
+                    'title' => $job->title,
+                    'category' => $job->job_type,
+                    'status' => $job->status,
+                    'type' => $job->location === 'Remote' ? 'Remote' : 'On-site',
+                    'location' => $job->location,
+                    'salary' => $job->salary,
+                    'applicants' => $job->applications_count,
+                    'posted' => $job->created_at->diffForHumans(),
+                    'views' => 0
+                ];
+            });
+
         return response()->json([
             'success' => true,
-            'data' => $this->mockJobs
+            'data' => $jobs
         ]);
     }
 
@@ -73,28 +46,72 @@ class CompanyJobController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'category' => 'required|string',
+            'category' => 'required|string', // internship or job
             'type' => 'required|string',
             'location' => 'required|string',
             'salary' => 'required|string',
             'description' => 'required|string',
             'skills' => 'required|array',
+            'deadline' => 'nullable|date',
         ]);
+
+        $job = new \App\Models\Job();
+        $job->company_id = $request->user()->id;
+        $job->title = $validated['title'];
+        $job->job_type = $validated['category'];
+        $job->location = $validated['location'];
+        $job->salary = $validated['salary'];
+        $job->description = $validated['description'];
+        $job->skills = json_encode($validated['skills']);
+        $job->deadline = $validated['deadline'] ?? null;
+        $job->status = 'Pending'; // Strict enforcement of Admin Approval workflow
+        
+        // Ensure slug is generated
+        $job->slug = \Illuminate\Support\Str::slug($validated['title'] . '-' . time());
+        
+        $job->save();
 
         return response()->json([
             'success' => true,
-            'message' => 'Job posted successfully and is pending approval.',
-            'data' => [
-                'id' => 'job-' . time(),
-                'title' => $validated['title'],
-                'category' => $validated['category'],
-                'status' => 'Pending',
-                'type' => $validated['type'],
-                'location' => $validated['location'],
-                'salary' => $validated['salary'],
-                'applicants' => 0,
-                'posted' => 'Just now'
-            ]
+            'message' => 'Job posted successfully and is pending admin approval.',
+            'data' => $job
         ], 201);
+    }
+
+    /**
+     * Update job status (Active/Closed)
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        $companyId = $request->user()->id;
+        $job = \App\Models\Job::where('company_id', $companyId)->findOrFail($id);
+
+        $validated = $request->validate([
+            'status' => 'required|string|in:Active,Closed,Pending',
+        ]);
+
+        $job->status = $validated['status'];
+        $job->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Job marked as {$validated['status']}.",
+            'data' => $job
+        ]);
+    }
+
+    /**
+     * Delete a job posting
+     */
+    public function destroy(Request $request, $id)
+    {
+        $companyId = $request->user()->id;
+        $job = \App\Models\Job::where('company_id', $companyId)->findOrFail($id);
+        $job->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Job deleted successfully.'
+        ]);
     }
 }

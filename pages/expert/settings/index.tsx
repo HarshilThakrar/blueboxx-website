@@ -11,7 +11,8 @@ const fetcher = (url: string) => api.get(url).then(res => res.data);
 
 export default function ExpertSettings() {
   const { data, mutate } = useSWR("/profile", fetcher);
-  const [avatar, setAvatar] = useState("https://i.pravatar.cc/150?u=ankit");
+  const [avatar, setAvatar] = useState("https://ui-avatars.com/api/?name=Expert&background=random");
+  const [uploadedAvatarPath, setUploadedAvatarPath] = useState("");
   const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -32,6 +33,11 @@ export default function ExpertSettings() {
         hourlyRate: data.profile?.hourly_rate || '0',
         expertise: Array.isArray(data.profile?.expertise) ? data.profile.expertise.join(', ') : (data.profile?.expertise || '')
       });
+      if (data.profile?.profile_photo) {
+        setAvatar(data.profile.profile_photo.startsWith('http') ? data.profile.profile_photo : `/storage/${data.profile.profile_photo}`);
+      } else if (data.data.name) {
+        setAvatar(`https://ui-avatars.com/api/?name=${encodeURIComponent(data.data.name)}&background=random`);
+      }
     }
   }, [data]);
 
@@ -53,11 +59,16 @@ export default function ExpertSettings() {
     setErrors({});
     setIsSaving(true);
     try {
-      await api.put('/profile', {
+      const payload: any = {
         name: profileData.name,
         designation: profileData.title,
         bio: profileData.bio
-      });
+      };
+      if (uploadedAvatarPath) {
+        payload.profile_photo = uploadedAvatarPath;
+      }
+
+      await api.put('/profile', payload);
       toast.success("Profile settings saved successfully!");
       mutate();
     } catch (error) {
@@ -125,12 +136,25 @@ export default function ExpertSettings() {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setAvatar(url);
-      toast.success("Avatar updated!");
+      const toastId = toast.loading("Uploading avatar...");
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("type", "profile");
+        
+        const res = await api.post("/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+        
+        setAvatar(res.data.url);
+        setUploadedAvatarPath(res.data.path);
+        toast.success("Avatar uploaded! Don't forget to click Save Profile.", { id: toastId });
+      } catch (err) {
+        toast.error("Failed to upload avatar", { id: toastId });
+      }
     }
   };
 

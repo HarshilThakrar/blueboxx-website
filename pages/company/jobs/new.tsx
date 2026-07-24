@@ -273,7 +273,7 @@ export default function PostJobPage() {
                 <Building size={20} />
               </div>
               <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Acme Corp</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Company Name</p>
                 <h3 className="font-black text-slate-800 text-base leading-tight">
                   {form.title || `${category} Title`}
                 </h3>

@@ -15,13 +15,24 @@ export default function JobseekerDashboard() {
   
   const { data, isLoading } = useSWR("/jobseeker/dashboard", fetcher);
   
-  const stats = data?.data?.stats || { jobs_applied: 0, profile_views: 0, interviews: 0 };
+  const stats = data?.data?.stats || { jobs_applied: 0, saved_jobs: 0, interviews: 0, offers: 0 };
   const recentApps = data?.data?.recent_applications || [];
 
-  const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      toast.success(`Resume "${e.target.files[0].name}" uploaded successfully!`);
-      setIsResumeModalOpen(false);
+      const file = e.target.files[0];
+      const formData = new FormData();
+      formData.append("resume", file);
+      
+      try {
+        await api.post("/jobseeker/resume", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+        toast.success(`Resume "${file.name}" uploaded successfully!`);
+        setIsResumeModalOpen(false);
+      } catch (error) {
+        toast.error("Failed to upload resume.");
+      }
     }
   };
 
@@ -46,11 +57,12 @@ export default function JobseekerDashboard() {
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-8">
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { label: "Jobs Applied", value: isLoading ? "-" : stats.jobs_applied.toString(), icon: Target, color: "text-blue-600", bg: "bg-blue-50" },
-              { label: "Profile Views", value: isLoading ? "-" : stats.profile_views.toString(), icon: Eye, color: "text-emerald-600", bg: "bg-emerald-50" },
-              { label: "Interviews Scheduled", value: isLoading ? "-" : stats.interviews.toString(), icon: Calendar, color: "text-amber-600", bg: "bg-amber-50" },
+              { label: "Saved Jobs", value: isLoading ? "-" : stats.saved_jobs.toString(), icon: Eye, color: "text-slate-600", bg: "bg-slate-100" },
+              { label: "Interviews", value: isLoading ? "-" : stats.interviews.toString(), icon: Calendar, color: "text-amber-600", bg: "bg-amber-50" },
+              { label: "Offers", value: isLoading ? "-" : stats.offers.toString(), icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50" },
             ].map((stat, i) => (
               <AnimatedContent key={i} direction="up" delay={i * 0.1} className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-shadow">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${stat.bg} ${stat.color} mb-3`}>
@@ -77,7 +89,16 @@ export default function JobseekerDashboard() {
               {isLoading ? (
                 <div className="p-8 text-center text-slate-400">Loading applications...</div>
               ) : recentApps.length === 0 ? (
-                <div className="p-8 text-center text-slate-400">No recent applications found.</div>
+                <div className="p-12 text-center flex flex-col items-center">
+                  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-300">
+                    <Briefcase size={28} />
+                  </div>
+                  <p className="text-base font-bold text-slate-700">No job applications yet.</p>
+                  <p className="text-sm text-slate-500 mt-1">Start exploring jobs and applying to see your progress here.</p>
+                  <Link href="/jobs" className="mt-4 px-6 py-2 bg-[#1B2A6B] text-white rounded-lg text-sm font-bold shadow-md hover:bg-[#0d1635] transition-all">
+                    Explore Jobs
+                  </Link>
+                </div>
               ) : (
                 recentApps.map((app: any, i: number) => (
                   <div key={i} className="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors">

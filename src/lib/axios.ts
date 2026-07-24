@@ -1,7 +1,7 @@
 import Axios from 'axios';
 
 const api = Axios.create({
-    baseURL: 'http://localhost:8000/api',
+    baseURL: 'http://127.0.0.1:8000/api',
     headers: {
         'X-Requested-With': 'XMLHttpRequest',
         'Accept': 'application/json',
@@ -36,7 +36,7 @@ const PUBLIC_PATHS = [
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response && error.response.status === 401) {
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
             if (typeof window !== 'undefined') {
                 const currentPath = window.location.pathname;
 
@@ -48,10 +48,14 @@ api.interceptors.response.use(
                 );
 
                 if (!isPublicPath) {
-                    // Clear stale token
-                    localStorage.removeItem('auth_token');
-                    localStorage.removeItem('blueboxx_user');
-                    window.location.href = '/login';
+                    // For 401, or 403 if it's a "User is not logged in" spatie error, clear token
+                    // For general 403s on portals, we can let layout-level redirects handle the precise role routing,
+                    // but as a fallback, if we are stuck on a 403 and the layout doesn't kick us, go to login.
+                    if (error.response.status === 401 || (error.response.status === 403 && error.response.data?.message === 'User is not logged in.')) {
+                        localStorage.removeItem('auth_token');
+                        localStorage.removeItem('blueboxx_user');
+                        window.location.href = '/login';
+                    }
                 }
             }
         }

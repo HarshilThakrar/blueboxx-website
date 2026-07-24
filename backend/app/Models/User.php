@@ -94,7 +94,7 @@ class User extends Authenticatable
     public function socialLinks() { return $this->hasMany(StudentSocialLink::class); }
     public function preferences() { return $this->hasOne(StudentPreference::class); }
     public function activityLogs() { return $this->hasMany(StudentActivityLog::class); }
-    public function notifications() { return $this->hasMany(StudentNotification::class); }
+    public function studentNotifications() { return $this->hasMany(StudentNotification::class); }
     
     // Internship integrations
     public function internshipApplications() { return $this->hasMany(InternshipApplication::class); }
@@ -110,6 +110,13 @@ class User extends Authenticatable
     // RELATIONSHIPS - ENTERPRISE ATS JOBS
     // ------------------------------------------------------------------------
     public function postedJobs() { return $this->hasMany(Job::class, 'company_id'); }
+    
+    // College Placements
+    public function placementDrives() { return $this->hasMany(Job::class, 'college_id'); }
+    public function collegeInternships() { return $this->hasMany(Internship::class, 'college_id'); }
+    public function collegeContests() { return $this->hasMany(Contest::class, 'college_id'); }
+    public function partnerCompanies() { return $this->belongsToMany(User::class, 'college_company_partnerships', 'college_id', 'company_id')->withPivot('status')->withTimestamps(); }
+    
     public function jobApplications() { return $this->hasMany(JobApplication::class); }
     public function jobInterviewsConducted() { return $this->hasMany(JobInterview::class, 'interviewer_id'); }
     public function jobShortlists() { return $this->hasMany(JobShortlist::class); }

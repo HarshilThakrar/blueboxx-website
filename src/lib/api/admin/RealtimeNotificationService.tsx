@@ -6,7 +6,7 @@ export const NotificationService = {
   useNotifications: (isAuthenticated: boolean = false) => {
     const { data, error, mutate } = useSWR(
       // Only fetch if the user is authenticated — prevents 401s on public pages
-      isAuthenticated ? '/notifications' : null,
+      isAuthenticated ? '/admin/notifications' : null,
       async (url) => {
         const res = await api.get(url);
         return res.data;
@@ -22,18 +22,30 @@ export const NotificationService = {
 
     const markAllRead = async () => {
       try {
-        // Fixed: was '/notifications/read', correct route is '/notifications/read-all'
-        await api.put('/notifications/read-all');
-        // Optimistically update local state
+        await api.put('/admin/notifications/read-all');
         mutate(
           { ...data, data: notifications.map((n: any) => ({ ...n, read_at: new Date().toISOString() })) },
           false
         );
         toast.success('All notifications marked as read');
-        // Revalidate from server
         mutate();
       } catch (err) {
         toast.error('Failed to mark notifications as read');
+      }
+    };
+
+    const markAsRead = async (id: string) => {
+      try {
+        await api.put(`/admin/notifications/${id}/read`);
+        mutate(
+          { 
+            ...data, 
+            data: notifications.map((n: any) => n.id === id ? { ...n, read_at: new Date().toISOString() } : n) 
+          },
+          false
+        );
+      } catch (err) {
+        console.error('Failed to mark notification as read');
       }
     };
 
@@ -43,6 +55,28 @@ export const NotificationService = {
       isLoading: isAuthenticated && !error && !data,
       isError: error,
       markAllRead,
+      markAsRead,
+      mutate
+    };
+  },
+  
+  useBadges: (isAuthenticated: boolean = false) => {
+    const { data, error, mutate } = useSWR(
+      isAuthenticated ? '/admin/notifications/badges' : null,
+      async (url) => {
+        const res = await api.get(url);
+        return res.data;
+      },
+      {
+        refreshInterval: isAuthenticated ? 60000 : 0, // poll every 60s
+        revalidateOnFocus: false,
+      }
+    );
+
+    return {
+      badges: data?.badges || {},
+      isLoading: isAuthenticated && !error && !data,
+      isError: error,
       mutate
     };
   }
