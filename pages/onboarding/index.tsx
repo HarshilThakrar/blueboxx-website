@@ -6,6 +6,7 @@ import { AuthBranding } from "../../src/components/AuthBranding";
 import { motion } from "framer-motion";
 import api from "../../src/lib/axios";
 import { useAuth } from "../../src/context/AuthContext";
+import { getActiveToken } from "../../src/lib/authUtils";
 import toast from "react-hot-toast";
 import { User, Briefcase, GraduationCap, Building2, TerminalSquare, Search } from "lucide-react";
 
@@ -34,7 +35,10 @@ export default function OnboardingRolePage() {
 
       // 2. Update context state
       if (user) {
-        login({ ...user, role: selectedRole as any });
+        const token = getActiveToken(router.pathname);
+        if (token) {
+          login({ ...user, role: selectedRole as any }, token);
+        }
       }
       
       // 3. Redirect logic based on role
@@ -76,7 +80,7 @@ export default function OnboardingRolePage() {
       >
         <div className="w-full mx-auto max-w-sm py-4">
           <Link href="/" className="flex items-center gap-3 mb-6">
-            <img src="/Boxx logo.png" alt="BlueBoxx" className="h-10 w-auto object-contain" />
+            <img src="/Boxx-logo.png" alt="BlueBoxx" className="h-10 w-auto object-contain" />
           </Link>
 
           <motion.div variants={container} initial="hidden" animate="show" className="mb-6">

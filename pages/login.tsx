@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { Button } from "../src/components/ui/Button";
-import { useAuth } from "../src/context/AuthContext";
+import { useAuth, UserRole } from "../src/context/AuthContext";
 import api from "../src/lib/axios";
 import { Mail, Lock, ChevronRight, Eye, EyeOff, ShieldCheck, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
@@ -68,12 +68,12 @@ export default function LoginPage() {
       const { token, user } = response.data;
       
       // Extract role
-      let userRole = "student";
+      let userRole: UserRole = "student";
       if (user.roles && user.roles.length > 0) {
         const roleNames = user.roles.map((r: any) => r.name);
         if (roleNames.includes('super_admin')) userRole = 'super_admin';
         else if (roleNames.includes('admin')) userRole = 'admin';
-        else userRole = roleNames[0];
+        else userRole = roleNames[0] as UserRole;
       }
       
       // Map to context structure
@@ -112,7 +112,7 @@ export default function LoginPage() {
       const { redirect } = router.query;
       const destination = typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('/login')
         ? redirect 
-        : roleToDashboard[userRole] ?? '/student/dashboard';
+        : roleToDashboard[userRole || 'student'] ?? '/student/dashboard';
         
       router.push(destination);
     } catch (err: any) {
@@ -165,7 +165,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex justify-center mb-4">
           <Link href="/">
-            <img src="/Boxx logo.png" alt="BlueBoxx" className="h-9 w-auto object-contain" />
+            <img src="/Boxx-logo.png" alt="BlueBoxx" className="h-9 w-auto object-contain" />
           </Link>
         </div>
 

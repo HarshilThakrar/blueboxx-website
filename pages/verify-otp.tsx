@@ -47,7 +47,7 @@ export default function VerifyOtpPage() {
           role: role
         };
 
-        login(mappedUser);
+        login(mappedUser, response.data.token);
       }
 
       setSuccessMsg("Email verified successfully!");
@@ -95,7 +95,7 @@ export default function VerifyOtpPage() {
       >
         <div className="w-full mx-auto max-w-sm py-4">
           <Link href="/" className="flex items-center gap-3 mb-6">
-            <img src="/Boxx logo.png" alt="BlueBoxx" className="h-10 w-auto object-contain" />
+            <img src="/Boxx-logo.png" alt="BlueBoxx" className="h-10 w-auto object-contain" />
           </Link>
 
           <motion.div variants={container} initial="hidden" animate="show" className="mb-6">

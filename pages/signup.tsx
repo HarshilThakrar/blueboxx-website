@@ -78,7 +78,7 @@ export default function SignupPage() {
         };
         
         // Update global auth state before redirecting
-        login(mappedUser);
+        login(mappedUser as any, response.data.token);
         
         // Redirect to appropriate dashboard based on role
         const normalizedRole = userRole.toLowerCase();
@@ -129,7 +129,7 @@ export default function SignupPage() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 mb-4">
-            <img src="/Boxx logo.png" alt="BlueBoxx" className="h-9 w-auto object-contain" />
+            <img src="/Boxx-logo.png" alt="BlueBoxx" className="h-9 w-auto object-contain" />
           </Link>
 
           <motion.div variants={container} initial="hidden" animate="show" className="mb-4">

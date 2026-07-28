@@ -17,7 +17,7 @@ export default function PendingApprovalPage() {
         <div className="w-full mx-auto max-w-sm text-center">
           {/* Logo */}
           <Link href="/" className="inline-block mb-10">
-            <img src="/Boxx logo.png" alt="BlueBoxx" className="h-12 w-auto object-contain mx-auto" />
+            <img src="/Boxx-logo.png" alt="BlueBoxx" className="h-12 w-auto object-contain mx-auto" />
           </Link>
 
           <motion.div

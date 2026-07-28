@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <Link href="/">
-            <img src="/Boxx logo.png" alt="BlueBoxx" className="h-10 w-auto object-contain" />
+            <img src="/Boxx-logo.png" alt="BlueBoxx" className="h-10 w-auto object-contain" />
           </Link>
         </div>
 

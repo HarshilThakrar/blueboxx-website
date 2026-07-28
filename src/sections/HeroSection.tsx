@@ -257,7 +257,7 @@ export const HeroSection = () => {
                   style={{ width: HUB_SIZE, height: HUB_SIZE }}
                 >
                   <div className="mb-3 flex items-center justify-center">
-                    <img src="/Boxx Logo.png" alt="BlueBoxx logo" className="h-20 w-20 object-contain drop-shadow-xl" />
+                    <img src="/Boxx-Logo.png" alt="BlueBoxx logo" className="h-20 w-20 object-contain drop-shadow-xl" />
                   </div>
                   <p className="text-base font-bold text-white font-sora">Career Ecosystem</p>
                   <p className="mt-1.5 max-w-[150px] text-[11px] leading-4 text-slate-300 font-semibold">
