@@ -6,11 +6,11 @@
 
 ---
 
-## 📖 Project Overview
+##  Project Overview
 BlueBoxx DA is a production-ready, enterprise-grade EdTech and Placement platform built with **Next.js 14** and **Laravel 12**. 
 It orchestrates a complex multi-sided marketplace handling Course enrollments, Job & Internship applications, Mentor bookings, and automated B2B Campus Placements.
 
-## 🚀 Features
+##  Features
 - **Multi-Role Sanctum Auth:** 7 strictly isolated portals (Admin, Student, Intern, Job Seeker, Expert, Company, College).
 - **Payment Gateway Integration:** Razorpay integration wrapped in ACID-compliant Database Transactions.
 - **E-Commerce Learning System:** Courses, quizzes, automated certificate generation, and dashboard tracking.
@@ -18,12 +18,12 @@ It orchestrates a complex multi-sided marketplace handling Course enrollments, J
 - **Advanced SEO Engine:** Programmatic dynamic meta tags, Open Graph, Twitter Cards, and deep Schema.org JSON-LD injections.
 - **High-Performance Architecture:** Rate limiting, N+1 query elimination, query caching, and React Concurrent rendering.
 
-## 💻 Tech Stack
+##  Tech Stack
 - **Frontend:** Next.js 14 (Pages Router), React 18, TypeScript, Tailwind CSS, Framer Motion, Zustand.
 - **Backend:** Laravel 12, PHP 8.2+, MySQL 8, Sanctum API Auth.
 - **Tools:** Pest/PHPUnit, ESLint, Prettier, SWR.
 
-## 🏗️ Architecture Diagram
+##  Architecture Diagram
 ```mermaid
 graph TD
     User([End User]) -->|HTTPS Request| NextJS[Next.js Frontend]
@@ -41,14 +41,14 @@ graph TD
     end
 ```
 
-## 📁 Project Structure
+##  Project Structure
 The repository contains the frontend application:
 - `/` - Next.js Frontend application.
 - `/docs` - Comprehensive Technical Documentation.
 
 *See [`/docs/PROJECT_STRUCTURE.md`](docs/PROJECT_STRUCTURE.md) for the complete directory tree.*
 
-## ⚙️ Installation & Requirements
+##  Installation & Requirements
 **Requirements:**
 - Node.js >= 18.17.0
 - PHP >= 8.2
@@ -71,16 +71,16 @@ npm install
 npm run dev
 ```
 
-## 🔐 Environment Variables
+##  Environment Variables
 You will need to configure environment variables for both the frontend and backend. See [`/docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md) for the complete required keys (Razorpay, SMTP, DB credentials).
 
-## 🚢 Deployment Guide
+##  Deployment Guide
 The platform is optimized for VPS, Ubuntu, Nginx, or Docker deployments.
 - Run `npm run build` and `npm run start` for the Next.js production server.
 - Run `php artisan optimize:clear` and configure Nginx to point to `backend/public`.
 - See the complete [Deployment Guide](docs/DEPLOYMENT.md).
 
-## 📚 Technical Documentation
+##  Technical Documentation
 For deep technical integrations, refer to the `/docs` directory:
 - [System Architecture](docs/ARCHITECTURE.md)
 - [Database Schema & Integrity](docs/DATABASE.md)
