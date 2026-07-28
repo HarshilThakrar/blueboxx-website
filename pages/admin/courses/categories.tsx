@@ -167,7 +167,7 @@ export default function AdminCourseCategoriesPage() {
   };
 
   const getImageUrl = (path: string | undefined) => {
-    if (!path) return null;
+    if (!path) return undefined;
     if (path.startsWith('http')) return path;
     const baseUrl = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace('/api', '') : 'http://127.0.0.1:8000';
     return `${baseUrl}/storage/${path}`;
@@ -346,7 +346,7 @@ export default function AdminCourseCategoriesPage() {
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden">
-                              {cat.icon ? <img src={getImageUrl(cat.icon)} className="w-full h-full object-cover" onError={e => e.currentTarget.style.display='none'} /> : <ImageIcon size={16} className="text-slate-400" />}
+                              {cat.icon ? <img src={getImageUrl(cat.icon)} alt="category icon" className="w-full h-full object-cover" onError={e => e.currentTarget.style.display='none'} /> : <ImageIcon size={16} className="text-slate-400" />}
                             </div>
                             <div>
                               <p className="text-sm font-bold text-slate-800">{cat.name}</p>

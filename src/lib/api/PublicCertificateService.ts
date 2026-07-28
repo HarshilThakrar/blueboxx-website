@@ -34,7 +34,7 @@ export const PublicCertificateService = {
    * Triggers a direct download of the certificate PDF using the browser's download functionality
    */
   downloadCertificatePdf(certificateNumber: string) {
-    const url = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/public/certificates/${certificateNumber}/download`;
+    const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/public/certificates/${certificateNumber}/download`;
     // We open it in a new tab to let the browser handle the PDF (view or download) natively for maximum performance.
     window.open(url, '_blank');
   },

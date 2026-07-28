@@ -30,6 +30,7 @@ export default function AdminQuizEditorPage() {
         router.push("/admin/education/quiz");
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const addQuestion = () => {

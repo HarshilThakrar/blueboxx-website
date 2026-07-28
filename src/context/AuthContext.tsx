@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (token) {
       // Pre-load user from cached session if available for instant render
       const sessions = getSessions();
-      if (activeRole !== 'public' && sessions[activeRole]) {
+      if (activeRole && activeRole !== 'public' && sessions[activeRole]) {
         setUser(sessions[activeRole].user);
       } else if (activeRole === 'public') {
         const anyTokenRole = Object.keys(sessions).find(k => sessions[k]?.token === token);

@@ -5,7 +5,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import useSWR from "swr";
 import { fetcher } from "../../../src/lib/fetcher";
-import api from "../../../src/lib/api";
+import api from "../../../src/lib/axios";
 import Image from "next/image";
 
 interface Testimonial {

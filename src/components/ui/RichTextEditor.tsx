@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
-import { Bold, Italic, Underline as UnderlineIcon, Strikethrough, Code, Link2, Image as ImageIcon, List, ListOrdered, Quote, AlignLeft, AlignCenter, AlignRight, Heading1, Heading2, Undo, Redo, Edit3, Type, Minus } from "lucide-react";
+import { Bold, Italic, Underline as UnderlineIcon, Strikethrough, Code, Link2, Image as ImageIcon, List, ListOrdered, Quote, AlignLeft, AlignCenter, AlignRight, Heading1, Heading2, Undo, Redo, Type, Minus } from "lucide-react";
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -13,7 +13,6 @@ interface RichTextEditorProps {
   onChange?: (html: string) => void;
   placeholder?: string;
   minHeight?: string;
-  onImageUpload?: (file: File) => Promise<string>;
   onImageUpload?: (file: File) => Promise<string>;
 }
 

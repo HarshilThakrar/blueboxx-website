@@ -6,20 +6,20 @@ import { AuthGuard } from "../components/auth/AuthGuard";
 import {
   LayoutDashboard, Users, BookOpen, Briefcase, Settings, LogOut,
   Menu, X, Bell, Search, ShieldCheck, GraduationCap,
-  FileText, Activity, TerminalSquare, ChevronRight, ChevronDown,
+  FileText, TerminalSquare, ChevronRight, ChevronDown,
   ShieldAlert, Image as ImageIcon, Award, Archive, Sliders, Book,
   ClipboardList, Trophy, Calendar, Radio, BarChart3, HelpCircle,
   Percent, ShoppingCart, Landmark, PhoneCall, Layers, Globe, Mail,
   ListTodo, UserCheck, Shield, Database, KeyRound, FileSpreadsheet,
   Sparkles, Building2, Play, Plus, Trash2, Upload, Video, MessageSquare,
-  MessageCircle, Megaphone, Palette, FolderOpen, Link2, PieChart, HardDrive, Lock, History, Fingerprint,
-  Hammer, Loader, MapPin, AlertOctagon, ShieldBan, Wrench, RotateCcw, BarChart, Layout, Moon, Sun, Maximize, Minimize,
-  Code, TrendingUp, RefreshCcw, Handshake, Compass, Send
+  MessageCircle, Megaphone, FolderOpen, Link2, PieChart, HardDrive, Lock, Fingerprint,
+  Hammer, Loader, MapPin, ShieldBan, RotateCcw, BarChart, Layout,
+  Code, Handshake, Compass
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NotificationService } from "../lib/api/admin/RealtimeNotificationService";
 import { MessageService } from "../lib/api/admin/MessageService";
-import { LeadService } from "../lib/api/admin/LeadService";
+
 import api from '../lib/axios';
 import { useGlobalSettings } from "../contexts/SettingsContext";
 
@@ -324,13 +324,6 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
   const { data: messagesData } = MessageService.useUnreadSummary(isAuthenticated);
   const unreadMessagesCount = messagesData?.unread_count || 0;
 
-  // Notification Bell Dropdown State
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-
-
-
-
-
   // Derive user initials from name for avatar display
   const userInitials = user?.name
     ? user.name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
@@ -409,6 +402,7 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
       return acc;
     }, [] as { name: string, href: string, category: string }[]);
     return [...links, ...dummyDataLinks];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings?.crm_lead_categories]);
 
   const searchResults = searchQuery
@@ -496,6 +490,7 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
         return newState;
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.asPath, router.isReady]);
 
   // Handle Sidebar Scroll Position Restoration

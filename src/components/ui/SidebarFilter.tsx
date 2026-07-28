@@ -85,6 +85,7 @@ function InternshipsFilter({ onFilterChange }: { onFilterChange?: (f: any) => vo
 
   useEffect(() => {
     onFilterChange?.({ domain, duration, mode, level });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [domain, duration, mode, level]);
 
   return (
@@ -115,6 +116,7 @@ function JobsFilter({ onFilterChange }: { onFilterChange?: (f: any) => void }) {
 
   useEffect(() => {
     onFilterChange?.({ role, experience, salary, mode, type });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role, experience, salary, mode, type]);  return (
     <>
       <FilterSection title="Job Role" icon={Briefcase}

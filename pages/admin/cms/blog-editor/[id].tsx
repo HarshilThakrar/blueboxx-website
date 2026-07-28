@@ -40,6 +40,7 @@ export default function BlogEditorPage() {
     if (!isNew && id) {
       loadBlog();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const loadBlog = async () => {

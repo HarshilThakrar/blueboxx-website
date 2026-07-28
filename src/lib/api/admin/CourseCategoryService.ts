@@ -1,6 +1,17 @@
 import api from '../../axios';
 import useSWR from 'swr';
 
+export interface CourseCategory {
+  id: number;
+  name: string;
+  description?: string;
+  parent_id?: number | null;
+  position?: number;
+  status: string;
+  icon?: string;
+  image?: string;
+}
+
 const fetcher = (url: string) => api.get(url).then((res) => res.data);
 
 export const CourseCategoryService = {
@@ -13,7 +24,7 @@ export const CourseCategoryService = {
     const { data, error, mutate, isLoading } = useSWR(url, fetcher, { keepPreviousData: true });
     
     return {
-      data: data?.data || (Array.isArray(data) ? data : []),
+      data: (data?.data || (Array.isArray(data) ? data : [])) as CourseCategory[],
       meta: data?.meta || {},
       isLoading,
       isError: !!error,

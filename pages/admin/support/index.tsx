@@ -18,6 +18,7 @@ export default function AdminSupportPage() {
 
   useEffect(() => {
     fetchTickets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const fetchTickets = async () => {

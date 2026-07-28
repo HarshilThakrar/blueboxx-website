@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { AdminDashboardLayout } from "../../../../src/layout/AdminDashboardLayout";
+import { AdminDashboardLayout } from "../../../src/layout/AdminDashboardLayout";
 import { ChevronRight, ChevronDown, Check, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
-import { InternshipService } from "../../../../src/lib/api/admin/InternshipService";
+import { InternshipService } from "../../../src/lib/api/admin/InternshipService";
 
 export default function AdminEditInternshipPage() {
   const router = useRouter();

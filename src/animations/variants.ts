@@ -45,3 +45,7 @@ export const fadeInUp = {
     },
   },
 };
+
+export const staggerItem = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
+export const EASE_OUT_EXPO = [0.19, 1, 0.22, 1];
+export const cardHover = { hover: { scale: 1.02, transition: { duration: 0.2 } } };

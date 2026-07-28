@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, ChevronUp, ChevronDown, Download, Trash2, Edit2, Filter, MoreVertical, CheckSquare, Square, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ChevronUp, ChevronDown, Trash2, Edit2, CheckSquare, Square, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Column<T> {
@@ -95,13 +95,6 @@ export function DataTable<T extends { id?: string | number }>({
     setSelectedRows(newSelected);
   };
 
-  const handleExportCSV = () => {
-    toast.success("Downloading CSV...");
-  };
-
-  const handleExportExcel = () => {
-    toast.success("Downloading Excel...");
-  };
 
   const handleBulkStatus = (status: string) => {
     if (selectedRows.size === 0) return toast.error("No rows selected");

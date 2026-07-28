@@ -50,6 +50,7 @@ export default function JobApplications() {
     if (!selectedApp && filteredApplicants.length > 0) {
       setSelectedApp(filteredApplicants[0]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredApplicants = applicants.filter((a: any) => {

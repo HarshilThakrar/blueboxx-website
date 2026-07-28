@@ -72,6 +72,7 @@ export default function AdminRolesPage() {
       const updated = roles.find((r: any) => r.id === selectedRole.id);
       if (updated) setSelectedRole(updated);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roles]);
 
   const { data: auditLogsData } = UserManagerService.useRoleAuditLogs(activeTab === 'Audit' ? selectedRole?.id : undefined);

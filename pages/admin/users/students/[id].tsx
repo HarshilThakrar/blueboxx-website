@@ -40,6 +40,7 @@ export default function EditStudent() {
       fetchStudent();
     }
     fetchSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchSettings = async () => {
@@ -398,9 +399,9 @@ export default function EditStudent() {
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-400 overflow-hidden">
                         {files.profile_photo ? (
-                          <img src={URL.createObjectURL(files.profile_photo)} className="w-full h-full object-cover" />
+                          <img src={URL.createObjectURL(files.profile_photo)} alt="profile preview" className="w-full h-full object-cover" />
                         ) : existingPhotos.profile ? (
-                          <img src={existingPhotos.profile} className="w-full h-full object-cover" />
+                          <img src={existingPhotos.profile} alt="existing profile" className="w-full h-full object-cover" />
                         ) : <ImageIcon size={24} />}
                       </div>
                       <div className="flex-1 relative border-2 border-dashed border-gray-200 rounded-xl px-4 py-4 hover:bg-gray-50 hover:border-[#C9A227]/50 transition-colors cursor-pointer text-center group">

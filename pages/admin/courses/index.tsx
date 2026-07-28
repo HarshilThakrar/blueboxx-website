@@ -258,7 +258,7 @@ export default function CourseList() {
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <div className="w-12 h-12 rounded-lg bg-slate-100 shrink-0 overflow-hidden border border-slate-200 flex items-center justify-center relative">
-                            {course.thumbnail ? <img src={getImageUrl(course.thumbnail)} className="w-full h-full object-cover"/> : <span className="text-xs font-bold text-slate-400">IMG</span>}
+                            {course.thumbnail ? <img src={getImageUrl(course.thumbnail)} alt="course thumbnail" className="w-full h-full object-cover"/> : <span className="text-xs font-bold text-slate-400">IMG</span>}
                             {course.is_featured && <div className="absolute top-0 right-0 bg-amber-500 w-3 h-3 rounded-bl-lg"></div>}
                           </div>
                           <div>

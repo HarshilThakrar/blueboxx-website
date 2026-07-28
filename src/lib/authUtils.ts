@@ -1,6 +1,6 @@
 import { UserRole } from "../context/AuthContext";
 
-export const getActiveRoleFromUrl = (path: string): UserRole | 'public' => {
+export const getActiveRoleFromUrl = (path: string): UserRole | 'public' | 'auth' => {
   if (path.startsWith('/admin') || path.startsWith('/super_admin')) return 'admin';
   if (path.startsWith('/student')) return 'student';
   if (path.startsWith('/expert')) return 'expert';
@@ -49,8 +49,8 @@ export const getActiveToken = (path?: string) => {
   const activeRole = getActiveRoleFromUrl(currentPath);
   const sessions = getSessions();
 
-  if (activeRole !== 'public' && sessions[activeRole]) {
-    return sessions[activeRole].token;
+  if (activeRole && activeRole !== 'public' && sessions[activeRole as string]) {
+    return sessions[activeRole as string].token;
   }
   
   if (activeRole === 'auth') {

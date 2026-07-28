@@ -101,6 +101,7 @@ export default function MediaManager() {
 
   useEffect(() => {
     fetchMedia(activeFolderId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFolderId]);
 
   useEffect(() => {
@@ -600,7 +601,7 @@ export default function MediaManager() {
                                 <div className="flex items-center gap-3">
                                   {item.url && type === 'image' ? (
                                     <>
-                                      <img src={item.url} className="w-8 h-8 rounded object-cover shadow-sm" 
+                                      <img src={item.url} alt="media preview" className="w-8 h-8 rounded object-cover shadow-sm" 
                                         onError={(e) => {
                                           e.currentTarget.style.display = 'none';
                                           e.currentTarget.nextElementSibling?.classList.remove('hidden');

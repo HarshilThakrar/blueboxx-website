@@ -337,7 +337,7 @@ export default function AddStudent() {
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-400 overflow-hidden">
                         {files.profile_photo ? (
-                          <img src={URL.createObjectURL(files.profile_photo)} className="w-full h-full object-cover" />
+                          <img src={URL.createObjectURL(files.profile_photo)} alt="Profile Preview" className="w-full h-full object-cover" />
                         ) : <ImageIcon size={24} />}
                       </div>
                       <div className="flex-1 relative border-2 border-dashed border-gray-200 rounded-xl px-4 py-4 hover:bg-gray-50 hover:border-[#C9A227]/50 transition-colors cursor-pointer text-center group">

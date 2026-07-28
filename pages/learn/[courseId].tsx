@@ -16,13 +16,13 @@ import {
   ThumbsUp,
   MoreVertical
 } from "lucide-react";
-import { MOCK_COURSES } from "../../src/data/mockData";
+import { dummyCourses } from "../../src/data/courses";
 import { AnimatedContent } from "../../src/components/reactbits/AnimatedContent";
 
 export default function CoursePlayerPage() {
   const router = useRouter();
   const { courseId } = router.query;
-  const course = MOCK_COURSES.find(c => c.slug === courseId) || MOCK_COURSES[0];
+  const course = dummyCourses.find(c => c.id === courseId) || dummyCourses[0];
 
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedModules, setExpandedModules] = useState<number[]>([0]);
@@ -69,7 +69,7 @@ export default function CoursePlayerPage() {
           <div className="w-full bg-black aspect-video relative group">
             {/* Dummy Video Player */}
             <img 
-              src={course?.image} 
+              src={course?.thumbnail} 
               alt="Video Thumbnail" 
               className="w-full h-full object-cover opacity-60"
             />
@@ -209,15 +209,15 @@ export default function CoursePlayerPage() {
                     className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
                   >
                     <div>
-                      <h3 className="text-sm font-bold text-slate-900 leading-tight mb-1">{module.module}</h3>
-                      <p className="text-xs text-slate-500 font-medium">0 / {module.lessons.length} • 45 min</p>
+                      <h3 className="text-sm font-bold text-slate-900 leading-tight mb-1">{module.title}</h3>
+                      <p className="text-xs text-slate-500 font-medium">0 / {module.items?.length || 0} • {module.duration}</p>
                     </div>
                     {expandedModules.includes(mIdx) ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
                   </button>
                   
                   {expandedModules.includes(mIdx) && (
                     <div className="bg-white">
-                      {module.lessons.map((lesson, lIdx) => {
+                      {module.items?.map((lesson: any, lIdx: number) => {
                         const isCurrent = mIdx === 0 && lIdx === 1;
                         const isLocked = !lesson.isFree && mIdx > 0;
                         const isCompleted = mIdx === 0 && lIdx === 0;
@@ -240,7 +240,7 @@ export default function CoursePlayerPage() {
                                 {lesson.title}
                               </p>
                               <p className="text-xs text-slate-500 flex items-center gap-1">
-                                <PlayCircle size={10} /> {lesson.duration}
+                                <PlayCircle size={10} /> {lesson.time}
                               </p>
                             </div>
                           </div>

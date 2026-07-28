@@ -20,7 +20,7 @@ const getStatusBadge = (status: string) => {
   }
 };
 
-export const MyScholarshipsView = ({ userRole }: { userRole: 'student' | 'intern' }) => {
+export const MyScholarshipsView = ({  }: { userRole?: 'student' | 'intern' }) => {
   const { data: responseData, isLoading } = useSWR('/student/scholarships', fetcher);
   
   const scholarships = responseData?.data?.scholarships || [];

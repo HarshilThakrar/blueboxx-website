@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from "react";
-import { CompanyDashboardLayout } from "../../../src/layout/CompanyDashboardLayout";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { CompanyDashboardLayout } from "../../../layout/CompanyDashboardLayout";
 import { Search, Send, Phone, Video, MoreVertical, CheckCheck } from "lucide-react";
 import useSWR from "swr";
-import api from "../../../src/lib/axios";
+import api from "../../../lib/axios";
 
 const fetcher = (url: string) => api.get(url).then(res => res.data);
 
@@ -19,7 +19,7 @@ export default function CompanyMessages() {
     { refreshInterval: 5000 }
   );
 
-  const messages = msgData?.data || [];
+  const messages = useMemo(() => msgData?.data || [], [msgData?.data]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export default function CompanyMessages() {
                 className={`p-4 sm:p-5 flex gap-4 cursor-pointer hover:bg-slate-50 transition-all border-b border-slate-50 ${activeConv?.id === conv.id ? 'bg-slate-50/80 border-l-4 border-l-[#1B2A6B]' : 'border-l-4 border-l-transparent'}`}
               >
                 <div className="w-12 h-12 rounded-full bg-slate-200 shrink-0 flex items-center justify-center text-slate-600 font-black text-lg">
-                  {conv.user.avatar ? <img src={conv.user.avatar} className="w-full h-full rounded-full object-cover" /> : conv.user.name.charAt(0)}
+                  {conv.user.avatar ? <img src={conv.user.avatar} alt="user avatar" className="w-full h-full rounded-full object-cover" /> : conv.user.name.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-1">

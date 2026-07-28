@@ -1,5 +1,5 @@
 import { motion, AnimatePresence, useInView } from "framer-motion";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import {
   Star,
   ChevronLeft,
@@ -50,7 +50,7 @@ export const TestimonialsSection = () => {
     }
   }, []);
 
-  const currentTestimonials = testimonialsData || [];
+  const currentTestimonials = useMemo(() => testimonialsData || [], [testimonialsData]);
 
   useEffect(() => {
     if (!isAutoPlaying || !currentTestimonials.length) return;

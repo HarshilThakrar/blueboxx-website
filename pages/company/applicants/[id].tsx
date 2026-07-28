@@ -1,12 +1,12 @@
 import React from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { CompanyDashboardLayout } from "../../../../src/layout/CompanyDashboardLayout";
-import { AnimatedContent } from "../../../../src/components/reactbits/AnimatedContent";
+import { CompanyDashboardLayout } from "../../../src/layout/CompanyDashboardLayout";
+import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
 import { Mail, Phone, ExternalLink, ArrowLeft, Download, FileText, CheckCircle, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import useSWR from "swr";
-import api from "../../../../src/lib/axios";
+import api from "../../../src/lib/axios";
 
 const fetcher = (url: string) => api.get(url).then(res => res.data);
 

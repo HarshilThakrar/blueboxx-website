@@ -37,6 +37,7 @@ export default function JobseekerSettingsPage() {
       });
       if (userData.avatar) setAvatarPreview(userData.avatar);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   // Notification toggles
