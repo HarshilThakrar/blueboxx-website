@@ -83,7 +83,7 @@ class CheckoutController extends Controller
 
             return response()->json([
                 'success' => true,
-                'key' => env('RAZORPAY_KEY'),
+                'key' => config('services.razorpay.key'),
                 'amount' => $gatewayOrder['amount'],
                 'razorpay_order_id' => $gatewayOrder['order_id'],
                 'data' => [

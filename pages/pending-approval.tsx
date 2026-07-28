@@ -37,9 +37,14 @@ export default function PendingApprovalPage() {
             We will review your details and send you an email once your account has been activated.
           </p>
 
-          <Link href="/" className="inline-flex items-center justify-center gap-2 w-full h-12 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-all">
-            <ArrowLeft size={16} /> Return to Homepage
-          </Link>
+          <div className="flex flex-col gap-3">
+            <Link href="/login" className="inline-flex items-center justify-center gap-2 w-full h-12 bg-[#1B2A6B] hover:bg-[#131F53] text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-[#1B2A6B]/20">
+              Go to Login
+            </Link>
+            <Link href="/" className="inline-flex items-center justify-center gap-2 w-full h-12 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-all">
+              <ArrowLeft size={16} /> Return to Homepage
+            </Link>
+          </div>
         </div>
       </motion.div>
 

@@ -26,16 +26,16 @@ class StudentDashboardController extends Controller
         $activeCourses = $enrollments->where('status', 'active')->count();
         $completedCourses = $enrollments->where('status', 'completed')->count();
 
-        // 2. Applications stats (Internships + Jobs)
+        // 2. Applications stats (Internships + Scholarships)
         $internshipApps = InternshipApplication::where('user_id', $user->id)
             ->whereNotIn('status', ['rejected', 'hired'])
             ->count();
         
-        $jobApps = JobApplication::where('user_id', $user->id)
-            ->whereNotIn('status', ['rejected', 'hired'])
+        $scholarshipApps = \App\Models\ScholarshipApplication::where('user_id', $user->id)
+            ->whereNotIn('status', ['Rejected', 'Awarded'])
             ->count();
 
-        $activeApplications = $internshipApps + $jobApps;
+        $activeApplications = $internshipApps + $scholarshipApps;
 
         // 3. Certificates stats
         $certificatesEarned = IssuedCertificate::where('user_id', $user->id)->count();
@@ -50,7 +50,7 @@ class StudentDashboardController extends Controller
                 return [
                     'id' => $enrollment->course->id,
                     'title' => $enrollment->course->title,
-                    'level' => $enrollment->course->level,
+                    'level' => $enrollment->course->level?->title ?? 'Beginner',
                     'category' => $enrollment->course->category,
                     'thumbnail' => $enrollment->course->thumbnail ? asset('storage/' . $enrollment->course->thumbnail) : null,
                     'progress' => $enrollment->progress_percentage,
@@ -74,24 +74,24 @@ class StudentDashboardController extends Controller
                 ];
             });
 
-        $recentJobs = JobApplication::with('job', 'job.company')
+        $recentScholarships = \App\Models\ScholarshipApplication::with('program')
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->take(3)
             ->get()
             ->map(function ($app) {
                 return [
-                    'id' => 'job_' . $app->id,
-                    'role' => $app->job->title,
-                    'company' => $app->job->company->name ?? 'Unknown Company',
+                    'id' => 'sch_' . $app->id,
+                    'role' => $app->program->title ?? 'Scholarship',
+                    'company' => 'Blueboxx DA',
                     'status' => ucfirst($app->status),
-                    'statusColor' => $this->getStatusColor($app->status),
+                    'statusColor' => $this->getStatusColor(strtolower($app->status)),
                     'appliedDate' => $app->created_at->diffForHumans(),
                 ];
             });
 
         // Combine and take latest 3
-        $applications = collect($recentInternships)->concat($recentJobs)->sortByDesc('appliedDate')->take(3)->values();
+        $applications = collect($recentInternships)->concat($recentScholarships)->sortByDesc('appliedDate')->take(3)->values();
 
         // 6. Upcoming classes / mentor sessions
         $upcomingSessions = MentorSession::with('expert.user')
@@ -132,11 +132,11 @@ class StudentDashboardController extends Controller
         $user = Auth::user();
 
         $internships = InternshipApplication::with('internship', 'internship.company')
-            ->where('student_id', $user->id)
+            ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $jobs = JobApplication::with('job', 'job.company')
+        $scholarships = \App\Models\ScholarshipApplication::with('program')
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -163,20 +163,18 @@ class StudentDashboardController extends Controller
             ];
         }
 
-        foreach ($jobs as $app) {
-            if ($app->status === 'interview') $interviews++;
-            if ($app->status === 'hired') $offers++;
+        foreach ($scholarships as $app) {
+            if (strtolower($app->status) === 'shortlisted') $interviews++;
+            if (strtolower($app->status) === 'awarded') $offers++;
 
             $allApps[] = [
-                'id' => 'job_' . $app->id,
-                'role' => $app->job->title ?? 'Job',
-                'company' => $app->job->company->name ?? 'Unknown Company',
-                'logo' => $app->job->company->company_logo 
-                            ? asset('storage/' . $app->job->company->company_logo) 
-                            : "https://ui-avatars.com/api/?name=" . urlencode($app->job->company->name ?? 'C') . "&background=0d1635&color=fff",
+                'id' => 'sch_' . $app->id,
+                'role' => $app->program->title ?? 'Scholarship',
+                'company' => 'Blueboxx DA',
+                'logo' => "https://ui-avatars.com/api/?name=B&background=C9A227&color=fff",
                 'appliedDate' => $app->created_at->format('M d, Y'),
                 'status' => strtolower($app->status),
-                'nextAction' => $app->status === 'interview' ? 'Interview Scheduled' : ($app->status === 'hired' ? 'Offer Extended' : 'Application under review'),
+                'nextAction' => strtolower($app->status) === 'shortlisted' ? 'In Consideration' : (strtolower($app->status) === 'awarded' ? 'Scholarship Awarded' : 'Application under review'),
             ];
         }
 
@@ -220,5 +218,46 @@ class StudentDashboardController extends Controller
             'rejected' => 'bg-red-50 text-red-700',
             default => 'bg-slate-50 text-slate-700',
         };
+    }
+
+    public function resume(Request $request)
+    {
+        $user = Auth::user();
+        $doc = \Illuminate\Support\Facades\DB::table('student_documents')
+            ->where('user_id', $user->id)
+            ->where('type', 'resume')
+            ->latest()
+            ->first();
+        
+        return response()->json([
+            'success' => true,
+            'resume_url' => $doc && $doc->file_path ? asset('storage/' . $doc->file_path) : null
+        ]);
+    }
+
+    public function uploadResume(Request $request)
+    {
+        $request->validate([
+            'resume' => 'required|file|mimes:pdf,doc,docx|max:5120',
+        ]);
+
+        $user = Auth::user();
+
+        if ($request->hasFile('resume')) {
+            $path = $request->file('resume')->store('resumes/students', 'public');
+            
+            \Illuminate\Support\Facades\DB::table('student_documents')->updateOrInsert(
+                ['user_id' => $user->id, 'type' => 'resume'],
+                ['file_path' => $path, 'title' => 'Resume', 'created_at' => now(), 'updated_at' => now()]
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Resume uploaded successfully.',
+                'resume_url' => asset('storage/' . $path)
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Failed to upload resume'], 400);
     }
 }

@@ -1,150 +1,211 @@
 import { CollegeDashboardLayout } from "../../../src/layout/CollegeDashboardLayout";
-import { Users, GraduationCap, Briefcase, Building, ChevronRight, AlertCircle, PlusCircle, Calendar, Bell } from "lucide-react";
+import { Users, Briefcase, BookOpen, FileText, CheckCircle2, ChevronRight, TrendingUp } from "lucide-react";
 import { AnimatedContent } from "../../../src/components/reactbits/AnimatedContent";
 import Link from "next/link";
 import useSWR from "swr";
 import api from "../../../src/lib/axios";
-import { useState } from "react";
 
 const fetcher = (url: string) => api.get(url).then(res => res.data);
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const map: Record<string, string> = {
+    active:   "bg-emerald-50 text-emerald-700 border-emerald-200",
+    draft:    "bg-slate-50 text-slate-500 border-slate-200",
+    closed:   "bg-red-50 text-red-600 border-red-200",
+    open:     "bg-emerald-50 text-emerald-700 border-emerald-200",
+  };
+  return (
+    <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border capitalize ${map[status] || map.draft}`}>
+      {status}
+    </span>
+  );
+};
 
 export default function CollegeDashboardPage() {
   const { data, isLoading } = useSWR("/college/dashboard", fetcher);
 
-  const kpis = data?.data?.kpis || { total_students: 0, active_placement_drives: 0, active_internship_drives: 0, connected_companies: 0 };
+  const kpis = data?.data?.kpis || {
+    total_students: 0,
+    placed_students: 0,
+    active_placement_drives: 0,
+    active_internship_drives: 0,
+    total_applications: 0,
+  };
   const recentDrives = data?.data?.recent_drives || [];
-  const alerts = data?.data?.alerts || [];
+
+  const placementRate = kpis.total_students > 0
+    ? Math.round((kpis.placed_students / kpis.total_students) * 100)
+    : 0;
+
+  const cards = [
+    {
+      label: "Total Students",
+      value: kpis.total_students,
+      icon: Users,
+      color: "text-[#1B2A6B] bg-blue-50",
+      href: "/college/students",
+      sub: "Registered in college",
+    },
+    {
+      label: "Students Placed",
+      value: kpis.placed_students,
+      icon: CheckCircle2,
+      color: "text-emerald-600 bg-emerald-50",
+      href: "/college/students",
+      sub: `${placementRate}% placement rate`,
+    },
+    {
+      label: "Placement Drives",
+      value: kpis.active_placement_drives,
+      icon: Briefcase,
+      color: "text-[#C9A227] bg-[#C9A227]/10",
+      href: "/college/placement-drives",
+      sub: "Active drives",
+    },
+    {
+      label: "Internship Drives",
+      value: kpis.active_internship_drives,
+      icon: BookOpen,
+      color: "text-violet-600 bg-violet-50",
+      href: "/college/internship-drives",
+      sub: "Active drives",
+    },
+    {
+      label: "Total Applications",
+      value: kpis.total_applications,
+      icon: FileText,
+      color: "text-sky-600 bg-sky-50",
+      href: "/college/placement-drives",
+      sub: "Across all drives",
+    },
+  ];
 
   return (
     <CollegeDashboardLayout>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-black text-slate-800 mb-1">Placement Cell Dashboard</h1>
-          <p className="text-slate-500 font-medium text-sm">Monitor student placements, active drives, and company partnerships.</p>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/college/placement-drives/create" className="flex items-center gap-2 h-10 px-5 bg-[#1B2A6B] text-white text-sm font-bold rounded-xl shadow-md hover:bg-[#0d1635] transition-colors">
-            <PlusCircle size={15} /> New Placement Drive
-          </Link>
-        </div>
+      <div className="mb-8">
+        <h1 className="text-2xl font-black text-slate-800 mb-1">Placement Cell Dashboard</h1>
+        <p className="text-slate-500 font-medium text-sm">Real-time overview of placements, drives, and student progress.</p>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {[
-          { label: "Total Students", value: kpis.total_students, icon: Users, color: "text-[#1B2A6B] bg-blue-50" },
-          { label: "Active Placement Drives", value: kpis.active_placement_drives, icon: Briefcase, color: "text-emerald-600 bg-emerald-50" },
-          { label: "Active Internship Drives", value: kpis.active_internship_drives, icon: GraduationCap, color: "text-[#C9A227] bg-[#C9A227]/10" },
-          { label: "Connected Companies", value: kpis.connected_companies, icon: Building, color: "text-[#0d1635] bg-slate-100" },
-        ].map((stat, i) => (
-          <AnimatedContent key={i} direction="up" delay={i * 0.07} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${stat.color} mb-4`}>
-              <stat.icon size={20} />
-            </div>
-            <p className="text-2xl font-black text-slate-800 mb-0.5">{stat.value}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{stat.label}</p>
-          </AnimatedContent>
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        {cards.map((stat, i) => (
+          <Link href={stat.href} key={i}>
+            <AnimatedContent
+              direction="up"
+              delay={i * 0.06}
+              className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md hover:border-[#1B2A6B]/30 transition-all cursor-pointer group"
+            >
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.color} mb-4`}>
+                <stat.icon size={18} />
+              </div>
+              {isLoading ? (
+                <div className="h-7 w-12 bg-slate-100 rounded animate-pulse mb-1" />
+              ) : (
+                <p className="text-2xl font-black text-slate-800 mb-0.5">{Number(stat.value || 0).toLocaleString()}</p>
+              )}
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider leading-tight">{stat.label}</p>
+              <p className="text-[10px] text-slate-400 mt-1 font-medium">{stat.sub}</p>
+            </AnimatedContent>
+          </Link>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Drives Table */}
-        <div className="lg:col-span-2 space-y-6">
-          <AnimatedContent direction="up" delay={0.2} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <h2 className="text-sm font-black text-slate-800">Recent Placement Drives</h2>
-              <Link href="/college/placement-drives" className="text-[11px] font-bold text-[#1B2A6B] hover:underline flex items-center">
-                View All <ChevronRight size={12} />
-              </Link>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                    <th className="py-3 px-5">Drive Title</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Deadline</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {isLoading ? (
-                    <tr><td colSpan={3} className="py-8 text-center text-slate-400 text-xs">Loading drives...</td></tr>
-                  ) : recentDrives.length === 0 ? (
-                    <tr>
-                      <td colSpan={3} className="py-12 text-center">
-                        <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                          <Briefcase size={20} className="text-slate-300" />
-                        </div>
-                        <p className="text-sm font-bold text-slate-500">No active drives</p>
-                        <p className="text-xs text-slate-400 mt-1">Create a placement drive to start hiring.</p>
-                      </td>
-                    </tr>
-                  ) : (
-                    recentDrives.map((drive: any) => (
-                      <tr key={drive.id} className="hover:bg-slate-50 transition-colors cursor-pointer">
-                        <td className="py-3.5 px-5">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                              <Briefcase size={14} className="text-[#1B2A6B]" />
-                            </div>
-                            <div>
-                              <p className="text-xs font-bold text-slate-800">{drive.title}</p>
-                              <p className="text-[10px] text-slate-500">{drive.job_type || 'Full Time'}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4">
-                          <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                            drive.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                            'bg-slate-50 text-slate-600 border-slate-200'
-                          }`}>
-                            {drive.status}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-4 text-xs font-semibold text-slate-600">
-                          {drive.application_deadline ? new Date(drive.application_deadline).toLocaleDateString() : 'N/A'}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </AnimatedContent>
+      {/* Placement Rate Bar */}
+      <AnimatedContent direction="up" delay={0.35} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <TrendingUp size={16} className="text-[#1B2A6B]" />
+            <span className="text-sm font-black text-slate-800">Overall Placement Rate</span>
+          </div>
+          <span className="text-sm font-black text-[#1B2A6B]">{placementRate}%</span>
         </div>
+        <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-[#1B2A6B] to-emerald-500 rounded-full transition-all duration-700"
+            style={{ width: `${placementRate}%` }}
+          />
+        </div>
+        <p className="text-[11px] text-slate-400 mt-2 font-medium">
+          {kpis.placed_students} out of {kpis.total_students} students placed
+        </p>
+      </AnimatedContent>
 
-        {/* Sidebar: Alerts / Updates */}
-        <div className="space-y-6">
-          <AnimatedContent direction="up" delay={0.25} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-slate-100 flex items-center gap-2 bg-slate-50/50">
-              <AlertCircle size={16} className="text-[#C9A227]" />
-              <h2 className="text-sm font-black text-slate-800">System Alerts</h2>
-            </div>
-            <div className="p-2">
-              {alerts.length === 0 ? (
-                <div className="p-6 text-center text-slate-400 text-xs font-semibold">
-                  <Bell size={24} className="mx-auto mb-2 opacity-50" />
-                  No alerts right now.
-                </div>
+      {/* Recent Placement Drives */}
+      <AnimatedContent direction="up" delay={0.4} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <h2 className="text-sm font-black text-slate-800">Recent Placement Drives</h2>
+          <Link href="/college/placement-drives" className="text-[11px] font-bold text-[#1B2A6B] hover:underline flex items-center gap-0.5">
+            View All <ChevronRight size={12} />
+          </Link>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                <th className="py-3 px-5">Drive Title</th>
+                <th className="py-3 px-4">Type</th>
+                <th className="py-3 px-4">Applications</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Deadline</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {isLoading ? (
+                [...Array(3)].map((_, i) => (
+                  <tr key={i}>
+                    {[...Array(5)].map((_, j) => (
+                      <td key={j} className="py-3.5 px-5">
+                        <div className="h-4 bg-slate-100 rounded animate-pulse w-20" />
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : recentDrives.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-14 text-center">
+                    <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Briefcase size={20} className="text-slate-300" />
+                    </div>
+                    <p className="text-sm font-bold text-slate-500">No placement drives yet</p>
+                    <p className="text-xs text-slate-400 mt-1">Create a placement drive to start recruiting.</p>
+                    <Link href="/college/placement-drives/create" className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#1B2A6B] hover:underline">
+                      + Create your first drive
+                    </Link>
+                  </td>
+                </tr>
               ) : (
-                alerts.map((alert: any, i: number) => (
-                  <div key={i} className="p-3 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer group flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center shrink-0 group-hover:bg-[#1B2A6B] transition-colors">
-                      <AlertCircle size={14} className="text-[#1B2A6B] group-hover:text-white transition-colors" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-700">{alert.title}</p>
-                      <p className="text-[10px] text-slate-500 mt-0.5">{alert.message}</p>
-                      <span className="text-[9px] font-black text-slate-400 mt-1 block uppercase tracking-wider">{alert.time}</span>
-                    </div>
-                  </div>
+                recentDrives.map((drive: any) => (
+                  <tr key={drive.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-3.5 px-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                          <Briefcase size={13} className="text-[#1B2A6B]" />
+                        </div>
+                        <p className="text-xs font-bold text-slate-800 truncate max-w-[180px]">{drive.title}</p>
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4 text-xs font-semibold text-slate-500">{drive.job_type || 'Full Time'}</td>
+                    <td className="py-3.5 px-4">
+                      <span className="text-xs font-bold text-slate-700">{drive.applications_count ?? 0}</span>
+                      <span className="text-[10px] text-slate-400 ml-1">apps</span>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <StatusBadge status={drive.status} />
+                    </td>
+                    <td className="py-3.5 px-4 text-xs font-semibold text-slate-500">
+                      {drive.application_deadline
+                        ? new Date(drive.application_deadline).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                        : '—'}
+                    </td>
+                  </tr>
                 ))
               )}
-            </div>
-          </AnimatedContent>
+            </tbody>
+          </table>
         </div>
-      </div>
+      </AnimatedContent>
     </CollegeDashboardLayout>
   );
 }

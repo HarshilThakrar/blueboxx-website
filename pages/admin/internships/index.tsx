@@ -737,9 +737,9 @@ export default function InternshipManager() {
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">Decision <span className="text-red-500">*</span></label>
                   <select name="status" required defaultValue={gradeSubmission.status || 'pending'}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-[#1B2A6B] focus:outline-none bg-white">
-                    <option value="approved">Approved ✅</option>
-                    <option value="rejected">Rejected ❌</option>
-                    <option value="resubmit">Request Resubmit 🔄</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="resubmit">Request Resubmit</option>
                   </select>
                 </div>
                 <div>

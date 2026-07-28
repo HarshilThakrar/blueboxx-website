@@ -1,4 +1,5 @@
 import api from '../../axios';
+import { getActiveToken } from '../../authUtils';
 import useSWR from 'swr';
 
 const fetcher = (url: string) => api.get(url).then(r => r.data);
@@ -42,7 +43,7 @@ export const VirtualClassService = {
   },
 
   exportCSV: (statusFilter = '') => {
-    const token = localStorage.getItem('auth_token');
+    const token = typeof window !== 'undefined' ? getActiveToken() : '';
     const link = document.createElement('a');
     link.href = `http://localhost:8000/api/admin/virtual-classes/export?token=${token}${statusFilter ? `&status=${statusFilter}` : ''}`;
     link.download = `virtual_classes_${new Date().toISOString().split('T')[0]}.csv`;

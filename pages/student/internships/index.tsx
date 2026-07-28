@@ -27,9 +27,8 @@ export default function InternshipsPage() {
   const toggleSave = (id: number) =>
     setSaved(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
 
-  const handleApply = (role: string) => {
-    const slug = role.toLowerCase().replace(/\s+/g, '-');
-    router.push(`/apply/internship/${slug}`);
+  const handleApply = (id: number) => {
+    router.push(`/apply/internship/${id}`);
   };
 
   return (
@@ -107,11 +106,11 @@ export default function InternshipsPage() {
 
                 <div className="mt-auto flex items-center justify-between">
                   <span className="text-[10px] text-slate-400 font-bold">Posted {item.posted_at}</span>
-                  {applied.includes(item.id) ? (
-                    <span className="px-4 py-2 bg-emerald-50 text-emerald-700 text-xs font-black rounded-xl">Applied ✓</span>
+                  {item.has_applied ? (
+                    <span className="px-4 py-2 bg-emerald-50 text-emerald-700 text-xs font-black rounded-xl">Applied</span>
                   ) : (
                     <button
-                      onClick={() => handleApply(item.title)}
+                      onClick={() => handleApply(item.id)}
                       className="flex items-center gap-1.5 px-4 py-2 bg-[#1B2A6B] text-white text-xs font-bold rounded-xl hover:bg-[#0d1635] transition-colors"
                     >
                       Apply Now <ExternalLink size={11} />

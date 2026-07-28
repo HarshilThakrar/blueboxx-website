@@ -138,7 +138,7 @@ export function OnboardingTour({ steps, onComplete, onSkip }: OnboardingTourProp
                 onClick={handleNext}
                 className="h-9 px-4 rounded-xl bg-[#1B2A6B] text-white text-sm font-bold hover:bg-[#0d1635] transition-colors flex items-center gap-1"
               >
-                {isLast ? "🎉 Finish" : <><span>Next</span><ArrowRight size={14} /></>}
+                {isLast ? "Finish" : <><span>Next</span><ArrowRight size={14} /></>}
               </button>
             </div>
           </div>

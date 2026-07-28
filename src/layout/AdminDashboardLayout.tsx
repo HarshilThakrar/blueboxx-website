@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthContext";
+import { AuthGuard } from "../components/auth/AuthGuard";
 import {
   LayoutDashboard, Users, BookOpen, Briefcase, Settings, LogOut,
   Menu, X, Bell, Search, ShieldCheck, GraduationCap,
@@ -104,6 +105,7 @@ const getSidebarCategories = (crmSettingsStr?: string) => {
     icon: ClipboardList,
     links: [
       { name: "List Internships", href: "/admin/internships", icon: ClipboardList },
+      { name: "College Drives", href: "/admin/internship-drives", icon: BookOpen },
       { name: "Active Internships", href: "/admin/internships/active", icon: Briefcase },
       { name: "Add Internship", href: "/admin/internships/add", icon: Plus },
     ]
@@ -122,6 +124,7 @@ const getSidebarCategories = (crmSettingsStr?: string) => {
     icon: Briefcase,
     links: [
       { name: "List Jobs", href: "/admin/jobs", icon: Briefcase },
+      { name: "College Drives", href: "/admin/placement-drives", icon: Users },
       { name: "All Applications", href: "/admin/jobs/applications", icon: ClipboardList },
     ]
   },
@@ -232,6 +235,12 @@ const getSidebarCategories = (crmSettingsStr?: string) => {
     isHeader: true,
   },
   {
+    title: "Support Tickets",
+    icon: MessageSquare,
+    href: "/admin/support",
+    isStandalone: true,
+  },
+  {
     title: "System Setting",
     icon: Settings,
     links: [
@@ -293,13 +302,10 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
   const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false);
   const { settings } = useGlobalSettings();
 
-  // Auth guard — redirect unauthenticated users to login
+  // Role guard — strict Role-Based Redirect: Kick non-admins out of the Admin panel
   useEffect(() => {
-    if (!isAuthReady) return;
-    if (!isAuthenticated) {
-      router.replace('/login');
-    } else if (user && user.role !== 'admin' && user.role !== 'super_admin') {
-      // Strict Role-Based Redirect: Kick non-admins out of the Admin panel
+    if (!isAuthReady || !isAuthenticated) return; 
+    if (user && user.role !== 'admin' && user.role !== 'super_admin') {
       if (user.role === 'intern') router.replace('/intern/dashboard');
       else if (user.role === 'company') router.replace('/company/dashboard');
       else if (user.role === 'expert') router.replace('/expert/dashboard');
@@ -316,10 +322,14 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
   
   // Real-Time Messages — only poll when authenticated
   const { data: messagesData } = MessageService.useUnreadSummary(isAuthenticated);
-  const unreadMessagesCount = messagesData.unread_count || 0;
+  const unreadMessagesCount = messagesData?.unread_count || 0;
 
   // Notification Bell Dropdown State
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
+
+
+
 
   // Derive user initials from name for avatar display
   const userInitials = user?.name
@@ -521,10 +531,32 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
     return { label, href };
   });
 
+  // Show full-screen loader while auth is resolving from /me endpoint
+  if (!isAuthReady) {
+    return (
+      <div className="min-h-screen bg-[#0d1635] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-white/10 border-t-[#C9A227] rounded-full animate-spin" />
+          <p className="text-white font-bold text-sm tracking-widest">LOADING ADMIN PANEL...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If auth is ready but user is not an admin, render nothing (redirect is in-progress)
+  if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
+    return (
+      <div className="min-h-screen bg-[#0d1635] flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-white/10 border-t-[#C9A227] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      {/* Mobile Sidebar Overlay */}
-      <AnimatePresence>
+    <AuthGuard>
+      <div className="min-h-screen bg-slate-50 flex">
+        {/* Mobile Sidebar Overlay */}
+        <AnimatePresence>
         {isSidebarOpen && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -939,6 +971,7 @@ export const AdminDashboardLayout = ({ children }: { children: React.ReactNode }
         __html: ".admin-scrollbar::-webkit-scrollbar { width: 6px; } .admin-scrollbar::-webkit-scrollbar-track { background: transparent; } .admin-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; } .admin-scrollbar:hover::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }"
       }} />
 
-    </div>
+      </div>
+    </AuthGuard>
   );
 };

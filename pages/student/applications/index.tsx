@@ -35,7 +35,7 @@ const STATUS_STYLES: Record<AppStatus, { label: string; pill: string; border: st
   applied:   { label: "Applied",    pill: "bg-blue-50 text-blue-700",    border: "border-blue-200" },
   review:    { label: "In Review",  pill: "bg-amber-50 text-amber-700",  border: "border-amber-200" },
   interview: { label: "Interview",  pill: "bg-purple-50 text-purple-700",border: "border-purple-200" },
-  offer:     { label: "Offer 🎉",  pill: "bg-emerald-50 text-emerald-700",border: "border-emerald-300" },
+  offer:     { label: "Offer",  pill: "bg-emerald-50 text-emerald-700",border: "border-emerald-300" },
   rejected:  { label: "Rejected",   pill: "bg-red-50 text-red-600",      border: "border-red-200" },
 };
 
@@ -50,35 +50,35 @@ export default function ApplicationsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   React.useEffect(() => {
-    api.get("/dashboard/student")
+    api.get("/student/applications")
       .then((res) => {
-        const mapped = res.data.applications.map((app: any) => {
+        const mapped = res.data.data.map((app: any) => {
           let status: AppStatus = "applied";
-          if (["shortlisted", "interview"].includes(app.status)) status = "interview";
+          if (["shortlisted", "interview", "in consideration"].includes(app.status)) status = "interview";
           else if (["rejected", "failed"].includes(app.status)) status = "rejected";
-          else if (["hired", "offer"].includes(app.status)) status = "offer";
-          else if (app.status === "review" || app.status === "in_review") status = "review";
+          else if (["hired", "offer", "awarded", "scholarship awarded"].includes(app.status)) status = "offer";
+          else if (app.status === "review" || app.status === "in_review" || app.status === "application under review") status = "review";
 
           return {
             id: app.id,
             role: app.role,
             company: app.company,
             location: "Remote (Hybrid)",
-            type: "Internship",
+            type: app.id.toString().startsWith("sch_") ? "Scholarship" : "Internship",
             appliedDate: app.appliedDate || "Just now",
             status: status,
             notes: "",
             timeline: [
               { step: "Applied", date: app.appliedDate || "Just now", done: true },
-              { step: "Resume Screened", date: "Pending", done: status !== "applied" },
-              { step: "Interview", date: "Pending", done: status === "interview" || status === "offer" },
+              { step: "Under Review", date: "Pending", done: status !== "applied" },
+              { step: "Interview / Shortlist", date: "Pending", done: status === "interview" || status === "offer" },
               { step: "Final Decision", date: "Pending", done: status === "offer" || status === "rejected" }
             ]
           };
         });
         setApplications(mapped);
         
-        const notesMap: Record<number, string> = {};
+        const notesMap: Record<string, string> = {};
         mapped.forEach((a: any) => {
           notesMap[a.id] = a.notes || "";
         });

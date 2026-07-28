@@ -1,19 +1,46 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, FormEvent, useCallback } from "react";
 import { useRouter } from "next/router";
 import { MainLayout } from "../../../src/layout/MainLayout";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2, Upload, FileText, Briefcase, MapPin, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../../../src/components/ui/Button";
+import { useAuth } from "../../../src/context/AuthContext";
 
 import api from "../../../src/lib/axios";
 import toast from "react-hot-toast";
 
+function getApplicationsUrl(role?: string): string {
+  switch (role) {
+    case 'student':    return '/student/applications';
+    case 'intern':     return '/student/applications';
+    case 'job-seeker':
+    case 'jobseeker':  return '/jobseeker/applications';
+    case 'company':    return '/company/applicants';
+    case 'expert':     return '/expert/sessions';
+    default:           return '/jobseeker/applications';
+  }
+}
+
+function getDashboardUrl(role?: string): string {
+  switch (role) {
+    case 'student':    return '/student/dashboard';
+    case 'intern':     return '/student/dashboard';
+    case 'job-seeker':
+    case 'jobseeker':  return '/jobseeker/dashboard';
+    case 'company':    return '/company/dashboard';
+    case 'expert':     return '/expert/dashboard';
+    default:           return '/jobseeker/dashboard';
+  }
+}
+
 export default function ApplicationFlowPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const { type, slug: id } = router.query;
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [countdown, setCountdown] = useState(4);
   const [job, setJob] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -37,10 +64,12 @@ export default function ApplicationFlowPage() {
 
   // Form data captured across steps
   const [formData, setFormData] = useState({
-    firstName: '', lastName: '', email: '', phone: '', portfolio: ''
+    firstName: '', lastName: '', email: '', phone: '', portfolio: '',
+    resumeFile: null as File | null, useBlueBoxxResume: false
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (step < 3) {
       setStep(step + 1);
@@ -59,6 +88,9 @@ export default function ApplicationFlowPage() {
         if (isInternship) {
           data.append('portfolio_url', formData.portfolio);
         }
+        if (formData.resumeFile) {
+          data.append('resume', formData.resumeFile);
+        }
 
         await api.post(endpoint, data, {
           headers: { 'Content-Type': 'multipart/form-data' }
@@ -67,6 +99,19 @@ export default function ApplicationFlowPage() {
         setIsSubmitting(false);
         setStep(4);
         toast.success("Application submitted successfully!");
+
+        // Auto-redirect to dashboard after countdown
+        const dashboardUrl = getDashboardUrl(user?.role);
+        let count = 4;
+        setCountdown(count);
+        const timer = setInterval(() => {
+          count--;
+          setCountdown(count);
+          if (count <= 0) {
+            clearInterval(timer);
+            router.push(dashboardUrl);
+          }
+        }, 1000);
       } catch (err: any) {
         toast.error(err.response?.data?.message || "Failed to submit application. Make sure you are logged in.");
         setIsSubmitting(false);
@@ -96,6 +141,52 @@ export default function ApplicationFlowPage() {
 
   const jobTitle = job.title;
 
+  if (user?.role === 'student' && type === 'job') {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-transparent py-12 pt-28">
+          <div className="container mx-auto px-4 max-w-3xl">
+            <div className="bg-white rounded-2xl p-12 shadow-sm border border-slate-200 mb-8 text-center mt-10">
+              <div className="w-20 h-20 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Briefcase size={40} />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-3">Access Denied</h2>
+              <p className="text-slate-500 max-w-sm mx-auto mb-8">
+                Students are not allowed to apply for full-time jobs. Please apply for internships or enroll in courses to build your skills.
+              </p>
+              <Link href="/internships">
+                <Button variant="primary" className="py-3 px-8 text-base shadow-md">Explore Internships</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (job.has_applied && step < 4) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-transparent py-12 pt-28">
+          <div className="container mx-auto px-4 max-w-3xl">
+            <div className="bg-white rounded-2xl p-12 shadow-sm border border-slate-200 mb-8 text-center mt-10">
+              <div className="w-20 h-20 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle2 size={40} />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-3">Already Applied</h2>
+              <p className="text-slate-500 max-w-sm mx-auto mb-8">
+                You have already submitted an application for {jobTitle}. You can track its status in your dashboard.
+              </p>
+              <Link href={getApplicationsUrl(user?.role)}>
+                <Button variant="primary" className="py-3 px-8 text-base shadow-md">View My Applications</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <div className="min-h-screen bg-transparent py-12 pt-28">
@@ -112,7 +203,7 @@ export default function ApplicationFlowPage() {
                 </p>
               </div>
               <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xl">
-                {String(slug || "C").charAt(0).toUpperCase()}
+                {String(job?.company_name || jobTitle || "C").charAt(0).toUpperCase()}
               </div>
             </div>
           )}
@@ -173,13 +264,29 @@ export default function ApplicationFlowPage() {
               <motion.form initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} onSubmit={handleSubmit} className="space-y-6">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6">Resume & Portfolio</h2>
                 
-                <div className="border-2 border-dashed border-slate-200 bg-slate-50 rounded-2xl p-10 text-center hover:bg-slate-100 hover:border-slate-300 transition-colors cursor-pointer">
+                <div 
+                  className={`border-2 border-dashed ${formData.resumeFile ? 'border-[#1B2A6B] bg-blue-50' : 'border-slate-200 bg-slate-50'} rounded-2xl p-10 text-center hover:bg-slate-100 hover:border-slate-300 transition-colors cursor-pointer`}
+                  onClick={() => fileInputRef.current?.click()}
+                >
                   <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mx-auto mb-4 text-[#1B2A6B]">
-                    <Upload size={24} />
+                    {formData.resumeFile ? <CheckCircle2 size={24} className="text-emerald-500" /> : <Upload size={24} />}
                   </div>
-                  <h3 className="font-bold text-slate-800 mb-1">Upload your resume</h3>
+                  <h3 className="font-bold text-slate-800 mb-1">{formData.resumeFile ? formData.resumeFile.name : 'Upload your resume'}</h3>
                   <p className="text-sm text-slate-500 mb-4">PDF, DOC, DOCX up to 5MB</p>
-                  <Button variant="outline" type="button" className="mx-auto">Browse Files</Button>
+                  <Button variant="outline" type="button" className="mx-auto" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
+                    Browse Files
+                  </Button>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setFormData({...formData, resumeFile: e.target.files[0], useBlueBoxxResume: false});
+                      }
+                    }}
+                  />
                 </div>
 
                 <div className="flex items-center gap-4 my-6">
@@ -188,7 +295,7 @@ export default function ApplicationFlowPage() {
                   <div className="flex-1 h-px bg-slate-200"></div>
                 </div>
 
-                <div className="border border-slate-200 rounded-2xl p-6 flex items-center justify-between">
+                <div className={`border ${formData.useBlueBoxxResume ? 'border-[#1B2A6B] bg-blue-50/50' : 'border-slate-200'} rounded-2xl p-6 flex items-center justify-between`}>
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
                       <FileText size={20} />
@@ -198,7 +305,15 @@ export default function ApplicationFlowPage() {
                       <p className="text-xs text-slate-500">Auto-generated from your profile</p>
                     </div>
                   </div>
-                  <Button variant="outline" type="button" size="sm" className="font-bold">Select</Button>
+                  <Button 
+                    variant={formData.useBlueBoxxResume ? "primary" : "outline"} 
+                    type="button" 
+                    size="sm" 
+                    className="font-bold"
+                    onClick={() => setFormData({...formData, useBlueBoxxResume: true, resumeFile: null})}
+                  >
+                    {formData.useBlueBoxxResume ? 'Selected' : 'Select'}
+                  </Button>
                 </div>
 
                 <div className="space-y-2 pt-4">
@@ -248,7 +363,9 @@ export default function ApplicationFlowPage() {
                     <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Resume</h4>
                     <div className="flex items-center gap-3">
                       <FileText size={18} className="text-[#1B2A6B]" />
-                      <span className="font-semibold text-slate-800 text-sm">John_Doe_Resume.pdf</span>
+                      <span className="font-semibold text-slate-800 text-sm">
+                        {formData.useBlueBoxxResume ? "BlueBoxx Resume" : (formData.resumeFile ? formData.resumeFile.name : "No resume uploaded")}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -270,14 +387,24 @@ export default function ApplicationFlowPage() {
                   <CheckCircle2 size={48} />
                 </div>
                 <h2 className="text-3xl font-bold text-slate-900 mb-3">Application Submitted!</h2>
-                <p className="text-slate-500 mb-8 max-w-sm mx-auto">
-                  Your application for {jobTitle} has been successfully submitted. We will notify you of any updates.
+                <p className="text-slate-500 mb-4 max-w-sm mx-auto">
+                  Your application for <strong>{jobTitle}</strong> has been successfully submitted. We will notify you of any updates.
                 </p>
-                <Link href="/student/placements">
-                  <Button variant="primary" className="py-4 px-8 text-base shadow-md">
-                    Track Application Status
-                  </Button>
-                </Link>
+                <p className="text-sm text-slate-400 mb-6">
+                  Redirecting to your dashboard in <span className="font-bold text-[#1B2A6B]">{countdown}s</span>...
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <Link href={getDashboardUrl(user?.role)}>
+                    <Button variant="primary" className="py-3 px-8 text-base shadow-md">
+                      Go to Dashboard Now
+                    </Button>
+                  </Link>
+                  <Link href={getApplicationsUrl(user?.role)}>
+                    <Button variant="outline" className="py-3 px-8 text-base">
+                      View All Applications
+                    </Button>
+                  </Link>
+                </div>
               </motion.div>
             )}
           </div>

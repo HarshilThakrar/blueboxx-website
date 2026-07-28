@@ -68,6 +68,17 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function ($user) {
+            // Polymorphic relation cascades
+            $user->notifications()->delete();
+        });
+    }
+
     // ------------------------------------------------------------------------
     // RELATIONSHIPS - PROFILES
     // ------------------------------------------------------------------------

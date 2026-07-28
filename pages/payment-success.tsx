@@ -4,7 +4,12 @@ import Link from "next/link";
 import { CheckCircle, Download, ArrowRight, BookOpen } from "lucide-react";
 import { AnimatedContent } from "../src/components/reactbits/AnimatedContent";
 
+import { useRouter } from "next/router";
+
 export default function PaymentSuccessPage() {
+  const router = useRouter();
+  const { order_id, amount } = router.query;
+  const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   return (
     <MainLayout>
       <div className="bg-transparent min-h-screen pt-32 pb-24 flex items-center justify-center">
@@ -24,19 +29,19 @@ export default function PaymentSuccessPage() {
               <div className="bg-slate-50 rounded-2xl p-6 mb-8 text-left border border-slate-100">
                 <div className="flex justify-between items-center mb-3 pb-3 border-b border-slate-200">
                   <span className="text-sm font-medium text-slate-500">Order ID</span>
-                  <span className="text-sm font-bold text-slate-900">#BBX-9982-445</span>
+                  <span className="text-sm font-bold text-slate-900">{order_id || 'Processing...'}</span>
                 </div>
                 <div className="flex justify-between items-center mb-3 pb-3 border-b border-slate-200">
                   <span className="text-sm font-medium text-slate-500">Date</span>
-                  <span className="text-sm font-bold text-slate-900">June 27, 2026</span>
+                  <span className="text-sm font-bold text-slate-900">{today}</span>
                 </div>
                 <div className="flex justify-between items-center mb-3 pb-3 border-b border-slate-200">
                   <span className="text-sm font-medium text-slate-500">Amount Paid</span>
-                  <span className="text-sm font-bold text-slate-900">₹44,499</span>
+                  <span className="text-sm font-bold text-slate-900">₹{amount ? Number(amount).toLocaleString() : 'Check Dashboard'}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-slate-500">Payment Method</span>
-                  <span className="text-sm font-bold text-slate-900">Credit Card ending in 4242</span>
+                  <span className="text-sm font-bold text-slate-900">Razorpay Secure</span>
                 </div>
               </div>
 

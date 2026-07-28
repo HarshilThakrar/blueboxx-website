@@ -9,18 +9,37 @@ class AdminDashboardController extends Controller
 {
     public function summary()
     {
+        $data = \Illuminate\Support\Facades\Cache::remember('admin.dashboard.summary', 60, function () {
+            return [
+                'total_students' => \App\Models\User::role('student')->count(),
+                'total_experts' => \App\Models\User::role('expert')->count(),
+                'total_companies' => \App\Models\User::role('company')->count(),
+                'courses' => [
+                    'total' => \App\Models\Course::count(), 
+                    'published' => \App\Models\Course::where('is_published', true)->count()
+                ],
+                'revenue' => [
+                    'total' => \App\Models\Order::where('status', 'completed')->sum('total_amount'), 
+                    'monthly' => \App\Models\Order::where('status', 'completed')->whereMonth('created_at', now()->month)->sum('total_amount')
+                ],
+                'orders' => [
+                    'total' => \App\Models\Order::count(), 
+                    'completed' => \App\Models\Order::where('status', 'completed')->count()
+                ],
+                'jobs' => [
+                    'total' => \App\Models\Job::count(), 
+                    'active' => \App\Models\Job::where('status', 'active')->count()
+                ],
+                'internships' => [
+                    'total' => \App\Models\Internship::count(), 
+                    'running' => \App\Models\Internship::where('status', 'active')->count()
+                ],
+            ];
+        });
+
         return response()->json([
             'success' => true,
-            'data' => [
-                'total_students' => 0,
-                'total_experts' => 0,
-                'total_companies' => 0,
-                'courses' => ['total' => 0, 'published' => 0],
-                'revenue' => ['total' => 0, 'monthly' => 0],
-                'orders' => ['total' => 0, 'completed' => 0],
-                'jobs' => ['total' => 0, 'active' => 0],
-                'internships' => ['total' => 0, 'running' => 0],
-            ]
+            'data' => $data
         ]);
     }
 

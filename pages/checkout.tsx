@@ -9,7 +9,7 @@ import {
   ArrowLeft, Lock, Check, Info, BookOpen
 } from "lucide-react";
 import { useStore } from "../src/store/useStore";
-import { useAuth } from "../src/contexts/AuthContext";
+import { useAuth } from "../src/context/AuthContext";
 import api from "../src/lib/axios";
 import { useEffect } from "react";
 
@@ -28,9 +28,9 @@ const UPI_APPS = [
 ];
 
 const PAYMENT_METHODS = [
-  { id: "upi", label: "UPI", icon: Smartphone },
-  { id: "card", label: "Card", icon: CreditCard },
-  { id: "netbanking", label: "Net Banking", icon: Building2 },
+  { id: "upi", label: "UPI", icon: Smartphone, image: "/upi.png" },
+  { id: "card", label: "Card", icon: CreditCard, image: "/card.png" },
+  { id: "netbanking", label: "Net Banking", icon: Building2, image: "/netbanking.png" },
 ];
 
 const CartItemImage = ({ thumbnail, title }: { thumbnail: string; title: string }) => {
@@ -54,7 +54,7 @@ const CartItemImage = ({ thumbnail, title }: { thumbnail: string; title: string 
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isAuthReady, isAuthenticated, role } = useAuth();
   const { cart: cartItems, clearCart } = useStore();
   const [paymentMethod, setPaymentMethod] = useState("upi");
   const [selectedUpi, setSelectedUpi] = useState("gpay");
@@ -63,10 +63,13 @@ export default function CheckoutPage() {
   const [processingStep, setProcessingStep] = useState(0);
 
   useEffect(() => {
-    if (user === null) {
+    if (!isAuthReady) return;
+
+    if (!isAuthenticated) {
       router.push('/login?redirect=/checkout');
     }
-  }, [user, router]);
+    // Temporarily disabled role check to allow testing enrollment for all user types
+  }, [isAuthReady, isAuthenticated, role, router]);
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price, 0);
   const tax = Math.round(subtotal * 0.18);
@@ -114,7 +117,10 @@ export default function CheckoutPage() {
             });
 
             clearCart();
-            router.push('/payment-success');
+            router.push({
+              pathname: '/payment-success',
+              query: { order_id: response.razorpay_order_id, amount: total }
+            });
           } catch (err) {
             console.error("Payment verification failed", err);
             router.push('/payment-failed');
@@ -176,7 +182,7 @@ export default function CheckoutPage() {
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-2 text-sm text-slate-400 mb-8"
           >
-            <Link href="/cart" className="flex items-center gap-1 hover:text-white transition-colors font-medium">
+            <Link href="/cart" replace className="flex items-center gap-1 hover:text-white transition-colors font-medium">
               <ArrowLeft size={14} /> Cart
             </Link>
             <ChevronRight size={14} />
@@ -219,6 +225,49 @@ export default function CheckoutPage() {
                 </div>
               </motion.div>
 
+              {/* Billing Details & Additional Info */}
+              <motion.div 
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.05 }}
+                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl space-y-4"
+              >
+                <h2 className="font-extrabold text-white text-base mb-4">Billing & Additional Info</h2>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">Billing Address</label>
+                    <textarea rows={2} placeholder="Enter your full address" className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/40 focus:border-[#C9A227]/50 transition-all font-medium text-white resize-none"></textarea>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">State</label>
+                    <input type="text" placeholder="Maharashtra" className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/40 focus:border-[#C9A227]/50 transition-all font-medium text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">GST Number (Optional)</label>
+                    <input type="text" placeholder="27XXXXX1234X1ZX" className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/40 focus:border-[#C9A227]/50 transition-all font-medium text-white" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">Order Notes (Optional)</label>
+                    <input type="text" placeholder="Any special requests or notes for us" className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/40 focus:border-[#C9A227]/50 transition-all font-medium text-white" />
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Coupon Code Section */}
+              <motion.div 
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.08 }}
+                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl"
+              >
+                <h2 className="font-extrabold text-white text-base mb-4">Have a Coupon?</h2>
+                <div className="flex gap-2">
+                  <input type="text" placeholder="Enter coupon code" className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/40 focus:border-[#C9A227]/50 transition-all font-medium text-white uppercase" />
+                  <button className="bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-colors border border-white/10">Apply</button>
+                </div>
+              </motion.div>
+
               {/* Payment Method */}
               <motion.div 
                 initial={{ opacity: 0, y: 15 }}
@@ -240,7 +289,11 @@ export default function CheckoutPage() {
                           : "bg-white/5 text-slate-300 border-white/10 hover:bg-white/10 hover:text-white"
                       }`}
                     >
-                      <m.icon size={15} />
+                      {m.image ? (
+                        <img src={m.image} alt={m.label} className="h-5 object-contain" />
+                      ) : (
+                        <m.icon size={15} />
+                      )}
                       {m.label}
                     </button>
                   ))}
@@ -349,15 +402,22 @@ export default function CheckoutPage() {
                 <div className="space-y-3 mb-4">
                   {cartItems.length === 0 ? (
                     <p className="text-xs text-slate-400 font-medium">No items in cart.</p>
-                  ) : cartItems.map((item) => (
-                    <div key={item.id} className="flex gap-2.5 items-start">
-                      <div className="w-12 h-9 rounded-lg overflow-hidden bg-white/10 border border-white/10 shrink-0 relative">
+                  ) : cartItems.map((item: any) => (
+                    <div key={item.id} className="flex gap-3 items-start border-b border-white/5 pb-3 last:border-0 last:pb-0">
+                      <div className="w-16 h-12 rounded-lg overflow-hidden bg-white/10 border border-white/10 shrink-0 relative">
                         <CartItemImage thumbnail={item.thumbnail} title={item.title} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-white leading-tight line-clamp-2">{item.title}</p>
+                        <p className="text-xs font-bold text-white leading-tight line-clamp-2 mb-1">{item.title}</p>
+                        <p className="text-[10px] text-slate-400 font-medium">Instructor: {item.instructor || 'Expert'}</p>
+                        <p className="text-[10px] text-slate-400 font-medium">{item.duration || 'Flexible'} • Certificate</p>
                       </div>
-                      <div className="text-xs font-bold text-white shrink-0">₹{item.price.toLocaleString()}</div>
+                      <div className="text-right shrink-0">
+                        <div className="text-sm font-black text-white">₹{item.price?.toLocaleString()}</div>
+                        {item.original_price && item.original_price > item.price && (
+                          <div className="text-[10px] text-slate-400 line-through">₹{item.original_price?.toLocaleString()}</div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -365,19 +425,23 @@ export default function CheckoutPage() {
                 {/* Divider */}
                 <div className="border-t border-white/10 pt-4 space-y-2.5 text-xs mb-4">
                   <div className="flex justify-between text-slate-300 font-medium">
+                    <span>Original Price</span><span className="font-semibold text-slate-400 line-through">₹{(subtotal + discount).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-emerald-400 font-bold">
+                    <span>Platform Discount</span><span>−₹{discount.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-300 font-medium">
                     <span>Subtotal</span><span className="font-semibold text-white">₹{subtotal.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-slate-300 font-medium">
                     <span>GST (18%)</span><span className="font-semibold text-white">₹{tax.toLocaleString()}</span>
                   </div>
-                  {discount > 0 && (
-                    <div className="flex justify-between text-emerald-400 font-semibold">
-                      <span>Discount</span><span>−₹{discount.toLocaleString()}</span>
-                    </div>
-                  )}
                   <div className="border-t border-white/10 pt-3 mt-1 flex justify-between items-baseline">
                     <span className="font-extrabold text-white">Total</span>
-                    <span className="font-black text-xl text-[#C9A227]">₹{total.toLocaleString()}</span>
+                    <div className="text-right">
+                      <div className="font-black text-xl text-[#C9A227]">₹{total.toLocaleString()}</div>
+                      <div className="text-[10px] text-emerald-400 font-bold mt-0.5">Total Savings: ₹{discount.toLocaleString()}</div>
+                    </div>
                   </div>
                 </div>
 

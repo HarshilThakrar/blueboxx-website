@@ -222,16 +222,7 @@ class AdminInternshipController extends Controller
         return response()->json($apps);
     }
 
-    public function updateApplicationStatus(Request $request, $id)
-    {
-        $app = InternshipApplication::findOrFail($id);
-        $app->status = $request->status;
-        if ($request->has('internal_notes')) {
-            $app->internal_notes = $request->internal_notes;
-        }
-        $app->save();
-        return response()->json(['success' => true, 'data' => $app]);
-    }
+
 
     // Tasks
     public function createTask(Request $request)

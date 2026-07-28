@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import useSWR from "swr";
+import api from "../../src/lib/axios";
 
 const filterSections: FilterSection[] = [
   {
@@ -140,7 +142,10 @@ export default function CompaniesPublicPage() {
 
   const handleClearAll = () => setActiveFilters({ industry: [] });
 
-  const filteredCompanies = partnerCompanies.filter(company => {
+  const { data: apiData } = useSWR("/public/companies", (url: string) => api.get(url).then(res => res.data));
+  const companiesList = apiData?.data && apiData.data.length > 0 ? apiData.data : partnerCompanies;
+
+  const filteredCompanies = companiesList.filter((company: any) => {
     const matchesIndustry =
       activeFilters.industry.length === 0 ||
       activeFilters.industry.includes(company.industry);

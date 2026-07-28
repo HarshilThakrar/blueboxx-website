@@ -366,12 +366,6 @@
     size: A4 portrait;
   }
 
-  /* ─── Hide everything except the resume preview ─────────── */
-  body > *,
-  #__next > * {
-    display: none !important;
-  }
-
   /* Show the student dashboard layout only for resume preview */
   nav,
   header,
@@ -387,11 +381,21 @@
     display: none !important;
   }
 
+  /* ─── Hide the editor section specifically ─────────── */
+  .w-full.lg\:w-1\/2:not(.resume-preview-print) {
+    display: none !important;
+  }
+
   /* ─── Show the resume preview card ──────────────────────── */
   .resume-preview-print {
     display: block !important;
-    width: 100%;
+    width: 100% !important;
+    position: absolute;
+    top: 0;
+    left: 0;
     page-break-inside: avoid;
+    background: white;
+    z-index: 9999;
   }
 
   /* ─── Show the print header with Blueboxx logo ───────────── */

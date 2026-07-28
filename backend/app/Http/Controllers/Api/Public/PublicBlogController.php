@@ -131,7 +131,7 @@ class PublicBlogController extends Controller
      */
     public function categories()
     {
-        $categories = BlogCategory::where('is_active', true)
+        $categories = BlogCategory::where('status', 'active')
             ->withCount(['blogs' => fn($q) => $q->where('status', 'published')])
             ->having('blogs_count', '>', 0)
             ->orderByDesc('blogs_count')

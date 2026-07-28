@@ -17,6 +17,7 @@ export default function JobseekerDashboard() {
   
   const stats = data?.data?.stats || { jobs_applied: 0, saved_jobs: 0, interviews: 0, offers: 0 };
   const recentApps = data?.data?.recent_applications || [];
+  const profileCompletion = data?.data?.profile_completion ?? 0;
 
   const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -164,9 +165,9 @@ export default function JobseekerDashboard() {
              <h3 className="text-base font-black text-[#0d1635] mb-2">Complete Your Profile</h3>
              <p className="text-sm text-slate-500 font-medium mb-4">Profiles with complete details are 3x more likely to be shortlisted.</p>
              <div className="w-full bg-slate-100 rounded-full h-2 mb-4">
-                <div className="bg-[#C9A227] h-2 rounded-full" style={{ width: '0%' }}></div>
+                <div className="bg-[#C9A227] h-2 rounded-full transition-all duration-1000" style={{ width: `${profileCompletion}%` }}></div>
              </div>
-             <p className="text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest">0% Completed</p>
+             <p className="text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest">{profileCompletion}% Completed</p>
              <Link href="/jobseeker/profile" className="inline-block px-5 py-2 border-2 border-slate-200 text-slate-600 font-bold rounded-xl text-sm hover:border-[#1B2A6B] hover:text-[#1B2A6B] transition-colors">
                Update Profile
              </Link>

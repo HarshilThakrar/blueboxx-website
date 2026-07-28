@@ -23,8 +23,14 @@ class PaymentController extends Controller
             'razorpay_signature' => 'required|string'
         ]);
 
-        $api = new Api(env('RAZORPAY_KEY'), env('RAZORPAY_SECRET'));
-        
+        $razorpayKey = config('services.razorpay.key');
+        $razorpaySecret = config('services.razorpay.secret');
+
+        if (!$razorpayKey || !$razorpaySecret) {
+            return response()->json(['message' => 'Payment gateway not configured'], 500);
+        }
+
+        $api = new Api($razorpayKey, $razorpaySecret);
         $attributes = [
             'razorpay_order_id' => $request->razorpay_order_id,
             'razorpay_payment_id' => $request->razorpay_payment_id,

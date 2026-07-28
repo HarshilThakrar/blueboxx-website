@@ -81,16 +81,4 @@ class AdminCertificateController extends Controller
         ], 201);
     }
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'id' => $cert->id,
-                'student' => $user->first_name . ' ' . $user->last_name,
-                'course' => $course->title,
-                'date' => $cert->issued_at->format('M d, Y'),
-                'cid' => $cert->certificate_number,
-                'status' => 'Issued'
-            ]
-        ], 201);
-    }
 }

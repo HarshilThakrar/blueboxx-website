@@ -29,4 +29,25 @@ return Application::configure(basePath: dirname(__DIR__))
             }
             return $request->wantsJson();
         });
+        
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json(['message' => 'Unauthenticated.', 'success' => false], 401);
+            }
+        });
+        
+        $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*')) {
+                $user = $request->user();
+                $data = [
+                    'message' => $e->getMessage(),
+                    'user_id' => $user ? $user->id : null,
+                    'user_email' => $user ? $user->email : null,
+                    'roles' => $user ? $user->roles()->get()->toArray() : [],
+                    'hasAnyRoleCompany' => $user ? $user->hasAnyRole(['company']) : false,
+                ];
+                \Illuminate\Support\Facades\Log::error('403 Unauthorized Details', $data);
+                return response()->json($data, 403);
+            }
+        });
     })->create();

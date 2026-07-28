@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CollegeDashboardLayout } from "../../src/layout/CollegeDashboardLayout";
 import { AnimatedContent } from "../../src/components/reactbits/AnimatedContent";
-import { Users, GraduationCap, TrendingUp, Building2, Search, Filter, Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { Users, GraduationCap, TrendingUp, Building2, Search, Filter, Download, ChevronLeft, ChevronRight, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 import useSWR from "swr";
 import api from "../../src/lib/axios";
@@ -35,17 +35,37 @@ export default function CollegeStudentsPage() {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={() => toast.success("Exporting data as CSV...")}
+            onClick={() => {
+              const token = localStorage.getItem('blueboxx_sessions') ? JSON.parse(localStorage.getItem('blueboxx_sessions')!).college?.token : null;
+              if (token) {
+                window.open(`http://127.0.0.1:8000/api/college/students/export?token=${token}`, '_blank');
+              } else {
+                toast.error("Authentication error");
+              }
+            }}
             className="flex items-center gap-2 h-10 px-4 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors"
           >
             <Download size={15} /> Export
           </button>
-          <button
-            onClick={() => toast("Add student modal coming soon.", { icon: "➕" })}
-            className="flex items-center gap-2 h-10 px-5 bg-[#1B2A6B] text-white text-sm font-bold rounded-xl shadow-md hover:bg-[#0d1635] transition-colors"
-          >
-            + Add Student
-          </button>
+          <label className="flex items-center gap-2 h-10 px-5 bg-[#1B2A6B] text-white text-sm font-bold rounded-xl shadow-md hover:bg-[#0d1635] transition-colors cursor-pointer">
+            <Upload size={15} /> Import Excel
+            <input type="file" className="hidden" accept=".xlsx, .xls, .csv" onChange={async (e) => {
+              if (e.target.files?.length) {
+                const file = e.target.files[0];
+                const formData = new FormData();
+                formData.append('file', file);
+                const toastId = toast.loading("Importing students...");
+                try {
+                  await api.post('/college/students/import', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                  });
+                  toast.success("Students imported successfully!", { id: toastId });
+                } catch (error) {
+                  toast.error("Failed to import students.", { id: toastId });
+                }
+              }
+            }} />
+          </label>
         </div>
       </div>
 

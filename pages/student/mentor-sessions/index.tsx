@@ -39,15 +39,17 @@ export default function StudentMentorSessionsPage() {
             ? new Date(s.scheduled_at).toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit' })
             : "TBD";
 
+          const mentorName = s.expert?.user ? `${s.expert.user.first_name} ${s.expert.user.last_name}` : "Expert Mentor";
+
           return {
             id: s.id,
-            mentor: s.expert?.name || "Expert Mentor",
+            mentor: mentorName,
             title: s.notes || "1:1 Mentorship Session",
             date: dateStr,
             time: `${timeStr} (${s.duration_minutes} mins)`,
             status: s.status === "scheduled" ? "Upcoming" : "Completed",
             link: s.meeting_url,
-            avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(s.expert?.name || 'Mentor')}`
+            avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(mentorName)}`
           };
         });
         setSessions(mapped);

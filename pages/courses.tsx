@@ -152,7 +152,7 @@ export default function CoursesPage() {
                         onClick={() => router.push(`/courses/${course.slug}`)}
                       >
                         <div className="relative aspect-[16/9] overflow-hidden bg-slate-200 shrink-0">
-                          <Image src={course.thumbnail} alt={course.title || "Course thumbnail"} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+                          <Image src={course.thumbnail || "/logoblue.png"} alt={course.title || "Course thumbnail"} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                           <div className="absolute top-2 left-2 flex flex-wrap gap-1.5">
                             <Badge className="bg-white/90 text-slate-900 hover:bg-white border-none shadow-sm backdrop-blur-sm text-[10px] py-0">
                               {course.category?.name || "Tech"}

@@ -24,14 +24,12 @@ class DynamicConfigurationServiceProvider extends ServiceProvider
     public function boot(): void
     {
         try {
-            // Ensure we don't break artisan commands if DB is down or migrating
-            if (!app()->runningInConsole() || app()->runningUnitTests()) {
-                if (Schema::hasTable('system_api_credentials')) {
-                    $this->loadApiCredentials();
-                }
-                if (Schema::hasTable('system_settings')) {
-                    $this->loadSystemSettings();
-                }
+            // Check if tables exist before attempting to load data
+            if (Schema::hasTable('system_api_credentials')) {
+                $this->loadApiCredentials();
+            }
+            if (Schema::hasTable('system_settings')) {
+                $this->loadSystemSettings();
             }
         } catch (\Exception $e) {
             // Silently fail if DB connection issue so we don't break the whole app

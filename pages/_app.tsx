@@ -29,12 +29,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    // Reduced from 16s to 2s — the LoadingScreen itself handles its own animation.
-    // Users should not be blocked from page content for 16 seconds.
-    const t = setTimeout(() => setIsLoading(false), 2000);
-    return () => clearTimeout(t);
-  }, []);
+  // We no longer block rendering for the loading screen. 
+  // It handles its own overlay independently.
 
   const isAuthPage = AUTH_PAGES.some(
     (path) => router.pathname === path || router.pathname.startsWith(path + "/")
@@ -51,38 +47,35 @@ export default function MyApp({ Component, pageProps }: AppProps) {
               <OnboardingTour />
               {/* Only show ScholarshipPopup on non-auth pages */}
               {!isAuthPage && <ScholarshipPopup />}
-              {isLoading ? (
-                <LoadingScreen onComplete={() => setIsLoading(false)} />
-              ) : (
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={router.pathname}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    variants={{
-                      initial: { opacity: 0, y: 20 },
-                      animate: { 
-                        opacity: 1, 
-                        y: 0, 
-                        transition: { 
-                          duration: 0.45, 
-                          ease: "easeOut",
-                          when: "beforeChildren",
-                          staggerChildren: 0.1
-                        } 
-                      },
-                      exit: { 
-                        opacity: 0, 
-                        transition: { duration: 0.3, ease: "easeIn" } 
-                      }
-                    }}
-                    className="min-h-screen"
-                  >
-                    <Component {...pageProps} />
-                  </motion.div>
-                </AnimatePresence>
-              )}
+              <LoadingScreen />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={router.pathname}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  variants={{
+                    initial: { opacity: 0, y: 20 },
+                    animate: { 
+                      opacity: 1, 
+                      y: 0, 
+                      transition: { 
+                        duration: 0.45, 
+                        ease: "easeOut",
+                        when: "beforeChildren",
+                        staggerChildren: 0.1
+                      } 
+                    },
+                    exit: { 
+                      opacity: 0, 
+                      transition: { duration: 0.3, ease: "easeIn" } 
+                    }
+                  }}
+                  className="min-h-screen"
+                >
+                  <Component {...pageProps} />
+                </motion.div>
+              </AnimatePresence>
             </MockDataProvider>
           </SettingsProvider>
         </TourProvider>

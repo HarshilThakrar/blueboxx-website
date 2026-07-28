@@ -104,9 +104,9 @@ Route::get('/debug-categories', function () {
         \App\Models\CourseCategory::create(['name' => 'Web Development', 'slug' => 'web-development', 'status' => 'active']);
     }
     if (\App\Models\CourseLevel::count() === 0) {
-        \App\Models\CourseLevel::create(['name' => 'Beginner', 'slug' => 'beginner', 'status' => 'active']);
-        \App\Models\CourseLevel::create(['name' => 'Intermediate', 'slug' => 'intermediate', 'status' => 'active']);
-        \App\Models\CourseLevel::create(['name' => 'Advanced', 'slug' => 'advanced', 'status' => 'active']);
+        \App\Models\CourseLevel::create(['title' => 'Beginner', 'slug' => 'beginner', 'status' => 'active']);
+        \App\Models\CourseLevel::create(['title' => 'Intermediate', 'slug' => 'intermediate', 'status' => 'active']);
+        \App\Models\CourseLevel::create(['title' => 'Advanced', 'slug' => 'advanced', 'status' => 'active']);
     }
     return response()->json([
         'count' => \App\Models\CourseCategory::count(),
@@ -166,7 +166,7 @@ Route::apiResource('placement-partners', PlacementPartnerController::class)->onl
 Route::apiResource('success-stories', SuccessStoryController::class)->only(['index', 'show']);
 
 // ─── PUBLIC Course Catalog & Career APIs ─────────────────────────────────────
-Route::prefix('public')->group(function () {
+Route::prefix('public')->middleware('throttle:60,1')->group(function () {
     // Course Catalog
     Route::get('courses', [\App\Http\Controllers\Api\Public\PublicCourseController::class, 'index']);
     Route::get('courses/{slug}', [\App\Http\Controllers\Api\Public\PublicCourseController::class, 'show']);
@@ -182,7 +182,7 @@ Route::prefix('public')->group(function () {
     // Course Levels
     Route::get('course-levels', fn() => response()->json([
         'success' => true,
-        'data'    => \App\Models\CourseLevel::where('status', 'active')->orderBy('name')->get(['id', 'name', 'slug']),
+        'data'    => \App\Models\CourseLevel::where('status', 'active')->orderBy('title')->get(['id', 'title', 'slug']),
     ]));
 
     // CMS & Platform Stats
@@ -216,37 +216,6 @@ Route::prefix('public')->group(function () {
             ]),
     ]));
 
-    // ─── Jobs Platform ───────────────────────────────────────────────────────
-    Route::get('jobs', [\App\Http\Controllers\Api\Public\PublicJobController::class, 'index']);
-    Route::get('jobs/{id}', [\App\Http\Controllers\Api\Public\PublicJobController::class, 'show']);
-
-    // ─── Internships Platform ─────────────────────────────────────────────────
-    Route::get('internships', [\App\Http\Controllers\Api\Public\PublicInternshipController::class, 'index']);
-    Route::get('internships/{id}', [\App\Http\Controllers\Api\Public\PublicInternshipController::class, 'show']);
-
-    // ─── Experts & Mentorship Platform ────────────────────────────────────────
-    Route::get('experts', [\App\Http\Controllers\Api\Public\PublicExpertController::class, 'index']);
-    Route::get('experts/{id}', [\App\Http\Controllers\Api\Public\PublicExpertController::class, 'show']);
-
-    // ─── Certificates (Verification & Download) ───────────────────────────────
-    Route::get('certificates/{certificate_number}/verify', [\App\Http\Controllers\Api\Public\PublicCertificateController::class, 'verify']);
-    Route::get('certificates/{certificate_number}/download', [\App\Http\Controllers\Api\Public\PublicCertificateController::class, 'download']);
-
-    // ─── Contests Platform (Hackathons) ───────────────────────────────────────
-    Route::get('contests', [\App\Http\Controllers\Api\Public\PublicContestController::class, 'index']);
-    Route::get('contests/{id}', [\App\Http\Controllers\Api\Public\PublicContestController::class, 'show']);
-
-    // ─── Scholarships Engine ──────────────────────────────────────────────────
-    Route::get('scholarships', [\App\Http\Controllers\Api\Public\PublicScholarshipController::class, 'index']);
-    Route::get('scholarships/{id}', [\App\Http\Controllers\Api\Public\PublicScholarshipController::class, 'show']);
-
-    // ─── CRM & Leads ──────────────────────────────────────────────────────────
-    Route::post('contact', [\App\Http\Controllers\Api\Public\PublicCRMController::class, 'submitLead']);
-
-    // ─── Newsletter ──────────────────────────────────────────────────────────
-    Route::post('newsletter/subscribe', [\App\Http\Controllers\Api\Public\PublicNewsletterController::class, 'subscribe']);
-    Route::post('newsletter/unsubscribe', [\App\Http\Controllers\Api\Public\PublicNewsletterController::class, 'unsubscribe']);
-
     // ─── Blog CMS ─────────────────────────────────────────────────────────────
     Route::get('blogs', [\App\Http\Controllers\Api\Public\PublicBlogController::class, 'index']);
     Route::get('blogs/{slug}', [\App\Http\Controllers\Api\Public\PublicBlogController::class, 'show']);
@@ -278,15 +247,53 @@ Route::prefix('public')->group(function () {
         // CRM (Support Tickets)
         Route::post('support/tickets', [\App\Http\Controllers\Api\Public\PublicCRMController::class, 'createTicket']);
     });
+
+    // ─── Jobs Platform ───────────────────────────────────────────────────────
+    Route::get('jobs', [\App\Http\Controllers\Api\Public\PublicJobController::class, 'index']);
+    Route::get('jobs/{id}', [\App\Http\Controllers\Api\Public\PublicJobController::class, 'show'])->where('id', '[0-9]+');
+
+    // ─── Internships Platform ─────────────────────────────────────────────────
+    Route::get('internships', [\App\Http\Controllers\Api\Public\PublicInternshipController::class, 'index']);
+    Route::get('internships/{id}', [\App\Http\Controllers\Api\Public\PublicInternshipController::class, 'show'])->where('id', '[0-9]+');
+
+    // ─── Experts & Mentorship Platform ────────────────────────────────────────
+    Route::get('experts', [\App\Http\Controllers\Api\Public\PublicExpertController::class, 'index']);
+    Route::get('experts/{id}', [\App\Http\Controllers\Api\Public\PublicExpertController::class, 'show'])->where('id', '[0-9]+');
+
+    // ─── Certificates (Verification & Download) ───────────────────────────────
+    Route::get('certificates/{certificate_number}/verify', [\App\Http\Controllers\Api\Public\PublicCertificateController::class, 'verify']);
+    Route::get('certificates/{certificate_number}/download', [\App\Http\Controllers\Api\Public\PublicCertificateController::class, 'download']);
+
+    // ─── Contests Platform (Hackathons) ───────────────────────────────────────
+    Route::get('contests', [\App\Http\Controllers\Api\Public\PublicContestController::class, 'index']);
+    Route::get('contests/{id}', [\App\Http\Controllers\Api\Public\PublicContestController::class, 'show'])->where('id', '[0-9]+');
+
+    // ─── Scholarships Engine ──────────────────────────────────────────────────
+    Route::get('scholarships', [\App\Http\Controllers\Api\Public\PublicScholarshipController::class, 'index']);
+    Route::get('scholarships/{id}', [\App\Http\Controllers\Api\Public\PublicScholarshipController::class, 'show'])->where('id', '[0-9]+');
+
+    // ─── CRM & Leads ──────────────────────────────────────────────────────────
+    Route::post('contact', [\App\Http\Controllers\Api\Public\PublicCRMController::class, 'submitLead']);
+
+    // ─── Newsletter ──────────────────────────────────────────────────────────
+    Route::post('newsletter/subscribe', [\App\Http\Controllers\Api\Public\PublicNewsletterController::class, 'subscribe']);
+
+    // ─── SEO Metadata ─────────────────────────────────────────────────────────
+    Route::get('seo', [\App\Http\Controllers\Api\Public\PublicSeoController::class, 'getMetadata']);
+    Route::post('newsletter/unsubscribe', [\App\Http\Controllers\Api\Public\PublicNewsletterController::class, 'unsubscribe']);
+
 });
-
-
-
-
-
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
+        
+        // Notifications
+        Route::prefix('notifications')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
+            Route::put('/read-all', [\App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead']);
+            Route::put('/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
+            Route::delete('/{id}', [\App\Http\Controllers\Api\NotificationController::class, 'destroy']);
+        });
         Route::post('/change-password', [AuthController::class, 'changePassword']);
         Route::get('/me', [AuthController::class, 'me']);
 
@@ -301,7 +308,7 @@ Route::prefix('public')->group(function () {
     Route::middleware('role:student,sanctum')->prefix('student')->group(function () {
         Route::get('/courses', [\App\Http\Controllers\Api\Student\StudentCourseController::class, 'index']);
         Route::post('/courses/{course_id}/lessons/{lesson_id}/complete', [\App\Http\Controllers\Api\Student\StudentCourseController::class, 'markLessonComplete']);
-        Route::get('/dashboard', [\App\Http\Controllers\Api\Student\StudentDashboardController::class, 'index']);
+        Route::get('/dashboard', [\App\Http\Controllers\Api\Student\StudentDashboardController::class, 'metrics']);
         
         // New Real Data Endpoints
         Route::get('/messages', [\App\Http\Controllers\Api\Student\StudentMessageController::class, 'index']);
@@ -317,14 +324,31 @@ Route::prefix('public')->group(function () {
     Route::middleware('role:company,sanctum')->prefix('company')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Api\Company\CompanyDashboardController::class, 'index']);
         Route::get('/analytics', [\App\Http\Controllers\Api\Company\CompanyDashboardController::class, 'analytics']);
+        
+        // Jobs
         Route::get('/jobs', [\App\Http\Controllers\Api\Company\CompanyJobController::class, 'index']);
         Route::post('/jobs', [\App\Http\Controllers\Api\Company\CompanyJobController::class, 'store']);
+        Route::get('/jobs/{id}', [\App\Http\Controllers\Api\Company\CompanyJobController::class, 'show']);
+        Route::put('/jobs/{id}', [\App\Http\Controllers\Api\Company\CompanyJobController::class, 'update']);
         Route::put('/jobs/{id}/status', [\App\Http\Controllers\Api\Company\CompanyJobController::class, 'updateStatus']);
         Route::delete('/jobs/{id}', [\App\Http\Controllers\Api\Company\CompanyJobController::class, 'destroy']);
+        
+        // Internships
+        Route::get('/internships', [\App\Http\Controllers\Api\Company\CompanyInternshipController::class, 'index']);
+        
+        // Applicants
         Route::get('/applicants', [\App\Http\Controllers\Api\Company\CompanyApplicantController::class, 'index']);
+        Route::get('/applicants/{id}', [\App\Http\Controllers\Api\Company\CompanyApplicantController::class, 'show']);
         Route::post('/applicants/{id}/status', [\App\Http\Controllers\Api\Company\CompanyApplicantController::class, 'updateStatus']);
+        
+        // Interviews
         Route::get('/interviews', [\App\Http\Controllers\Api\Company\CompanyInterviewController::class, 'index']);
         Route::post('/interviews', [\App\Http\Controllers\Api\Company\CompanyInterviewController::class, 'store']);
+        Route::put('/interviews/{id}', [\App\Http\Controllers\Api\Company\CompanyInterviewController::class, 'update']);
+        
+        // Offers
+        Route::get('/offers', [\App\Http\Controllers\Api\Company\CompanyOfferController::class, 'index']);
+        Route::post('/offers', [\App\Http\Controllers\Api\Company\CompanyOfferController::class, 'store']);
     });
 
     // Expert Portal Integration
@@ -341,13 +365,79 @@ Route::prefix('public')->group(function () {
         Route::get('/schedule', [\App\Http\Controllers\Api\Expert\ExpertDashboardController::class, 'schedule']);
     });
 
+    // Company Portal Integration
+    Route::middleware(['auth:sanctum', 'role:company'])->prefix('company')->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [\App\Http\Controllers\Api\Company\CompanyDashboardController::class, 'index']);
+        Route::get('/analytics', [\App\Http\Controllers\Api\Company\CompanyDashboardController::class, 'analytics']);
+        
+        // Jobs
+        Route::apiResource('/jobs', \App\Http\Controllers\Api\Company\CompanyJobController::class);
+        Route::put('/jobs/{id}/status', [\App\Http\Controllers\Api\Company\CompanyJobController::class, 'updateStatus']);
+        
+        // Internships
+        Route::apiResource('/internships', \App\Http\Controllers\Api\Company\CompanyInternshipController::class);
+        Route::put('/internships/{id}/status', [\App\Http\Controllers\Api\Company\CompanyInternshipController::class, 'updateStatus']);
+        
+        // Applicants
+        Route::get('/applicants', [\App\Http\Controllers\Api\Company\CompanyApplicantController::class, 'index']);
+        Route::get('/applicants/{id}', [\App\Http\Controllers\Api\Company\CompanyApplicantController::class, 'show']);
+        Route::put('/applicants/{id}/status', [\App\Http\Controllers\Api\Company\CompanyApplicantController::class, 'updateStatus']);
+        
+        // Interviews
+        Route::get('/interviews', [\App\Http\Controllers\Api\Company\CompanyInterviewController::class, 'index']);
+        Route::post('/interviews', [\App\Http\Controllers\Api\Company\CompanyInterviewController::class, 'store']);
+        Route::put('/interviews/{id}', [\App\Http\Controllers\Api\Company\CompanyInterviewController::class, 'update']);
+        Route::delete('/interviews/{id}', [\App\Http\Controllers\Api\Company\CompanyInterviewController::class, 'destroy']);
+        Route::put('/interviews/{id}/status', [\App\Http\Controllers\Api\Company\CompanyInterviewController::class, 'updateStatus']);
+        
+        // Offers
+        Route::get('/offers', [\App\Http\Controllers\Api\Company\CompanyOfferController::class, 'index']);
+        Route::post('/offers', [\App\Http\Controllers\Api\Company\CompanyOfferController::class, 'store']);
+        Route::put('/offers/{id}', [\App\Http\Controllers\Api\Company\CompanyOfferController::class, 'update']);
+        Route::delete('/offers/{id}', [\App\Http\Controllers\Api\Company\CompanyOfferController::class, 'destroy']);
+        
+        // Settings & Team
+        Route::get('/settings', [\App\Http\Controllers\Company\CompanySettingsController::class, 'getSettings']);
+        Route::put('/settings', [\App\Http\Controllers\Company\CompanySettingsController::class, 'updateSettings']);
+        Route::get('/team', [\App\Http\Controllers\Company\CompanySettingsController::class, 'getTeamMembers']);
+        Route::post('/team/invite', [\App\Http\Controllers\Company\CompanySettingsController::class, 'inviteTeamMember']);
+        Route::delete('/team/{id}', [\App\Http\Controllers\Company\CompanySettingsController::class, 'removeTeamMember']);
+
+        // Support Tickets
+        Route::get('/support/tickets', [\App\Http\Controllers\Company\SupportTicketController::class, 'index']);
+        Route::post('/support/tickets', [\App\Http\Controllers\Company\SupportTicketController::class, 'store']);
+        Route::get('/support/tickets/{id}', [\App\Http\Controllers\Company\SupportTicketController::class, 'show']);
+        Route::post('/support/tickets/{id}/reply', [\App\Http\Controllers\Company\SupportTicketController::class, 'reply']);
+    });
+
     // Job Seeker Portal Integration
-    Route::middleware('role:job-seeker|jobseeker,sanctum')->prefix('jobseeker')->group(function () {
+    Route::middleware(['auth:sanctum', 'role:job-seeker|jobseeker'])->prefix('jobseeker')->group(function () {
+        // Dashboard
         Route::get('/dashboard', [\App\Http\Controllers\Api\JobseekerDashboardController::class, 'index']);
+        
+        // Applications
         Route::get('/applications', [\App\Http\Controllers\Api\JobseekerDashboardController::class, 'applications']);
+        Route::post('/applications/{id}/withdraw', [\App\Http\Controllers\Api\JobseekerDashboardController::class, 'withdrawApplication']);
+        
+        // Interviews
+        Route::get('/interviews', [\App\Http\Controllers\Api\JobseekerDashboardController::class, 'interviews']);
+        
+        // Offers
+        Route::get('/offers', [\App\Http\Controllers\Api\JobseekerDashboardController::class, 'offers']);
+        Route::post('/offers/{id}/accept', [\App\Http\Controllers\Api\JobseekerDashboardController::class, 'acceptOffer']);
+        Route::post('/offers/{id}/reject', [\App\Http\Controllers\Api\JobseekerDashboardController::class, 'rejectOffer']);
+        
+        // Profile
         Route::get('/profile', [\App\Http\Controllers\Api\JobseekerProfileController::class, 'show']);
         Route::put('/profile', [\App\Http\Controllers\Api\JobseekerProfileController::class, 'update']);
         Route::post('/resume', [\App\Http\Controllers\Api\JobseekerProfileController::class, 'uploadResume']);
+        
+        // Settings
+        Route::get('/settings', [\App\Http\Controllers\Api\JobseekerDashboardController::class, 'settings']);
+        Route::put('/settings', [\App\Http\Controllers\Api\JobseekerDashboardController::class, 'updateSettings']);
+        Route::put('/change-password', [\App\Http\Controllers\Api\JobseekerDashboardController::class, 'changePassword']);
+        Route::post('/avatar', [\App\Http\Controllers\Api\JobseekerDashboardController::class, 'uploadAvatar']);
     });
 
 
@@ -399,13 +489,46 @@ Route::prefix('public')->group(function () {
 
     // Student Dashboard & LMS Progress API
     Route::prefix('student')->group(function () {
+        // Resume
+        Route::get('/resume', [\App\Http\Controllers\Api\Student\StudentDashboardController::class, 'resume']);
+        Route::post('/resume/upload', [\App\Http\Controllers\Api\Student\StudentDashboardController::class, 'uploadResume']);
+
         // Enrolled courses & progress
         Route::get('/courses', [\App\Http\Controllers\Api\Student\StudentCourseController::class, 'index']);
+        Route::get('/courses/{course_id}', [\App\Http\Controllers\Api\Student\StudentCourseController::class, 'show']);
+        Route::post('/courses/{course_id}/enroll', [\App\Http\Controllers\Api\Student\StudentCourseController::class, 'enroll']);
         Route::post('/courses/{course_id}/lessons/{lesson_id}/complete', [\App\Http\Controllers\Api\Student\StudentCourseController::class, 'markLessonComplete']);
+
+        // LMS Notes
+        Route::get('/courses/{course_id}/notes', [\App\Http\Controllers\Api\Student\StudentLMSController::class, 'getNotes']);
+        Route::post('/courses/{course_id}/notes', [\App\Http\Controllers\Api\Student\StudentLMSController::class, 'addNote']);
+        Route::delete('/courses/{course_id}/notes/{note_id}', [\App\Http\Controllers\Api\Student\StudentLMSController::class, 'deleteNote']);
+
+        // LMS Resources
+        Route::get('/courses/{course_id}/resources', [\App\Http\Controllers\Api\Student\StudentLMSController::class, 'getResources']);
+
+        // LMS Q&A
+        Route::get('/courses/{course_id}/questions', [\App\Http\Controllers\Api\Student\StudentLMSController::class, 'getQuestions']);
+        Route::post('/courses/{course_id}/questions', [\App\Http\Controllers\Api\Student\StudentLMSController::class, 'postQuestion']);
+        Route::post('/courses/{course_id}/questions/{question_id}/answer', [\App\Http\Controllers\Api\Student\StudentLMSController::class, 'postAnswer']);
 
         // Quizzes
         Route::get('/lessons/{lesson_id}/quiz', [\App\Http\Controllers\Api\Student\StudentQuizController::class, 'show']);
         Route::post('/quizzes/{quiz_id}/submit', [\App\Http\Controllers\Api\Student\StudentQuizController::class, 'submit']);
+
+        // Scholarships & Contests
+        Route::get('/scholarships', [\App\Http\Controllers\Api\Student\StudentScholarshipController::class, 'index']);
+
+        // Applications
+        Route::get('/applications', [\App\Http\Controllers\Api\Student\StudentDashboardController::class, 'placementProgress']);
+
+        // Mentor Sessions
+        Route::get('/mentor-sessions', function (\Illuminate\Http\Request $r) {
+            return response()->json(\App\Models\MentorSession::with('expert.user')
+                ->where('student_id', $r->user()->id)
+                ->orderBy('scheduled_at', 'desc')
+                ->get());
+        });
 
         // Certificates earned
         Route::get('/certificates', function(\Illuminate\Http\Request $r) {
@@ -463,20 +586,117 @@ Route::prefix('public')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Api\College\CollegeDashboardController::class, 'index']);
         Route::get('/students', [\App\Http\Controllers\Api\College\CollegeDashboardController::class, 'students']);
         
-        // Placement & Internship Drives
+        // Placement Drives
         Route::apiResource('/placement-drives', \App\Http\Controllers\Api\College\CollegePlacementDriveController::class);
-        Route::apiResource('/internship-drives', \App\Http\Controllers\Api\College\CollegeInternshipDriveController::class);
-        Route::apiResource('/campus-jobs', \App\Http\Controllers\Api\College\CollegeCampusJobController::class);
+        Route::post('/placement-drives/{id}/duplicate', [\App\Http\Controllers\Api\College\CollegePlacementDriveController::class, 'duplicate']);
+        Route::put('/placement-drives/{id}/publish', [\App\Http\Controllers\Api\College\CollegePlacementDriveController::class, 'publish']);
+        Route::put('/placement-drives/{id}/close', [\App\Http\Controllers\Api\College\CollegePlacementDriveController::class, 'close']);
+        Route::put('/placement-drives/{id}/archive', [\App\Http\Controllers\Api\College\CollegePlacementDriveController::class, 'archive']);
+        Route::get('/placement-drives/{id}/export', [\App\Http\Controllers\Api\College\CollegePlacementDriveController::class, 'export']);
         
-        // Events & Contests
-        Route::apiResource('/events', \App\Http\Controllers\Api\College\CollegeEventController::class);
+        // Internship Drives
+        Route::apiResource('/internship-drives', \App\Http\Controllers\Api\College\CollegeInternshipDriveController::class);
+        Route::post('/internship-drives/{id}/duplicate', [\App\Http\Controllers\Api\College\CollegeInternshipDriveController::class, 'duplicate']);
+        Route::put('/internship-drives/{id}/publish', [\App\Http\Controllers\Api\College\CollegeInternshipDriveController::class, 'publish']);
+        Route::put('/internship-drives/{id}/close', [\App\Http\Controllers\Api\College\CollegeInternshipDriveController::class, 'close']);
+        Route::put('/internship-drives/{id}/archive', [\App\Http\Controllers\Api\College\CollegeInternshipDriveController::class, 'archive']);
+        Route::get('/internship-drives/{id}/export', [\App\Http\Controllers\Api\College\CollegeInternshipDriveController::class, 'export']);
+        
+        // BlueBoxx Admin info (for drive creation — only BlueBoxx can be partner)
+        Route::get('/blueboxx-admin', function() {
+            $admin = \App\Models\User::role('super_admin')->first();
+            return response()->json(['success' => true, 'data' => $admin ? ['id' => $admin->id, 'name' => $admin->name] : null]);
+        });
         
         // Connected Companies
         Route::get('/companies', [\App\Http\Controllers\Api\College\CollegeCompanyController::class, 'index']);
-        Route::post('/companies', [\App\Http\Controllers\Api\College\CollegeCompanyController::class, 'store']);
         Route::delete('/companies/{id}', [\App\Http\Controllers\Api\College\CollegeCompanyController::class, 'destroy']);
+        
+        // Student Management
+        Route::get('/students/export', [\App\Http\Controllers\Api\College\CollegeDashboardController::class, 'exportStudents']);
+        Route::post('/students/import', [\App\Http\Controllers\Api\College\CollegeDashboardController::class, 'importStudents']);
+        
+        // Reports
+        Route::get('/reports/export', [\App\Http\Controllers\Api\College\CollegeDashboardController::class, 'exportReports']);
+        
+        // Notifications
+        Route::get('/notifications', function(\Illuminate\Http\Request $request) {
+            $notifications = $request->user()->notifications()->take(20)->get()->map(function($n) {
+                return [
+                    'id' => $n->id,
+                    'type' => $n->type,
+                    'data' => $n->data,
+                    'read_at' => $n->read_at,
+                    'created_at' => $n->created_at,
+                ];
+            });
+            return response()->json(['success' => true, 'data' => $notifications]);
+        });
+        Route::put('/notifications/read-all', function(\Illuminate\Http\Request $request) {
+            $request->user()->unreadNotifications->markAsRead();
+            return response()->json(['success' => true]);
+        });
+
     });
-    
+
+    // College Profile Settings — accessible to college AND super_admin
+    Route::prefix('college')->group(function () {
+        Route::get('/profile', function(\Illuminate\Http\Request $request) {
+            $user = $request->user();
+            $profile = \Illuminate\Support\Facades\DB::table('college_profiles')->where('user_id', $user->id)->first();
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'name'             => $user->name,
+                    'email'            => $user->email,
+                    'phone'            => $profile->phone ?? '',
+                    'website'          => $profile->website ?? '',
+                    'address'          => $profile->address ?? '',
+                    'contact_person'   => $profile->contact_person ?? '',
+                    'placement_drive'  => $profile->placement_officer ?? '2026 Batch',
+                    'target_placement' => '90',
+                ]
+            ]);
+        });
+        Route::put('/profile', function(\Illuminate\Http\Request $request) {
+            $user = $request->user();
+            $data = $request->validate([
+                'name'             => 'sometimes|string|max:255',
+                'email'            => 'sometimes|nullable|email|max:255',
+                'phone'            => 'sometimes|nullable|string|max:30',
+                'website'          => 'sometimes|nullable|string|max:255',
+                'address'          => 'sometimes|nullable|string|max:500',
+                'contact_person'   => 'sometimes|nullable|string|max:255',
+                'placement_drive'  => 'sometimes|nullable|string|max:100',
+                'target_placement' => 'sometimes|nullable|string|max:10',
+            ]);
+
+            if (isset($data['name'])) {
+                $user->update(['name' => $data['name']]);
+            }
+            if (isset($data['email']) && $data['email'] !== $user->email) {
+                $user->update(['email' => $data['email']]);
+            }
+
+            \Illuminate\Support\Facades\DB::table('college_profiles')->updateOrInsert(
+                ['user_id' => $user->id],
+                [
+                    'phone'             => $data['phone'] ?? null,
+                    'website'           => $data['website'] ?? null,
+                    'address'           => $data['address'] ?? null,
+                    'contact_person'    => $data['contact_person'] ?? null,
+                    'placement_officer' => $data['placement_drive'] ?? null,
+                    'college_name'      => $data['name'] ?? $user->name,
+                    'email'             => $data['email'] ?? $user->email,
+                    'updated_at'        => now(),
+                    'created_at'        => now(),
+                ]
+            );
+
+            return response()->json(['success' => true, 'message' => 'Profile updated successfully']);
+        });
+    });
+
     // Auth Scholarships & Contests (Applying)
     Route::post('/scholarships/{id}/apply', [ScholarshipProgramController::class, 'apply']);
     Route::post('/contests/{id}/register', [ContestController::class, 'registerUser']);
@@ -487,7 +707,9 @@ Route::prefix('public')->group(function () {
     Route::post('/reviews', [ReviewController::class, 'store']);
     
     // Admin API
-    Route::middleware(['auth:sanctum', 'role:super_admin|admin'])->prefix('admin')->group(function () {
+    Route::middleware(['auth:sanctum', 'role:super_admin|admin,sanctum'])->prefix('admin')->group(function () {
+        // SEO Administration
+        Route::apiResource('seo-metadata', \App\Http\Controllers\Api\Admin\AdminSeoController::class);
         // Notifications & Badges
         Route::get('notifications', [\App\Http\Controllers\Api\Admin\AdminNotificationController::class, 'index']);
         Route::get('notifications/badges', [\App\Http\Controllers\Api\Admin\AdminNotificationController::class, 'badges']);
@@ -502,6 +724,14 @@ Route::prefix('public')->group(function () {
         Route::get('dashboard/recent/enrollments', [AdminDashboardController::class, 'recentEnrollments']);
         Route::get('users/export', [UserController::class, 'export']);
         Route::apiResource('users', UserController::class);
+
+        // Support Management
+        Route::get('support/tickets', [\App\Http\Controllers\Admin\AdminSupportController::class, 'index']);
+        Route::get('support/tickets/{id}', [\App\Http\Controllers\Admin\AdminSupportController::class, 'show']);
+        Route::put('support/tickets/{id}/status', [\App\Http\Controllers\Admin\AdminSupportController::class, 'updateStatus']);
+        Route::put('support/tickets/{id}/assign', [\App\Http\Controllers\Admin\AdminSupportController::class, 'assignAdmin']);
+        Route::post('support/tickets/{id}/reply', [\App\Http\Controllers\Admin\AdminSupportController::class, 'reply']);
+        Route::post('support/tickets/{id}/notes', [\App\Http\Controllers\Admin\AdminSupportController::class, 'addNote']);
 
         // Approvals API
         Route::get('approvals', [ApprovalController::class, 'index']);
@@ -661,6 +891,16 @@ Route::prefix('public')->group(function () {
             Route::get('{id}/applications', [\App\Http\Controllers\Api\Admin\AdminJobApplicationController::class, 'index']);
         });
         Route::apiResource('jobs', \App\Http\Controllers\Api\Admin\AdminJobController::class);
+
+        // College Placement Drives
+        Route::get('placement-drives', [\App\Http\Controllers\Api\Admin\AdminPlacementDriveController::class, 'index']);
+        Route::put('placement-drives/{id}/approve', [\App\Http\Controllers\Api\Admin\AdminPlacementDriveController::class, 'approve']);
+        Route::put('placement-drives/{id}/reject', [\App\Http\Controllers\Api\Admin\AdminPlacementDriveController::class, 'reject']);
+        
+        // College Internship Drives
+        Route::get('internship-drives', [\App\Http\Controllers\Api\Admin\AdminInternshipDriveController::class, 'index']);
+        Route::put('internship-drives/{id}/approve', [\App\Http\Controllers\Api\Admin\AdminInternshipDriveController::class, 'approve']);
+        Route::put('internship-drives/{id}/reject', [\App\Http\Controllers\Api\Admin\AdminInternshipDriveController::class, 'reject']);
         
         // ATS Applications & Interviews
         Route::prefix('job-applications')->group(function () {
@@ -978,4 +1218,31 @@ Route::prefix('public')->group(function () {
     
     // File Upload API
     Route::post('upload', [UploadController::class, 'store']);
+});
+
+Route::get('/qa-routes-map', function () {
+    $scanData = [
+        'api_endpoints' => [],
+        'backend_routes' => []
+    ];
+    
+    $routes = \Illuminate\Support\Facades\Route::getRoutes();
+    foreach ($routes as $route) {
+        $uri = $route->uri();
+        $methods = implode('|', $route->methods());
+        
+        if (str_starts_with($uri, '_ignition') || str_starts_with($uri, 'sanctum') || str_starts_with($uri, 'broadcasting')) continue;
+        
+        $routeInfo = [
+            'uri' => $uri,
+            'methods' => $methods,
+        ];
+        
+        if (str_starts_with($uri, 'api/')) {
+            $scanData['api_endpoints'][] = $routeInfo;
+        } else {
+            $scanData['backend_routes'][] = $routeInfo;
+        }
+    }
+    return response()->json($scanData);
 });

@@ -15,15 +15,15 @@ class CompanyDashboardController extends Controller
         $companyId = $request->user()->id;
 
         $jobs = \App\Models\Job::where('company_id', $companyId)->latest()->get();
-        $activeJobsCount = $jobs->where('status', 'Active')->count();
-        $pendingJobsCount = $jobs->where('status', 'Pending')->count();
+        $activeJobsCount = $jobs->whereIn('status', ['Active', 'active'])->count();
+        $pendingJobsCount = $jobs->whereIn('status', ['Pending', 'pending'])->count();
 
         $jobIds = $jobs->pluck('id');
         $applications = \App\Models\JobApplication::whereIn('job_id', $jobIds)->get();
         $totalApplicants = $applications->count();
-        $hiredCount = $applications->where('status', 'Hired')->count();
+        $hiredCount = $applications->whereIn('status', ['offer_sent', 'accepted', 'joined'])->count();
 
-        $activeJobsList = $jobs->where('status', 'Active')->take(5)->map(function($job) {
+        $activeJobsList = $jobs->whereIn('status', ['Active', 'active'])->take(5)->map(function($job) {
             return [
                 'id' => $job->id,
                 'title' => $job->title,
@@ -35,7 +35,8 @@ class CompanyDashboardController extends Controller
         })->values();
 
         $today = \Carbon\Carbon::today();
-        $interviews = \App\Models\JobInterview::whereIn('job_id', $jobIds)
+        $applicationIds = $applications->pluck('id');
+        $interviews = \App\Models\JobInterview::whereIn('application_id', $applicationIds)
             ->whereDate('scheduled_at', $today)
             ->with(['application.user', 'job'])
             ->get()
@@ -80,19 +81,20 @@ class CompanyDashboardController extends Controller
             ->with('user')
             ->get();
 
-        $interviews = \App\Models\JobInterview::whereIn('job_id', $jobIds)->get();
+        $applicationIds = $applications->pluck('id');
+        $interviews = \App\Models\JobInterview::whereIn('application_id', $applicationIds)->get();
 
-        $activeJobsCount = $jobs->where('status', 'Active')->count();
-        $pendingJobsCount = $jobs->where('status', 'Pending')->count();
-        $closedJobsCount = $jobs->where('status', 'Closed')->count();
+        $activeJobsCount = $jobs->whereIn('status', ['Active', 'active'])->count();
+        $pendingJobsCount = $jobs->whereIn('status', ['Pending', 'pending'])->count();
+        $closedJobsCount = $jobs->whereIn('status', ['Closed', 'closed'])->count();
 
         $totalApplicants = $applications->count();
-        $inReview = $applications->where('status', 'Shortlisted')->count();
-        $inInterview = $applications->where('status', 'Interview')->count();
-        $offers = $applications->where('status', 'Hired')->count();
-        $rejected = $applications->where('status', 'Rejected')->count();
+        $inReview = $applications->whereIn('status', ['under_review', 'shortlisted'])->count();
+        $inInterview = $applications->where('status', 'interview_scheduled')->count();
+        $offers = $applications->whereIn('status', ['offer_sent', 'accepted', 'joined'])->count();
+        $rejected = $applications->where('status', 'rejected')->count();
         
-        $applied = $applications->where('status', 'New')->count();
+        $applied = $applications->where('status', 'applied')->count();
 
         $conversionRate = $totalApplicants > 0 ? round(($offers / $totalApplicants) * 100, 1) : 0;
         $interviewRate = $totalApplicants > 0 ? round(($inInterview / $totalApplicants) * 100, 1) : 0;

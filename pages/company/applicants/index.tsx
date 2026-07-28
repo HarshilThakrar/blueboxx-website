@@ -16,7 +16,8 @@ const STAGES: AppStage[] = ["Applied", "In Review", "Interview", "Offer"];
 export default function ApplicantsPage() {
   const companyProfile = useCompanyStore((s) => s.profile);
   
-  const { data, isLoading, mutate } = useSWR("/company/applicants", fetcher);
+  const { data, error, mutate } = useSWR("/company/applicants", fetcher);
+  const isLoading = !data && !error;
   const allApplicants = data?.data || [];
 
   // Assuming backend returns applicants specific to the company, but we can filter here for safety if needed
@@ -31,21 +32,31 @@ export default function ApplicantsPage() {
   const [scheduleForm, setScheduleForm] = useState({ date: "", time: "", type: "Technical Round" });
   const [scheduleSuccess, setScheduleSuccess] = useState(false);
 
-  const roles = Array.from(new Set(applicants.map((a) => a.role)));
+  const roles = Array.from(new Set(applicants.map((a: any) => a.jobTitle || a.role).filter(Boolean)));
 
   const filtered = applicants.filter(
-    (a) =>
-      (selectedJob === "All Roles" || a.role === selectedJob) &&
-      (selectedExp === "All Experience" || a.exp === selectedExp) &&
-      a.name.toLowerCase().includes(search.toLowerCase())
+    (a: any) => {
+      const role = a.jobTitle || a.role;
+      const exp = a.exp || "Fresher";
+      const name = a.applicantName || a.name || "";
+      
+      return (selectedJob === "All Roles" || role === selectedJob) &&
+             (selectedExp === "All Experience" || exp === selectedExp) &&
+             name.toLowerCase().includes(search.toLowerCase());
+    }
   );
 
   const moveApplicant = async (id: string, direction: "next" | "prev") => {
     const app = applicants.find((a: any) => a.id === id);
     if (!app) return;
     
-    // In our backend we mapped 'New' to 'Applied', 'Shortlisted' to 'In Review', 'Interview', 'Hired' to 'Offer', 'Rejected'
-    const currentIndex = STAGES.indexOf(app.status === 'New' ? 'Applied' : app.status === 'Shortlisted' ? 'In Review' : app.status === 'Hired' ? 'Offer' : app.status);
+    const appStatus = app.status;
+    let currentStage = "Applied";
+    if (['under_review', 'shortlisted'].includes(appStatus)) currentStage = "In Review";
+    if (appStatus === 'interview_scheduled') currentStage = "Interview";
+    if (['offer_sent', 'accepted', 'joined'].includes(appStatus)) currentStage = "Offer";
+
+    const currentIndex = STAGES.indexOf(currentStage as AppStage);
     if (currentIndex === -1) return;
     
     const newIndex =
@@ -54,10 +65,11 @@ export default function ApplicantsPage() {
         : Math.max(currentIndex - 1, 0);
         
     const newStage = STAGES[newIndex];
-    let newStatus = 'New';
-    if (newStage === 'In Review') newStatus = 'Shortlisted';
-    if (newStage === 'Interview') newStatus = 'Interview';
-    if (newStage === 'Offer') newStatus = 'Hired';
+    // Maps UI columns to backend statuses
+    let newStatus = 'applied';
+    if (newStage === 'In Review') newStatus = 'under_review';
+    if (newStage === 'Interview') newStatus = 'interview_scheduled';
+    if (newStage === 'Offer') newStatus = 'offer_sent';
 
     try {
       await api.put(`/company/applicants/${id}/status`, { status: newStatus });
@@ -73,15 +85,16 @@ export default function ApplicantsPage() {
     if (!scheduleModal) return;
     
     try {
-      // Create Interview
+      let m = 'google_meet';
+      if (scheduleForm.type.includes('Offline')) m = 'offline';
+
       await api.post("/company/interviews", {
-        applicantId: scheduleModal.id,
+        application_id: scheduleModal.id,
         date: scheduleForm.date || "Tomorrow",
-        time: scheduleForm.time || "10:00 AM",
-        type: scheduleForm.type,
+        time: scheduleForm.time || "10:00",
+        mode: m,
       });
-      // Move to Interview stage
-      await api.put(`/company/applicants/${scheduleModal.id}/status`, { status: 'Interview' });
+      // Moving to Interview stage is handled by backend automatically now
       mutate();
       setScheduleModal(null);
       setScheduleSuccess(true);
@@ -90,6 +103,35 @@ export default function ApplicantsPage() {
       toast.error("Failed to schedule interview");
     }
   };
+
+  if (error && error.response?.status === 403) {
+    return (
+      <CompanyDashboardLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] bg-white rounded-2xl border border-red-100 p-8 shadow-sm">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-500 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          </div>
+          <h2 className="text-xl font-black text-slate-800 mb-2">Session Conflict Detected</h2>
+          <p className="text-slate-600 mb-4 max-w-md text-center font-medium">
+            You are currently logged in as a <strong className="text-blue-600">Job Seeker</strong> in another tab. This has overwritten your Company session.
+          </p>
+          <p className="text-slate-500 mb-8 max-w-md text-center text-sm">
+            To view company data, please log out and log back in as a Company. If you want to test both roles simultaneously, please open an <strong>Incognito window</strong> for your Job Seeker account.
+          </p>
+          <button 
+            onClick={() => {
+              localStorage.removeItem('auth_token');
+              localStorage.removeItem('blueboxx_user');
+              window.location.href = '/login';
+            }}
+            className="px-6 py-2.5 bg-[#1B2A6B] hover:bg-[#0d1635] text-white rounded-xl font-bold transition-colors shadow-md"
+          >
+            Log Out and Re-Login
+          </button>
+        </div>
+      </CompanyDashboardLayout>
+    );
+  }
 
   return (
     <CompanyDashboardLayout>
@@ -165,9 +207,10 @@ export default function ApplicantsPage() {
               <span className="px-2 py-0.5 bg-white border border-slate-200 rounded-full text-[10px] font-black text-slate-500">
                 {filtered.filter((a: any) => {
                   let normalized = a.status;
-                  if (a.status === 'New') normalized = 'Applied';
-                  if (a.status === 'Shortlisted') normalized = 'In Review';
-                  if (a.status === 'Hired') normalized = 'Offer';
+                  if (a.status === 'applied') normalized = 'Applied';
+                  if (['under_review', 'shortlisted'].includes(a.status)) normalized = 'In Review';
+                  if (a.status === 'interview_scheduled') normalized = 'Interview';
+                  if (['offer_sent', 'accepted', 'joined'].includes(a.status)) normalized = 'Offer';
                   return normalized === stage;
                 }).length}
               </span>
@@ -180,9 +223,10 @@ export default function ApplicantsPage() {
                 </div>
               ) : filtered.filter((a: any) => {
                   let normalized = a.status;
-                  if (a.status === 'New') normalized = 'Applied';
-                  if (a.status === 'Shortlisted') normalized = 'In Review';
-                  if (a.status === 'Hired') normalized = 'Offer';
+                  if (a.status === 'applied') normalized = 'Applied';
+                  if (['under_review', 'shortlisted'].includes(a.status)) normalized = 'In Review';
+                  if (a.status === 'interview_scheduled') normalized = 'Interview';
+                  if (['offer_sent', 'accepted', 'joined'].includes(a.status)) normalized = 'Offer';
                   return normalized === stage;
               }).map((app: any, i: number) => (
                 <AnimatedContent
@@ -195,23 +239,22 @@ export default function ApplicantsPage() {
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1B2A6B]/10 to-[#2E45A3]/10 flex items-center justify-center text-[#1B2A6B] font-black text-xs shrink-0">
-                        {app.name.split(" ").map((n) => n[0]).join("")}
+                        {app.applicantName?.split(" ").map((n: string) => n[0]).join("") || "A"}
                       </div>
                       <div>
-                        <h4 className="text-sm font-black text-slate-800 leading-tight">{app.applicantName || app.name}</h4>
+                        <h4 className="text-sm font-black text-slate-800 leading-tight">{app.applicantName}</h4>
                         <p className="text-[10px] font-bold text-slate-400">{app.appliedAt || app.appliedDate}</p>
                       </div>
                     </div>
-                    <span className={`px-2 py-0.5 text-[9px] font-black rounded-sm ${app.match >= 90 || app.match === 'Very High' || app.match === 'High' ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
-                      {app.score || app.match}% Match
+                    <span className={`px-2 py-0.5 text-[9px] font-black rounded-sm ${app.score >= 90 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                      {app.score}% Match
                     </span>
                   </div>
 
                   <div className="mb-3">
                     <p className="text-xs font-semibold text-slate-600 mb-0.5 flex items-center gap-1.5">
-                      <Briefcase size={12} className="text-slate-400" /> {app.jobTitle || app.role}
+                      <Briefcase size={12} className="text-slate-400" /> {app.jobTitle}
                     </p>
-                    <p className="text-[10px] font-semibold text-slate-400 ml-4">{app.exp || "1 Year"} Experience</p>
                   </div>
 
                   <div className="flex gap-1 border-t border-slate-100 pt-3" onClick={(e) => e.stopPropagation()}>
@@ -300,7 +343,7 @@ export default function ApplicantsPage() {
               <button
                 onClick={async () => {
                   try {
-                    await api.put(`/company/applicants/${selectedApplicant.id}/status`, { status: "Rejected" });
+                    await api.put(`/company/applicants/${selectedApplicant.id}/status`, { status: "rejected" });
                     mutate();
                     toast.success("Applicant rejected");
                   } catch(e) {

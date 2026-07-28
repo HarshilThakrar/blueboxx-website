@@ -17,26 +17,20 @@ export default function CompanyInterviewsPage() {
   const [rescheduleModal, setRescheduleModal] = useState<{ id: number; date: string; time: string } | null>(null);
   const [feedbackModal, setFeedbackModal] = useState<number | null>(null);
   const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackRecommendation, setFeedbackRecommendation] = useState("hire");
 
   const filtered = interviews.filter(
-    (i) =>
-      i.status === (activeTab === "Past" ? "Completed" : "Upcoming") &&
+    (i: any) =>
+      (activeTab === "Past" ? i.recommendation !== "pending" : i.recommendation === "pending") &&
       (i.name.toLowerCase().includes(search.toLowerCase()) || i.role.toLowerCase().includes(search.toLowerCase()))
   );
 
   const handleReschedule = async (e: React.FormEvent) => {
     e.preventDefault();
+    // This requires an endpoint to update schedule. For now, since we only have update(marks/recommendation), we will just mock it or if backend supports it, send it. Our update method in CompanyInterviewController doesn't process date/time currently.
+    // I'll leave the modal but note it.
     if (rescheduleModal) {
-      try {
-        await api.put(`/company/interviews/${rescheduleModal.id}`, {
-          date: rescheduleModal.date,
-          time: rescheduleModal.time,
-        });
-        mutate();
-        toast.success("Interview rescheduled");
-      } catch (err) {
-        toast.error("Failed to reschedule interview");
-      }
+      toast.error("Rescheduling not supported in current schema");
       setRescheduleModal(null);
     }
   };
@@ -45,7 +39,10 @@ export default function CompanyInterviewsPage() {
     e.preventDefault();
     if (feedbackModal !== null) {
       try {
-        await api.put(`/company/interviews/${feedbackModal}`, { status: "Completed" });
+        await api.put(`/company/interviews/${feedbackModal}`, { 
+          feedback: feedbackText,
+          recommendation: feedbackRecommendation 
+        });
         mutate();
         toast.success("Feedback submitted");
       } catch (err) {
@@ -53,6 +50,7 @@ export default function CompanyInterviewsPage() {
       }
       setFeedbackModal(null);
       setFeedbackText("");
+      setFeedbackRecommendation("hire");
     }
   };
 
@@ -62,7 +60,7 @@ export default function CompanyInterviewsPage() {
         <div>
           <h1 className="text-2xl font-black text-slate-800 mb-1">Interviews</h1>
           <p className="text-slate-500 font-medium text-sm">
-            {interviews.filter((i) => i.status === "Upcoming").length} upcoming interviews scheduled.
+            {interviews.filter((i: any) => i.recommendation === "pending").length} upcoming interviews scheduled.
           </p>
         </div>
         <Link href="/company/applicants" className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-colors text-sm shrink-0">
@@ -141,7 +139,7 @@ export default function CompanyInterviewsPage() {
                     </div>
                     <div className="flex items-center gap-4 text-xs font-semibold text-slate-500 ml-13">
                       <span className="flex items-center gap-1.5">
-                        <Calendar size={14} className="text-slate-400" /> {interview.type}
+                        <Calendar size={14} className="text-slate-400" /> {interview.round || "Round 1"} • {interview.mode}
                       </span>
                     </div>
                   </div>
@@ -188,11 +186,11 @@ export default function CompanyInterviewsPage() {
               </div>
               <div className="flex justify-between text-xs font-bold">
                 <span className="text-slate-500">Upcoming</span>
-                <span className="text-amber-600">{interviews.filter((i) => i.status === "Upcoming").length}</span>
+                <span className="text-amber-600">{interviews.filter((i: any) => i.recommendation === "pending").length}</span>
               </div>
               <div className="flex justify-between text-xs font-bold">
                 <span className="text-slate-500">Completed</span>
-                <span className="text-emerald-600">{interviews.filter((i) => i.status === "Completed").length}</span>
+                <span className="text-emerald-600">{interviews.filter((i: any) => i.recommendation !== "pending").length}</span>
               </div>
             </div>
           </AnimatedContent>
@@ -257,6 +255,17 @@ export default function CompanyInterviewsPage() {
             </div>
             <form onSubmit={handleFeedback} className="p-5 space-y-4">
               <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Recommendation</label>
+                <select
+                  value={feedbackRecommendation}
+                  onChange={(e) => setFeedbackRecommendation(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#1B2A6B] outline-none mb-4"
+                >
+                  <option value="hire">Hire</option>
+                  <option value="hold">Hold</option>
+                  <option value="reject">Reject</option>
+                </select>
+                
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Your Feedback</label>
                 <textarea
                   rows={4}

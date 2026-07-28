@@ -55,7 +55,7 @@ class InstructorRepository implements InstructorRepositoryInterface
                 'status' => 'active'
             ]);
 
-            $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'expert', 'guard_name' => 'sanctum']);
+            $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'expert', 'guard_name' => 'web']);
             $user->assignRole($role);
 
             $profileData = collect($data)->except(['first_name', 'last_name', 'email', 'phone', 'password', 'avatar'])->toArray();

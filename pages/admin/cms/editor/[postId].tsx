@@ -22,7 +22,7 @@ export default function AdminBlogEditorPage() {
   const handlePublish = () => {
     if (!title.trim()) { toast.error("Please add a title first."); return; }
     setStatus("Published");
-    toast.success(`🚀 "${title}" is now LIVE!`);
+    toast.success(`"${title}" is now LIVE!`);
   };
 
   return (

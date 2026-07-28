@@ -15,7 +15,7 @@ class PublicInternshipController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Internship::query()->where('status', 'Active');
+        $query = Internship::query()->whereIn('status', ['Active', 'active', 'Open', 'open', 'OPEN', 'Published', 'published']);
 
         if ($s = $request->query('search')) {
             $query->where(function ($q) use ($s) {
@@ -38,6 +38,21 @@ class PublicInternshipController extends Controller
         $perPage = min((int)$request->query('per_page', 12), 50);
         $internships = $query->latest()->paginate($perPage);
 
+        $appliedInternshipIds = [];
+        $user = auth('sanctum')->user();
+        if (!$user && $token = $request->bearerToken()) {
+            $accessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+            if ($accessToken && $accessToken->tokenable) {
+                $user = $accessToken->tokenable;
+            }
+        }
+
+        if ($user) {
+            $appliedInternshipIds = \App\Models\InternshipApplication::where('user_id', $user->id)
+                ->pluck('internship_id')
+                ->toArray();
+        }
+
         $data = $internships->through(fn($i) => [
             'id'           => $i->id,
             'title'        => $i->title,
@@ -52,10 +67,12 @@ class PublicInternshipController extends Controller
             'start_date'   => $i->start_date ?? null,
             'last_date'    => $i->last_date ?? null,
             'posted_at'    => $i->created_at->diffForHumans(),
+            'has_applied'  => in_array($i->id, $appliedInternshipIds),
         ]);
 
         return response()->json([
             'success' => true,
+            'debug_user_id' => $user ? $user->id : null,
             'data'    => $data->items(),
             'pagination' => [
                 'current_page' => $data->currentPage(),
@@ -72,7 +89,7 @@ class PublicInternshipController extends Controller
      */
     public function show(Request $request, $id)
     {
-        $internship = Internship::where('status', 'Active')->findOrFail($id);
+        $internship = Internship::whereIn('status', ['Active', 'active', 'Open', 'open', 'OPEN', 'Published', 'published'])->findOrFail($id);
 
         $hasApplied = false;
         if ($request->user()) {
@@ -97,7 +114,7 @@ class PublicInternshipController extends Controller
      */
     public function apply(Request $request, $id)
     {
-        $internship = Internship::where('status', 'Active')->findOrFail($id);
+        $internship = Internship::whereIn('status', ['Active', 'active', 'Open', 'open', 'OPEN', 'Published', 'published'])->findOrFail($id);
 
         $alreadyApplied = InternshipApplication::where('internship_id', $internship->id)
             ->where('user_id', $request->user()->id)
@@ -120,9 +137,9 @@ class PublicInternshipController extends Controller
         $application = InternshipApplication::create([
             'internship_id' => $internship->id,
             'user_id'       => $request->user()->id,
-            'status'        => 'Applied',
+            'status'        => 'applied',
             'cover_letter'  => $data['cover_letter'] ?? null,
-            'resume_path'   => $resumePath,
+            'resume_url'    => $resumePath,
             'portfolio_url' => $data['portfolio_url'] ?? null,
             'applied_at'    => now(),
         ]);

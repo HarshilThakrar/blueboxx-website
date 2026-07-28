@@ -28,17 +28,16 @@ export default function AdminApprovalsPage() {
   const fetchPendingApprovals = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const api = (await import('../../../src/lib/axios')).default;
+      const { getActiveToken } = await import('../../../src/lib/authUtils');
+      
+      const token = getActiveToken();
       if (!token) {
         router.push('/login');
         return;
       }
       
-      const api = (await import('../../../src/lib/axios')).default;
-      
-      const response = await api.get('/admin/approvals', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/admin/approvals');
       setUsers(response.data.data.data);
     } catch (error) {
       console.error('Error fetching approvals', error);
@@ -58,11 +57,8 @@ export default function AdminApprovalsPage() {
 
     const loadingToast = toast.loading(`${isApprove ? 'Approving' : 'Rejecting'} user...`);
     try {
-      const token = localStorage.getItem('auth_token');
       const api = (await import('../../../src/lib/axios')).default;
-      await api.put(`/admin/approvals/${id}/${action}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.put(`/admin/approvals/${id}/${action}`);
       
       setUsers(users.filter(u => u.id !== id));
       toast.success(`User ${action}d successfully`, { id: loadingToast });

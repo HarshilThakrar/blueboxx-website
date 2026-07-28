@@ -42,8 +42,15 @@ class OrderController extends Controller
         });
         $receiptId = 'rcpt_' . Str::random(10);
 
-        // Razorpay API keys (ensure they are set in .env)
-        $api = new Api(env('RAZORPAY_KEY'), env('RAZORPAY_SECRET'));
+        // Razorpay API keys (read from dynamic config)
+        $razorpayKey = config('services.razorpay.key');
+        $razorpaySecret = config('services.razorpay.secret');
+
+        if (!$razorpayKey || !$razorpaySecret) {
+            return response()->json(['message' => 'Payment gateway not configured'], 500);
+        }
+
+        $api = new Api($razorpayKey, $razorpaySecret);
 
         try {
             // Create Razorpay Order
@@ -78,7 +85,7 @@ class OrderController extends Controller
                 'order' => $order,
                 'razorpay_order_id' => $razorpayOrder['id'],
                 'amount' => $totalAmount,
-                'key' => env('RAZORPAY_KEY')
+                'key' => $razorpayKey
             ], 201);
 
         } catch (\Exception $e) {

@@ -17,7 +17,7 @@ class PublicJobController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Job::query()->where('status', 'Active');
+        $query = Job::query()->where('status', 'active');
 
         // Search
         if ($s = $request->query('search')) {
@@ -92,15 +92,13 @@ class PublicJobController extends Controller
      */
     public function show(Request $request, $id)
     {
-        $job = Job::where('status', 'Active')->findOrFail($id);
+        $job = Job::where('status', 'active')->findOrFail($id);
 
         // Track view
         \DB::table('job_views')->insertOrIgnore([
             'job_id'     => $job->id,
             'ip_address' => $request->ip(),
-            'user_agent' => substr($request->userAgent() ?? '', 0, 255),
-            'created_at' => now(),
-            'updated_at' => now(),
+            'user_id'    => auth('sanctum')->id(),
         ]);
 
         $isBookmarked = false;
@@ -146,11 +144,16 @@ class PublicJobController extends Controller
      */
     public function apply(Request $request, $id)
     {
-        $job = Job::where('status', 'Active')->findOrFail($id);
+        $job = Job::where('status', 'active')->findOrFail($id);
 
         // Check deadline
         if ($job->application_deadline && $job->application_deadline->isPast()) {
             return response()->json(['success' => false, 'message' => 'Application deadline has passed'], 422);
+        }
+
+        // Prevent students from applying to jobs
+        if ($request->user()->hasRole('student')) {
+            return response()->json(['success' => false, 'message' => 'Students can only apply for internships and courses.'], 403);
         }
 
         // Check for duplicate application
@@ -174,10 +177,9 @@ class PublicJobController extends Controller
         $application = JobApplication::create([
             'job_id'       => $job->id,
             'user_id'      => $request->user()->id,
-            'status'       => 'Applied',
+            'status'       => 'applied',
             'cover_letter' => $data['cover_letter'] ?? null,
             'resume_path'  => $resumePath,
-            'applied_at'   => now(),
         ]);
 
         return response()->json([

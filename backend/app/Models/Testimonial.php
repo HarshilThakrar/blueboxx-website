@@ -11,19 +11,23 @@ class Testimonial extends Model
 
     protected $fillable = [
         'name',
-        'role',
+        'designation',
         'company',
-        'message',
+        'review',
         'rating',
-        'avatar_path',
-        'is_approved',
+        'status',
+        'display_order',
+        'profile_image',
     ];
 
-    protected function casts(): array
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute()
     {
-        return [
-            'rating' => 'integer',
-            'is_approved' => 'boolean',
-        ];
+        if ($this->profile_image) {
+            return asset('storage/' . $this->profile_image);
+        }
+        
+        return null;
     }
 }

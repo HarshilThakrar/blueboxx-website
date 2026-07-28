@@ -45,20 +45,37 @@ export default function PostJobPage() {
     setSubmitting(true);
 
     try {
+      // Basic salary parsing
+      let salaryMin = null;
+      let salaryMax = null;
+      if (form.salary) {
+        const numbers = form.salary.match(/\d+/g);
+        if (numbers && numbers.length >= 2) {
+          salaryMin = parseInt(numbers[0]);
+          salaryMax = parseInt(numbers[1]);
+        } else if (numbers && numbers.length === 1) {
+          salaryMin = parseInt(numbers[0]);
+          salaryMax = parseInt(numbers[0]);
+        }
+      }
+
       await api.post("/company/jobs", {
         title: form.title,
-        category,
-        type: category === "Internship" ? "Internship" : form.type,
-        locationType: form.locationType,
+        employment_type: category === "Internship" ? "Internship" : form.type,
+        experience_level: "Entry Level", // Fallback, could add to form
+        remote_type: form.locationType,
         location: form.locationType === "Remote" ? "Remote" : form.location,
-        salary: form.salary,
+        salary_min: salaryMin,
+        salary_max: salaryMax,
         description: form.description,
-        skills,
+        required_skills: skills,
+        status: "active" // Or draft if we want
       });
       setSubmitted(true);
       toast.success("Job posted successfully!");
-    } catch (err) {
-      toast.error("Failed to post job");
+    } catch (err: any) {
+      console.error(err.response?.data);
+      toast.error("Failed to post job: " + (err.response?.data?.message || err.message));
     } finally {
       setSubmitting(false);
     }

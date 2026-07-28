@@ -8,23 +8,16 @@ use App\Models\PlacementPartner;
 use App\Models\Testimonial;
 use App\Models\User;
 use App\Models\Internship;
-use App\Models\Course;
-use App\Models\Job;
 use App\Models\ExpertProfile;
 use Illuminate\Support\Facades\Cache;
 
 class PublicCmsController extends Controller
 {
-    /**
-     * Get platform statistics for the Hero Section.
-     */
     public function stats()
     {
         return Cache::remember('public.cms.stats', now()->addHours(1), function () {
-            // These would normally be calculated from models or fetched from GlobalSettings.
-            // For production-readiness, we'll fetch actual counts, and fallback to base numbers.
             $studentsCount = User::role('student')->count() + 2500;
-            $placementsCount = 1200; // E.g., PlacementRecord::count() + 1200
+            $placementsCount = 1200;
             $projectsCount = Internship::count() * 5 + 850; 
             $partnersCount = PlacementPartner::where('is_active', true)->count() + 120;
 
@@ -40,14 +33,21 @@ class PublicCmsController extends Controller
         });
     }
 
-    /**
-     * Get public global settings.
-     */
     public function settings()
     {
         return Cache::remember('public.cms.settings', now()->addHours(6), function () {
             $settings = \App\Models\GlobalSetting::where('group', 'general')
-                ->pluck('value', 'key');
+                ->pluck('value', 'key')->toArray();
+                
+            try {
+                $credentials = \App\Models\SystemApiCredential::where('status', true)->get();
+                foreach ($credentials as $cred) {
+                    if ($cred->provider === 'razorpay') $settings['razorpay_key'] = $cred->api_key;
+                    if ($cred->provider === 'stripe') $settings['stripe_key'] = $cred->api_key;
+                    if ($cred->provider === 'google_maps') $settings['google_maps_key'] = $cred->api_key;
+                    if ($cred->provider === 'google_oauth') $settings['google_oauth_client_id'] = $cred->api_key;
+                }
+            } catch (\Exception $e) {}
                 
             return response()->json([
                 'success' => true,
@@ -56,9 +56,6 @@ class PublicCmsController extends Controller
         });
     }
 
-    /**
-     * Get placement partners for Clients Section.
-     */
     public function partners()
     {
         return Cache::remember('public.cms.partners', now()->addHours(6), function () {
@@ -78,23 +75,25 @@ class PublicCmsController extends Controller
         });
     }
 
-    /**
-     * Get testimonials.
-     */
     public function testimonials()
     {
-        return Cache::remember('public.cms.testimonials', now()->addHours(6), function () {
-            $testimonials = Testimonial::where('is_featured', true)
-                ->orderBy('created_at', 'desc')
-                ->take(10)
+        return Cache::remember('public.cms.testimonials', now()->addMinutes(5), function () {
+            $testimonials = Testimonial::where('status', 'active')
+                ->orderBy('display_order', 'asc')
                 ->get()
                 ->map(fn($t) => [
                     'id' => $t->id,
                     'name' => $t->name,
-                    'role' => $t->role,
-                    'content' => $t->content,
-                    'avatar' => $t->photo_url ? asset('storage/' . $t->photo_url) : null,
+                    'designation' => $t->designation,
+                    'role' => $t->designation, // Compatibility for TestimonialsSection
+                    'company' => $t->company,
+                    'review' => $t->review,
+                    'content' => $t->review, // Compatibility for TestimonialsSection
+                    'image_url' => $t->image_url,
+                    'avatar' => $t->image_url, // Compatibility for TestimonialsSection
                     'rating' => $t->rating,
+                    'year' => $t->created_at ? $t->created_at->format('Y') : date('Y'), // Compatibility for TestimonialsSection
+                    'highlightedText' => '', // Compatibility for TestimonialsSection
                 ]);
 
             return response()->json([
@@ -104,9 +103,6 @@ class PublicCmsController extends Controller
         });
     }
 
-    /**
-     * Get FAQs.
-     */
     public function faqs()
     {
         return Cache::remember('public.cms.faqs', now()->addHours(6), function () {
@@ -126,9 +122,6 @@ class PublicCmsController extends Controller
         });
     }
 
-    /**
-     * Get featured experts/mentors.
-     */
     public function experts()
     {
         return Cache::remember('public.cms.experts', now()->addHours(6), function () {
@@ -151,7 +144,7 @@ class PublicCmsController extends Controller
                     'gradientFrom' => '#1B2A6B',
                     'gradientTo' => '#2E45A3',
                     'avatarBg' => 'from-blue-600 to-indigo-700',
-                    'slug' => $e->id // we don't have a slug field standard, use ID
+                    'slug' => $e->id
                 ]);
 
             return response()->json([

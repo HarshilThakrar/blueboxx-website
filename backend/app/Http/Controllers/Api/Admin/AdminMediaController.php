@@ -76,19 +76,7 @@ class AdminMediaController extends Controller
         ]);
     }
 
-    public function getTrash(Request $request)
-    {
-        $files = MediaFile::onlyTrashed()->latest()->get()->map(function ($file) {
-            return array_merge($file->toArray(), [
-                'url'        => $file->path ? asset('storage/' . $file->path) : null,
-                'size_bytes' => $file->size,
-            ]);
-        });
-        return response()->json([
-            'success' => true,
-            'data'    => $files
-        ]);
-    }
+
 
     public function uploadFile(Request $request)
     {

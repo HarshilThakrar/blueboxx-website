@@ -16,7 +16,7 @@ class PublicCourseController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Course::with(['category', 'level'])
+        $query = Course::with(['category', 'level'])->withCount('enrollments')
             ->where('status', 'Published')
             ->where('is_archived', false);
 
@@ -83,7 +83,7 @@ class PublicCourseController extends Controller
             'is_featured'       => $c->is_featured,
             'category'          => ['id' => $c->category?->id, 'name' => $c->category?->name, 'slug' => $c->category?->slug],
             'level'             => ['id' => $c->level?->id, 'name' => $c->level?->name],
-            'enrolled_count'    => CourseEnrollment::where('course_id', $c->id)->count(),
+            'enrolled_count'    => $c->enrollments_count ?? 0,
         ]);
 
         return response()->json([

@@ -96,7 +96,6 @@ export default function ProfilePage() {
                 )}
               </CardContent>
             </Card>
-          </div>
 
           {/* Main Column: Details */}
           <div className="lg:col-span-2 space-y-6">

@@ -16,7 +16,16 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutTimer, setLockoutTimer] = useState(0);
-  const { login } = useAuth();
+  const [rememberMe, setRememberMe] = useState(false);
+  const { login, isAuthenticated, role } = useAuth();
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("bb_remembered_email");
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -30,6 +39,23 @@ export default function LoginPage() {
     return () => clearInterval(interval);
   }, [lockoutTimer, failedAttempts]);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      const roleToDashboard: Record<string, string> = {
+        admin:       '/admin/dashboard',
+        super_admin: '/admin/dashboard',
+        student:     '/student/dashboard',
+        expert:      '/expert/dashboard',
+        company:     '/company/dashboard',
+        college:     '/college/dashboard',
+        intern:      '/intern/dashboard',
+        'job-seeker':'/jobseeker/dashboard',
+        jobseeker:   '/jobseeker/dashboard',
+      };
+      router.replace(roleToDashboard[role?.toLowerCase() || 'student'] || '/student/dashboard');
+    }
+  }, [isAuthenticated, role, router]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (lockoutTimer > 0) return;
@@ -40,9 +66,6 @@ export default function LoginPage() {
       const response = await api.post("/login", { email, password });
       
       const { token, user } = response.data;
-      
-      // Save token
-      localStorage.setItem("auth_token", token);
       
       // Extract role
       let userRole = "student";
@@ -61,7 +84,15 @@ export default function LoginPage() {
         role: userRole
       };
 
-      login(mappedUser);
+      login(mappedUser, token);
+      
+      // Handle Remember Me
+      if (rememberMe) {
+        localStorage.setItem("bb_remembered_email", email);
+      } else {
+        localStorage.removeItem("bb_remembered_email");
+      }
+
       toast.success("Logged in successfully!");
       setIsLoading(false);
 
@@ -77,7 +108,12 @@ export default function LoginPage() {
         'job-seeker':'/jobseeker/dashboard',
         jobseeker:   '/jobseeker/dashboard',
       };
-      const destination = roleToDashboard[userRole] ?? '/student/dashboard';
+      
+      const { redirect } = router.query;
+      const destination = typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('/login')
+        ? redirect 
+        : roleToDashboard[userRole] ?? '/student/dashboard';
+        
       router.push(destination);
     } catch (err: any) {
       setIsLoading(false);
@@ -188,7 +224,12 @@ export default function LoginPage() {
 
           <div className="flex items-center justify-between py-1">
             <label className="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" className="w-3.5 h-3.5 rounded border-slate-300 text-[#1B2A6B] focus:ring-[#1B2A6B]/15" />
+              <input 
+                type="checkbox" 
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-3.5 h-3.5 rounded border-slate-300 text-[#1B2A6B] focus:ring-[#1B2A6B]/15" 
+              />
               <span className="text-[11px] font-bold text-slate-500 select-none">Remember me</span>
             </label>
           </div>

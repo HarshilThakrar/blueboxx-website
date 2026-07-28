@@ -8,6 +8,7 @@ import {
   CheckCircle2, ChevronDown, ChevronUp, Play, X, Loader2
 } from "lucide-react";
 import { useStore } from "../../src/store/useStore";
+import { useAuth } from "../../src/context/AuthContext";
 import api from "../../src/lib/axios";
 
 export default function CourseDetailPage() {
@@ -17,7 +18,10 @@ export default function CourseDetailPage() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [course, setCourse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEnrollingFree, setIsEnrollingFree] = useState(false);
+  const [enrollSuccess, setEnrollSuccess] = useState(false);
   const addToCart = useStore(state => state.addToCart);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (!id) return;
@@ -73,6 +77,28 @@ export default function CourseDetailPage() {
     "Best practices for clean, scalable, and maintainable code",
     "Prepare for technical interviews with confidence"
   ];
+
+  const isFree = parseFloat(course.price) === 0 || course.course_type === 'Free';
+
+  const handleFreeEnrollment = async () => {
+    if (!isAuthenticated) {
+      router.push(`/login?redirect=/courses/${id}`);
+      return;
+    }
+
+    setIsEnrollingFree(true);
+    try {
+      await api.post(`/student/courses/${course.id}/enroll`);
+      setEnrollSuccess(true);
+      setTimeout(() => {
+        router.push('/student/dashboard');
+      }, 1500);
+    } catch (error: any) {
+      console.error("Free enrollment failed", error);
+      alert(error.response?.data?.message || "Failed to enroll. Please try again.");
+      setIsEnrollingFree(false);
+    }
+  };
 
   return (
     <MainLayout>
@@ -237,7 +263,7 @@ export default function CourseDetailPage() {
                 className="relative h-56 bg-slate-200 group cursor-pointer overflow-hidden"
                 onClick={() => setIsVideoOpen(true)}
               >
-                <img src={course.thumbnail} alt="Course Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <img src={course.thumbnail || '/logoblue.png'} alt="Course Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-[#0d1635]/40 flex items-center justify-center">
                   <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/40 group-hover:bg-[#1B2A6B] transition-colors shadow-lg">
                     <PlayCircle size={32} className="text-white ml-1" />
@@ -262,36 +288,61 @@ export default function CourseDetailPage() {
                 </div>
 
                 <div className="space-y-3 mb-6">
-                  <Button 
-                    onClick={() => {
-                      addToCart({
-                        id: id as string || course.title,
-                        title: course.title,
-                        price: course.price,
-                        thumbnail: course.thumbnail,
-                        type: 'course'
-                      });
-                      router.push('/checkout');
-                    }}
-                    className="w-full bg-[#1B2A6B] hover:bg-[#0d1635] text-white font-black h-14 rounded-xl text-lg shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
-                  >
-                    Enroll Now
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => addToCart({
-                      id: id as string || course.title,
-                      title: course.title,
-                      price: course.price,
-                      thumbnail: course.thumbnail,
-                      type: 'course'
-                    })}
-                    className="w-full border-slate-200 text-slate-600 font-extrabold h-12 rounded-xl hover:bg-slate-50 transition-colors"
-                  >
-                    Add to Cart
-                  </Button>
+                  {isFree ? (
+                    <Button 
+                      onClick={handleFreeEnrollment}
+                      disabled={isEnrollingFree || enrollSuccess}
+                      className={`w-full font-black h-14 rounded-xl text-lg shadow-lg transition-all flex items-center justify-center gap-2 ${
+                        enrollSuccess 
+                          ? 'bg-emerald-500 text-white' 
+                          : 'bg-[#1B2A6B] hover:bg-[#0d1635] text-white hover:shadow-xl hover:-translate-y-0.5'
+                      }`}
+                    >
+                      {enrollSuccess ? (
+                        <>
+                          <CheckCircle2 size={20} /> Successfully Enrolled
+                        </>
+                      ) : isEnrollingFree ? (
+                        <>
+                          <Loader2 className="animate-spin" size={20} /> Enrolling...
+                        </>
+                      ) : (
+                        "Enroll for Free"
+                      )}
+                    </Button>
+                  ) : (
+                    <>
+                      <Button 
+                        onClick={() => {
+                          addToCart({
+                            id: id as string || course.title,
+                            title: course.title,
+                            price: course.price,
+                            thumbnail: course.thumbnail,
+                            type: 'course'
+                          });
+                          router.push('/checkout');
+                        }}
+                        className="w-full bg-[#1B2A6B] hover:bg-[#0d1635] text-white font-black h-14 rounded-xl text-lg shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                      >
+                        Buy Now
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => addToCart({
+                          id: id as string || course.title,
+                          title: course.title,
+                          price: course.price,
+                          thumbnail: course.thumbnail,
+                          type: 'course'
+                        })}
+                        className="w-full border-slate-200 text-slate-600 font-extrabold h-12 rounded-xl hover:bg-slate-50 transition-colors"
+                      >
+                        Add to Cart
+                      </Button>
+                    </>
+                  )}
                 </div>
-
                 <div className="text-center text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-6">
                   30-Day Money-Back Guarantee
                 </div>

@@ -20,14 +20,14 @@ class PublicExpertController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ExpertProfile::with(['user:id,name,email,profile_photo_path'])
+        $query = ExpertProfile::with(['user:id,first_name,last_name,email'])
             ->where('is_available', true)
             ->where('is_verified', true)
             ->whereHas('user', fn($q) => $q->where('status', 'active'));
 
         if ($s = $request->query('search')) {
             $query->where(function($q) use ($s) {
-                $q->whereHas('user', fn($qu) => $qu->where('name', 'like', "%{$s}%"))
+                $q->whereHas('user', fn($qu) => $qu->where('first_name', 'like', "%{$s}%")->orWhere('last_name', 'like', "%{$s}%"))
                   ->orWhere('designation', 'like', "%{$s}%")
                   ->orWhere('company', 'like', "%{$s}%");
             });
@@ -52,8 +52,8 @@ class PublicExpertController extends Controller
 
         $data = $experts->through(fn($e) => [
             'id'             => $e->id,
-            'name'           => $e->user->name,
-            'avatar'         => $e->user->profile_photo_url,
+            'name'           => $e->user ? $e->user->first_name . ' ' . $e->user->last_name : 'Expert User',
+            'avatar'         => $e->profile_photo ? url('storage/' . $e->profile_photo) : null,
             'designation'    => $e->designation,
             'company'        => $e->company,
             'specialization' => $e->specialization,
@@ -80,7 +80,7 @@ class PublicExpertController extends Controller
     public function show($id)
     {
         $expert = ExpertProfile::with([
-            'user:id,name,email,profile_photo_path',
+            'user:id,first_name,last_name,email',
             'sessions' => fn($q) => $q->where('is_active', true),
             'availabilities' => fn($q) => $q->where('is_active', true)
         ])
@@ -91,8 +91,8 @@ class PublicExpertController extends Controller
             'success' => true,
             'data'    => [
                 'id'             => $expert->id,
-                'name'           => $expert->user->name,
-                'avatar'         => $expert->user->profile_photo_url,
+                'name'           => $expert->user ? $expert->user->first_name . ' ' . $expert->user->last_name : 'Expert User',
+                'avatar'         => $expert->profile_photo ? url('storage/' . $expert->profile_photo) : null,
                 'designation'    => $expert->designation,
                 'company'        => $expert->company,
                 'bio'            => $expert->bio,

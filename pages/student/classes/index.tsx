@@ -78,7 +78,7 @@ export default function LiveClassesPage() {
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <h3 className="font-black text-slate-800 text-sm">{cls.title}</h3>
                 <span className={`px-2 py-0.5 text-[10px] font-black rounded-full uppercase ${STATUS_COLORS[cls.status]}`}>
-                  {cls.status === "live" ? "🔴 LIVE" : cls.status}
+                  {cls.status === "live" ? "LIVE" : cls.status}
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-semibold mb-1">{cls.course} · {cls.instructor}</p>

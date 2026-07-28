@@ -21,9 +21,37 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
 };
 
+import { SEO } from "../src/components/seo/SEO";
+
 export default function AboutPage() {
   return (
-    <MainLayout>
+    <>
+      <SEO 
+        title="About Blueboxx DA | Premier EdTech & Creative Production House"
+        description="Established in 2015, Blueboxx DA is Vadodara's premier Advertising Agency, Production House, and EdTech platform driving the Learn-Work-Earn model."
+        keywords="About Blueboxx, Advertising Agency Vadodara, Production House Gujarat, EdTech Company Vadodara, Ankush Dubey, Blueboxx Founder"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          "name": "Blueboxx DA",
+          "image": "https://blueboxx.in/og-image.jpg",
+          "telephone": "+91 9023512853",
+          "url": "https://blueboxx.in/about",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Near Jetalpur Bridge, Akota Road, FF 51, India Bulls Mega Mall",
+            "addressLocality": "Vadodara",
+            "addressRegion": "Gujarat",
+            "postalCode": "390020",
+            "addressCountry": "IN"
+          },
+          "founder": {
+            "@type": "Person", 
+            "name": "Ankush Dubey"
+          }
+        }}
+      />
+      <MainLayout>
       <div className="min-h-screen bg-transparent font-sans">
 
         {/* --- HERO SECTION --- */}
@@ -304,48 +332,158 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* --- MEET OUR TEAM --- */}
-        <section className="py-20 bg-transparent border-t border-slate-200">
-          <div className="container mx-auto max-w-7xl px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">Meet Our Team</h2>
-              <p className="text-lg text-slate-500 max-w-2xl mx-auto">
-                The passionate individuals bridging the gap between education and employment.
+        {/* --- MEET OUR FOUNDER --- */}
+        <section className="py-16 bg-transparent border-t border-slate-200">
+          <div className="container mx-auto max-w-5xl px-4">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-3">Meet Our Founder</h2>
+              <p className="text-slate-500 max-w-xl mx-auto">
+                The visionary leader behind the Learn-Work-Earn movement.
               </p>
             </div>
 
-            <div className="grid sm:grid-cols-2 max-w-3xl mx-auto gap-8">
-              {[
-                { name: "Ankush Dubey", role: "Founder & CEO", desc: "Visionary leader driving the Learn-Work-Earn model.", img: "/ankush.jpeg" },
-                { name: "Nirav Purandare", role: "Co-Founder", desc: "Ensuring scalable growth and strategic partnerships.", img: "/nirav.jpeg" }
-              ].map((member, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ type: "spring", stiffness: 100, delay: i * 0.1 }}
-                  whileHover={{ y: -12, scale: 1.02 }}
-                  className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-2xl transition-all duration-300 group relative overflow-hidden text-center z-10 w-full max-w-xs"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 pointer-events-none" />
-                  <div className="w-28 h-28 mx-auto rounded-full overflow-hidden mb-6 bg-slate-200 border-4 border-white shadow-lg group-hover:shadow-indigo-200 transition-all duration-500 relative z-10">
-                    <img src={member.img} alt={member.name} className={`w-full h-full object-cover transition-all duration-700 ${(member as any).imgClassName || "group-hover:scale-110"}`} />
-                  </div>
-                  <h4 className="text-xl font-bold text-slate-900 mb-1 relative z-10">{member.name}</h4>
-                  <p className="text-sm font-black text-[#C9A227] uppercase tracking-wider mb-4 relative z-10">{member.role}</p>
+            {/* ── Wide Horizontal Card ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ type: "spring", stiffness: 80, damping: 18 }}
+              className="relative bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-100 group"
+            >
+              {/* Top accent bar */}
+              <div className="h-1.5 w-full bg-gradient-to-r from-[#1B2A6B] via-[#C9A227] to-[#1B2A6B]" />
 
-                  {/* Socials */}
-                  <div className="flex items-center justify-center gap-3 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 mb-4 relative z-10">
-                    <motion.a whileHover={{ scale: 1.2, rotate: -10 }} href="#" className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-[#1B2A6B] hover:text-white transition-colors shadow-sm"><Linkedin size={14} /></motion.a>
-                    <motion.a whileHover={{ scale: 1.2, rotate: 10 }} href="#" className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-[#1B2A6B] hover:text-white transition-colors shadow-sm"><Twitter size={14} /></motion.a>
+              {/* Background decoration */}
+              <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-[#1B2A6B]/4 to-transparent rounded-full translate-x-1/3 -translate-y-1/3 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-[#C9A227]/4 to-transparent rounded-full pointer-events-none" />
+
+              <div className="flex flex-col md:flex-row items-center md:items-stretch gap-0">
+
+                {/* LEFT — Dark Photo Panel */}
+                <div className="relative md:w-80 lg:w-96 shrink-0 bg-gradient-to-br from-[#0d1635] to-[#1B2A6B] flex flex-col items-center justify-center py-10 px-8 gap-5">
+                  {/* Dot pattern */}
+                  <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
+
+                  {/* Photo — large, fully visible */}
+                  <motion.div 
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    whileInView={{ scale: 1, opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ type: "spring", delay: 0.1, stiffness: 100 }}
+                    className="relative z-10 group/photo"
+                  >
+                    <div className="w-44 h-52 rounded-2xl overflow-hidden border-4 border-white/20 shadow-2xl ring-2 ring-[#C9A227]/40">
+                      <img
+                        src="/ankush.jpeg"
+                        alt="Ankush Dubey — Founder & CEO, Blueboxx DA"
+                        className="w-full h-full object-cover object-top transition-transform duration-700 group-hover/photo:scale-110"
+                      />
+                    </div>
+                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-[#C9A227] text-[#0d1635] text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-wider whitespace-nowrap">
+                      Founder & CEO
+                    </div>
+                  </motion.div>
+
+                  {/* Name */}
+                  <div className="text-center z-10 mt-3">
+                    <h4 className="text-2xl font-extrabold text-white tracking-tight">Ankush Dubey</h4>
+                    <p className="text-white/50 text-xs mt-1 font-medium">Blueboxx Designs & Animation</p>
                   </div>
-                  <p className="text-slate-600 text-sm leading-relaxed relative z-10">{member.desc}</p>
-                </motion.div>
-              ))}
-            </div>
+
+                  {/* Stats row */}
+                  <motion.div 
+                    initial={{ y: 20, opacity: 0 }}
+                    whileInView={{ y: 0, opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 }}
+                    className="flex gap-6 z-10 border-t border-white/10 pt-5 w-full justify-center"
+                  >
+                    {[{ v: "12+", l: "Years Exp." }, { v: "500+", l: "Students" }, { v: "50+", l: "Companies" }].map((s, i) => (
+                      <motion.div 
+                        key={s.l} 
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4 + i * 0.1 }}
+                        viewport={{ once: true }}
+                        className="text-center"
+                      >
+                        <p className="text-2xl font-black text-[#C9A227] leading-none">{s.v}</p>
+                        <p className="text-[10px] text-white/50 font-semibold uppercase tracking-wide mt-1">{s.l}</p>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </div>
+
+                {/* RIGHT — Info Panel */}
+                <div className="flex-1 p-8 lg:p-10 flex flex-col justify-center">
+
+                  {/* Header */}
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="w-9 h-9 rounded-xl bg-[#1B2A6B] flex items-center justify-center shadow-md shrink-0">
+                      <Award size={16} className="text-[#C9A227]" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">About the Founder</p>
+                      <div className="w-16 h-0.5 bg-gradient-to-r from-[#1B2A6B] to-[#C9A227] rounded-full mt-1" />
+                    </div>
+                  </div>
+
+                  {/* Bio */}
+                  <motion.p 
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.4 }}
+                    className="text-slate-600 text-base leading-relaxed mb-6"
+                  >
+                    A seasoned entrepreneur and creative technologist with over <span className="font-bold text-[#1B2A6B]">12 years of industry expertise</span> in EdTech, Advertising, and Digital Production. As the architect of the pioneering <span className="font-bold text-[#1B2A6B]">Learn-Work-Earn</span> model, Ankush has transformed how students transition into industry-ready professionals — bridging the gap between quality education and real-world career opportunities.
+                  </motion.p>
+
+                  {/* Expertise Grid — Lucide icons, no emojis */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-6">
+                    {[
+                      { Icon: BookOpen,   label: "EdTech Leadership" },
+                      { Icon: TrendingUp, label: "Brand Strategy" },
+                      { Icon: Globe,      label: "Digital Marketing" },
+                      { Icon: Target,     label: "Product Development" },
+                      { Icon: Users,      label: "Placement Mentorship" },
+                      { Icon: Building2,  label: "Media Production" },
+                    ].map(({ Icon, label }, idx) => (
+                      <motion.div
+                        key={label}
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.5 + idx * 0.05 }}
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:border-[#1B2A6B]/30 hover:bg-[#1B2A6B]/5 transition-colors cursor-default shadow-sm"
+                      >
+                        <div className="w-6 h-6 rounded-md bg-[#1B2A6B]/10 flex items-center justify-center shrink-0">
+                          <Icon size={12} className="text-[#1B2A6B]" />
+                        </div>
+                        <span className="text-xs font-semibold text-slate-700">{label}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Bottom CTA strip */}
+                  <div className="flex items-center gap-3 pt-5 border-t border-slate-100">
+                    <div className="flex-1">
+                      <p className="text-xs text-slate-400 font-medium">Established <span className="font-bold text-slate-600">2015</span> · Vadodara, Gujarat, India</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-4 py-2 bg-[#1B2A6B] text-white text-xs font-bold rounded-xl shadow-md hover:bg-[#0d1635] transition-colors cursor-pointer">
+                      <TrendingUp size={13} />
+                      <span>12+ Years of Excellence</span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </motion.div>
           </div>
         </section>
+
+
 
         {/* --- CLIENTS / PARTNERS --- */}
         <div className="bg-white">
@@ -357,5 +495,6 @@ export default function AboutPage() {
         </div>
       </div>
     </MainLayout>
+    </>
   );
 }

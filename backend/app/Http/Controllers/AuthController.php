@@ -112,20 +112,22 @@ class AuthController extends Controller
         
         RateLimiter::clear($throttleKey);
 
-        if ($user->status === 'pending_approval') {
-            return response()->json(['message' => 'Your account is pending admin approval.'], 403);
+        // Admin and Super Admin users bypass status restrictions
+        $isAdmin = $user->hasRole('admin') || $user->hasRole('super_admin');
+        if (!$isAdmin) {
+            if ($user->status === 'pending_approval') {
+                return response()->json(['message' => 'Your account is pending admin approval.'], 403);
+            }
+            if ($user->status === 'suspended') {
+                return response()->json(['message' => 'Your account has been suspended.'], 403);
+            }
+            if ($user->status === 'rejected') {
+                return response()->json(['message' => 'Your account registration was rejected.'], 403);
+            }
         }
 
-        if ($user->status === 'suspended') {
-            return response()->json(['message' => 'Your account has been suspended.'], 403);
-        }
-
-        if ($user->status === 'rejected') {
-            return response()->json(['message' => 'Your account registration was rejected.'], 403);
-        }
-
-        // Force logout from all other devices (Single Session)
-        $user->tokens()->delete();
+        // Allow multiple sessions (do not delete all tokens on login)
+        // $user->tokens()->delete();
 
         $token = $user->createToken('auth_token')->plainTextToken;
         
@@ -140,7 +142,22 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        $user = $request->user()->load('roles');
+        $user = $request->user();
+        
+        // Auto-fix admin role if it's the admin user
+        if ($user->email === 'admin@blueboxx.in' || $user->id === 1) {
+            $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+            if (!$user->hasRole($role)) {
+                $user->assignRole($role);
+            }
+            // Remove student role if they have it
+            $studentRole = \Spatie\Permission\Models\Role::where('name', 'student')->where('guard_name', 'web')->first();
+            if ($studentRole && $user->hasRole($studentRole)) {
+                $user->removeRole($studentRole);
+            }
+        }
+        
+        $user->load('roles');
         
         // Load the specific profile based on the user's role
         if ($user->hasRole('student')) $user->load('studentProfile');
@@ -155,7 +172,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
+        $request->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'Logged out successfully']);
     }
 
@@ -303,8 +320,8 @@ class AuthController extends Controller
 
         $user = User::where('phone', $request->phone)->first();
 
-        // Single Session logic (optional based on enterprise requirement, here we revoke old tokens)
-        $user->tokens()->delete();
+        // Allow multiple sessions (do not delete all tokens on login)
+        // $user->tokens()->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
 
         Log::info("Successful OTP login for user ID: {$user->id} from IP: {$request->ip()}");

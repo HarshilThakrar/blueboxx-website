@@ -1,4 +1,5 @@
 import api from '../../axios';
+import { getActiveToken } from '../../authUtils';
 import useSWR from 'swr';
 
 const fetcher = (url: string) => api.get(url).then((res) => res.data);
@@ -64,7 +65,7 @@ export const InternshipService = {
   },
 
   exportCSV: (params: Record<string, any> = {}) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : '';
+    const token = typeof window !== 'undefined' ? getActiveToken() : '';
     const queryParams = new URLSearchParams(
       Object.fromEntries(Object.entries(params).filter(([, v]) => v !== '' && v != null))
     ).toString();

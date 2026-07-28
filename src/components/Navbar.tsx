@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, Variants } from 'framer-motion';
-import { useAuthStore } from '../store/useAuthStore';
+import { useAuth } from '../context/AuthContext';
 import { useStore } from '../store/useStore';
 import { useGlobalSettings } from '../contexts/SettingsContext';
 
@@ -13,7 +13,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuth();
   const cartItemCount = useStore((state) => state.cart.length);
   const { settings } = useGlobalSettings();
 
@@ -71,11 +71,16 @@ export default function Navbar() {
 
   // Dashboard link based on role
   const getDashboardLink = () => {
-    if (!user) return '/student/dashboard';
-    switch (user.role) {
+    if (!user || !user.role) return '/student/dashboard';
+    const role = user.role.toLowerCase();
+    switch (role) {
+      case 'super_admin':
       case 'admin': return '/admin/dashboard';
       case 'company': return '/companies/dashboard';
+      case 'expert':
       case 'mentor': return '/expert/dashboard';
+      case 'intern': return '/intern/dashboard';
+      case 'job-seeker': return '/jobseeker/dashboard';
       default: return '/student/dashboard';
     }
   };
@@ -144,14 +149,32 @@ export default function Navbar() {
             </Link>
 
             {isAuthenticated ? (
-              <div className="hidden md:flex items-center gap-4">
-                <Link href={getDashboardLink()} className="flex items-center gap-2 group">
-                  <img src={user?.avatar} alt="User Avatar" className="w-9 h-9 rounded-full border-2 border-[#1B2A6B]/20 group-hover:border-[#C9A227] transition-colors object-cover" />
-                  <span className="text-sm font-semibold text-slate-700 group-hover:text-[#1B2A6B]">{user?.name}</span>
-                </Link>
-                <button onClick={logout} className="text-xs font-semibold text-slate-500 hover:text-red-500 transition-colors">
-                  Logout
-                </button>
+              <div className="hidden md:flex items-center gap-4 border-l border-slate-200 pl-4">
+                <div className="relative group/profile">
+                  <Link href={getDashboardLink()} className="flex items-center gap-2.5 cursor-pointer">
+                    <div className="text-right hidden lg:block">
+                      <p className="text-xs font-bold text-slate-800 leading-none mb-1">{user?.name}</p>
+                      <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider leading-none">{user?.role || 'Student'}</p>
+                    </div>
+                    <div className="relative">
+                      <img src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name}&background=1B2A6B&color=fff`} alt="User Avatar" className="w-10 h-10 rounded-full border-2 border-slate-100 shadow-sm object-cover group-hover/profile:border-[#C9A227] transition-all" />
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+                    </div>
+                  </Link>
+                  
+                  {/* Dropdown for Profile */}
+                  <div className="absolute right-0 top-full pt-3 opacity-0 translate-y-2 pointer-events-none group-hover/profile:opacity-100 group-hover/profile:translate-y-0 group-hover/profile:pointer-events-auto transition-all duration-300 z-50">
+                    <div className="w-48 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-slate-100 py-2 overflow-hidden flex flex-col">
+                      <Link href={getDashboardLink()} className="px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#1B2A6B] transition-colors">
+                        Dashboard
+                      </Link>
+                      <div className="h-px bg-slate-100 my-1 w-full" />
+                      <button onClick={logout} className="px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-rose-50 transition-colors text-left w-full">
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
               <Link

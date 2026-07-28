@@ -90,10 +90,10 @@ export default function AdminRolesPage() {
       role.permissions.forEach((p: any) => {
         const parts = p.name.split('_');
         const action = parts[0];
-        const module = parts.slice(1).join('_');
+        const moduleNameStr = parts.slice(1).join('_');
         
         // Find matching UI labels
-        const uiModule = MODULES.find(m => m.toLowerCase().replace(/\s+/g, '_') === module);
+        const uiModule = MODULES.find(m => m.toLowerCase().replace(/\s+/g, '_') === moduleNameStr);
         const uiAction = PERMISSION_TYPES.find(pt => pt.toLowerCase() === action);
         
         if (uiModule && uiAction) {

@@ -46,19 +46,21 @@ export default function InternshipApplications() {
   // Determine if viewing a specific internship's applications, or all
   const internshipId = router.query.internshipId as string | undefined;
 
-  const { data: apps, meta, isLoading, mutate } = internshipId
-    ? InternshipService.useInternshipApplications(internshipId, {
-        search: searchQuery || undefined,
-        status: filterStatus || undefined,
-        page,
-        per_page: 15,
-      })
-    : InternshipService.useAllApplications({
-        search: searchQuery || undefined,
-        status: filterStatus || undefined,
-        page,
-        per_page: 15,
-      });
+  const specificAppResponse = InternshipService.useInternshipApplications(internshipId || '', {
+    search: searchQuery || undefined,
+    status: filterStatus || undefined,
+    page,
+    per_page: 15,
+  });
+
+  const allAppResponse = InternshipService.useAllApplications({
+    search: searchQuery || undefined,
+    status: filterStatus || undefined,
+    page,
+    per_page: 15,
+  });
+
+  const { data: apps, meta, isLoading, mutate } = internshipId ? specificAppResponse : allAppResponse;
 
   const handleStatusChange = async (id: number, status: string) => {
     toast.loading('Updating…', { id: 'app-status' });

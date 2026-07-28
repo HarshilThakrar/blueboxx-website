@@ -1,4 +1,15 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /student/
+Disallow: /intern/
+Disallow: /jobseeker/
+Disallow: /expert/
+Disallow: /company/
+Disallow: /college/
+Disallow: /checkout/
+Disallow: /onboarding/
+Disallow: /api/
 
+# Sitemaps
 Sitemap: https://blueboxx.in/sitemap.xml

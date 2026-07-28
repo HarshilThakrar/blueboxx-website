@@ -242,3 +242,5 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
     </div>
   );
 });
+
+RichTextEditor.displayName = 'RichTextEditor';

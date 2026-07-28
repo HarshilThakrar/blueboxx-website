@@ -1,4 +1,5 @@
 import api from '../../axios';
+import { getActiveToken } from '../../authUtils';
 import useSWR from 'swr';
 
 const fetcher = (url: string) => api.get(url).then((res) => res.data);
@@ -45,7 +46,7 @@ export const EnrollmentService = {
   },
 
   exportCSV: (status?: string) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : '';
+    const token = typeof window !== 'undefined' ? getActiveToken() : '';
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
     const query = status && status !== 'All' ? `&status=${status}` : '';
     window.open(`${baseUrl}/admin/enrollments/export?token=${token}${query}`, '_blank');

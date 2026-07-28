@@ -3,8 +3,12 @@ import { Card, CardContent } from "../src/components/ui/Card";
 import { GraduationCap, MapPin, ExternalLink, Award } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import useSWR from "swr";
+import api from "../src/lib/axios";
 
-const colleges = [
+const fetcher = (url: string) => api.get(url).then(res => res.data);
+
+const mockColleges = [
   { 
     name: "Sigma University", 
     location: "Vadodara, Gujarat", 
@@ -36,6 +40,9 @@ const colleges = [
 ];
 
 export default function CollegesPage() {
+  const { data, isLoading } = useSWR("/public/colleges", fetcher);
+  const colleges = data?.data && data.data.length > 0 ? data.data : mockColleges;
+
   return (
     <MainLayout>
       {/* Hero Section */}

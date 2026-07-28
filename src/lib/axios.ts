@@ -6,13 +6,14 @@ const api = Axios.create({
         'X-Requested-With': 'XMLHttpRequest',
         'Accept': 'application/json',
     },
-    withCredentials: true,
 });
+
+import { getActiveRoleFromUrl, getActiveToken, clearSession } from './authUtils';
 
 // Interceptor to attach token to requests
 api.interceptors.request.use((config) => {
     if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('auth_token');
+        const token = getActiveToken();
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -30,6 +31,23 @@ const PUBLIC_PATHS = [
     '/verify-otp',
     '/verify-email',
     '/', // Home page
+    '/internships',
+    '/jobs',
+    '/courses',
+    '/apply',  // Application flow pages
+    '/about',
+    '/contact',
+    '/experts',
+];
+
+// Protected portal prefixes — only these should trigger logout on 401
+const PORTAL_PATHS = [
+    '/student/',
+    '/admin/',
+    '/company/',
+    '/expert/',
+    '/college/',
+    '/jobseeker/',
 ];
 
 // Interceptor to handle global 401 Unauthorized responses
@@ -40,20 +58,21 @@ api.interceptors.response.use(
             if (typeof window !== 'undefined') {
                 const currentPath = window.location.pathname;
 
-                // Only redirect to login if:
-                // 1. We are NOT already on a public/auth page (avoid redirect loops)
-                // 2. The current path is an authenticated portal (admin, student, etc.)
                 const isPublicPath = PUBLIC_PATHS.some(
                     (path) => currentPath === path || currentPath.startsWith(path + '/')
                 );
 
-                if (!isPublicPath) {
-                    // For 401, or 403 if it's a "User is not logged in" spatie error, clear token
-                    // For general 403s on portals, we can let layout-level redirects handle the precise role routing,
-                    // but as a fallback, if we are stuck on a 403 and the layout doesn't kick us, go to login.
-                    if (error.response.status === 401 || (error.response.status === 403 && error.response.data?.message === 'User is not logged in.')) {
-                        localStorage.removeItem('auth_token');
-                        localStorage.removeItem('blueboxx_user');
+                const isPortalPath = PORTAL_PATHS.some(
+                    (path) => currentPath.startsWith(path)
+                );
+
+                // Only logout and redirect if on a portal page and it's a 401 (not authenticated)
+                if (!isPublicPath && isPortalPath) {
+                    if (error.response.status === 401) {
+                        const activeRole = getActiveRoleFromUrl(currentPath);
+                        if (activeRole !== 'public') {
+                            clearSession(activeRole as string);
+                        }
                         window.location.href = '/login';
                     }
                 }

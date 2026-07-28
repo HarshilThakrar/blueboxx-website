@@ -6,11 +6,11 @@ import {
   PlayCircle, PauseCircle, CheckCircle2, Lock,
   ChevronLeft, ChevronDown, ChevronUp,
   MessageSquare, FileText, Download, Settings,
-  Share2, ThumbsUp, BookOpen, StickyNote,
+  Share2, BookOpen, StickyNote,
   Volume2, VolumeX, Maximize, SkipForward,
   Clock, Award, BarChart3, Send, Trash2
 } from "lucide-react";
-import { MOCK_COURSES } from "../../../src/data/mockData";
+import api from "../../../src/lib/axios";
 
 // ─── Types ──────────────────────────────────────────────────────────
 type Note = {
@@ -20,78 +20,27 @@ type Note = {
   createdAt: string;
 };
 
-type QAPost = {
-  id: number;
-  user: string;
-  avatar: string;
-  text: string;
-  time: string;
-  likes: number;
-  replies: number;
-};
-
-// ─── Extended Curriculum Data ──────────────────────────────────────
-const FULL_CURRICULUM = [
-  {
-    module: "Module 1: Frontend Fundamentals",
-    lessons: [
-      { title: "HTML5 & Semantic Web", duration: "45 min", isFree: true, videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { title: "Advanced CSS3 & Tailwind", duration: "1h 20m", isFree: true, videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { title: "JavaScript ES6+ Deep Dive", duration: "2h 30m", isFree: false, videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-    ],
-  },
-  {
-    module: "Module 2: React Ecosystem",
-    lessons: [
-      { title: "React Fundamentals: Components & JSX", duration: "2h", isFree: false, videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { title: "State Management with Redux Toolkit", duration: "1h 45m", isFree: false, videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { title: "Next.js & Server-Side Rendering", duration: "3h 10m", isFree: false, videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-    ],
-  },
-  {
-    module: "Module 3: Backend & APIs",
-    lessons: [
-      { title: "Node.js & Express.js Fundamentals", duration: "2h 15m", isFree: false, videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { title: "REST API Design & Authentication", duration: "1h 50m", isFree: false, videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { title: "MongoDB & Mongoose ORM", duration: "2h", isFree: false, videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-    ],
-  },
-  {
-    module: "Module 4: Deployment & DevOps",
-    lessons: [
-      { title: "Docker & Containerization", duration: "1h 30m", isFree: false, videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { title: "CI/CD Pipelines & GitHub Actions", duration: "1h 15m", isFree: false, videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { title: "AWS Deployment & Scaling", duration: "2h 45m", isFree: false, videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-    ],
-  },
-];
-
-const INITIAL_QA: QAPost[] = [
+// ─── Q&A Mock Data (Placeholder until backend supports Q&A) ───────
+const INITIAL_QA = [
   {
     id: 1,
     user: "Priya Sharma",
     avatar: "https://i.pravatar.cc/150?u=student1",
     text: "Can someone explain why we shouldn't mutate state directly in React?",
     time: "2 days ago",
-    likes: 12,
-    replies: 3,
-  },
-  {
-    id: 2,
-    user: "Karan Desai",
-    avatar: "https://i.pravatar.cc/150?u=student2",
-    text: "What's the difference between useMemo and useCallback?",
-    time: "5 hours ago",
-    likes: 8,
-    replies: 1,
-  },
+    isPinned: false,
+    answers: [],
+  }
 ];
 
 // ─── Component ─────────────────────────────────────────────────────
 export default function LMSPlayerPage() {
   const router = useRouter();
   const { id } = router.query;
-  const course = MOCK_COURSES.find((c) => c.slug === id) || MOCK_COURSES[0];
+
+  const [course, setCourse] = useState<any>(null);
+  const [curriculum, setCurriculum] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Video state
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -107,20 +56,77 @@ export default function LMSPlayerPage() {
   const [expandedModules, setExpandedModules] = useState<number[]>([0]);
   const [activeModuleIdx, setActiveModuleIdx] = useState(0);
   const [activeLessonIdx, setActiveLessonIdx] = useState(0);
-  const [completedLessons, setCompletedLessons] = useState<string[]>(["0-0"]);
+  const [completedLessonIds, setCompletedLessonIds] = useState<number[]>([]);
+  const [completionPercent, setCompletionPercent] = useState(0);
+  const [totalLessons, setTotalLessons] = useState(0);
+
+  useEffect(() => {
+    if (id) {
+      setIsLoading(true);
+      api.get(`/student/courses/${id}`)
+        .then(res => {
+          if (res.data.success) {
+            setCourse(res.data.data);
+            setCurriculum(res.data.data.curriculum || []);
+            setCompletedLessonIds(res.data.data.completed_lesson_ids || []);
+            setCompletionPercent(res.data.data.progress || 0);
+            setTotalLessons(res.data.data.total_lessons || 0);
+          }
+        })
+        .catch(err => {
+          console.error("Failed to load course details:", err);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [id]);
 
   // Tabs
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Notes
-  const [notes, setNotes] = useState<Note[]>([
-    { id: 1, timestamp: "2:30", text: "Important: React uses a virtual DOM for efficient rendering", createdAt: "Just now" },
-  ]);
+  // Notes (real API)
+  const [notes, setNotes] = useState<Note[]>([]);
   const [noteInput, setNoteInput] = useState("");
+  const [notesLoading, setNotesLoading] = useState(false);
 
-  // Q&A
-  const [qaList, setQaList] = useState<QAPost[]>(INITIAL_QA);
+  // Resources (real API)
+  const [resources, setResources] = useState<any[]>([]);
+  const [resourcesLoading, setResourcesLoading] = useState(false);
+
+  // Q&A (real API)
+  const [qaList, setQaList] = useState<any[]>([]);
   const [qaInput, setQaInput] = useState("");
+  const [qaLoading, setQaLoading] = useState(false);
+  const [expandedAnswers, setExpandedAnswers] = useState<number[]>([]);
+  const [replyInputs, setReplyInputs] = useState<Record<number, string>>({});
+
+  // Lazy-load tab data when tab changes
+  useEffect(() => {
+    if (!course?.id) return;
+    if (activeTab === "notes" && notes.length === 0 && !notesLoading) {
+      setNotesLoading(true);
+      api.get(`/student/courses/${course.id}/notes`)
+        .then(res => { if (res.data.success) setNotes(res.data.data); })
+        .catch(console.error)
+        .finally(() => setNotesLoading(false));
+    }
+    if (activeTab === "resources" && resources.length === 0 && !resourcesLoading) {
+      setResourcesLoading(true);
+      api.get(`/student/courses/${course.id}/resources`)
+        .then(res => { if (res.data.success) setResources(res.data.data); })
+        .catch(console.error)
+        .finally(() => setResourcesLoading(false));
+    }
+    if (activeTab === "discussion" && qaList.length === 0 && !qaLoading) {
+      setQaLoading(true);
+      api.get(`/student/courses/${course.id}/questions`)
+        .then(res => { if (res.data.success) setQaList(res.data.data); })
+        .catch(console.error)
+        .finally(() => setQaLoading(false));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, course?.id]);
 
   // Sidebar collapse
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -209,61 +215,94 @@ export default function LMSPlayerPage() {
     }
   };
 
-  const handleNextLesson = () => {
-    const currentModule = FULL_CURRICULUM[activeModuleIdx];
+  const handleNextLesson = async () => {
+    if (!course || curriculum.length === 0) return;
+
+    const currentModule = curriculum[activeModuleIdx];
+    const currentLesson = currentModule?.lessons[activeLessonIdx];
+
+    if (currentLesson) {
+      // API call to mark complete
+      try {
+        const res = await api.post(`/student/courses/${course.id}/lessons/${currentLesson.id}/complete`);
+        if (res.data.success) {
+          setCompletedLessonIds(prev => Array.from(new Set([...prev, currentLesson.id])));
+          setCompletionPercent(res.data.course_progress || completionPercent);
+        }
+      } catch (err) {
+        console.error("Failed to mark lesson complete", err);
+      }
+    }
+
     if (activeLessonIdx < currentModule.lessons.length - 1) {
       selectLesson(activeModuleIdx, activeLessonIdx + 1);
-    } else if (activeModuleIdx < FULL_CURRICULUM.length - 1) {
+    } else if (activeModuleIdx < curriculum.length - 1) {
       selectLesson(activeModuleIdx + 1, 0);
     }
-    // Mark current as completed
-    const key = `${activeModuleIdx}-${activeLessonIdx}`;
-    if (!completedLessons.includes(key)) {
-      setCompletedLessons((prev) => [...prev, key]);
-    }
   };
 
-  const totalLessons = FULL_CURRICULUM.reduce((acc, m) => acc + m.lessons.length, 0);
-  const completionPercent = Math.round((completedLessons.length / totalLessons) * 100);
-  const currentLesson = FULL_CURRICULUM[activeModuleIdx]?.lessons[activeLessonIdx];
+  const currentLesson = curriculum[activeModuleIdx]?.lessons[activeLessonIdx];
 
-  // ─── Notes Helpers ───────────────────────────────────────────────
-  const addNote = (e: React.FormEvent) => {
+
+
+  // ─── Notes Helpers (Real API) ─────────────────────────────────────
+  const addNote = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!noteInput.trim()) return;
-    const newNote: Note = {
-      id: Date.now(),
-      timestamp: currentTime,
-      text: noteInput,
-      createdAt: "Just now",
-    };
-    setNotes((prev) => [newNote, ...prev]);
-    setNoteInput("");
+    if (!noteInput.trim() || !course?.id) return;
+    try {
+      const res = await api.post(`/student/courses/${course.id}/notes`, {
+        note_text: noteInput,
+        timestamp: currentTime,
+        lesson_id: currentLesson?.id,
+      });
+      if (res.data.success) {
+        setNotes(prev => [res.data.data, ...prev]);
+        setNoteInput("");
+      }
+    } catch (err) { console.error("Failed to save note", err); }
   };
 
-  const deleteNote = (id: number) => {
-    setNotes((prev) => prev.filter((n) => n.id !== id));
+  const deleteNote = async (id: number) => {
+    if (!course?.id) return;
+    try {
+      await api.delete(`/student/courses/${course.id}/notes/${id}`);
+      setNotes(prev => prev.filter(n => n.id !== id));
+    } catch (err) { console.error("Failed to delete note", err); }
   };
 
-  // ─── Q&A Helpers ─────────────────────────────────────────────────
-  const postQuestion = (e: React.FormEvent) => {
+  // ─── Q&A Helpers (Real API) ──────────────────────────────────────
+  const postQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!qaInput.trim()) return;
-    const newPost: QAPost = {
-      id: Date.now(),
-      user: "Arjun Reddy",
-      avatar: "https://i.pravatar.cc/150?u=arjun",
-      text: qaInput,
-      time: "Just now",
-      likes: 0,
-      replies: 0,
-    };
-    setQaList((prev) => [newPost, ...prev]);
-    setQaInput("");
+    if (!qaInput.trim() || !course?.id) return;
+    try {
+      const res = await api.post(`/student/courses/${course.id}/questions`, {
+        question: qaInput,
+      });
+      if (res.data.success) {
+        setQaList(prev => [res.data.data, ...prev]);
+        setQaInput("");
+      }
+    } catch (err) { console.error("Failed to post question", err); }
   };
 
-  const likePost = (id: number) => {
-    setQaList((prev) => prev.map((p) => (p.id === id ? { ...p, likes: p.likes + 1 } : p)));
+  const postAnswer = async (questionId: number) => {
+    const answer = replyInputs[questionId]?.trim();
+    if (!answer || !course?.id) return;
+    try {
+      const res = await api.post(`/student/courses/${course.id}/questions/${questionId}/answer`, { answer });
+      if (res.data.success) {
+        setQaList(prev => prev.map(q =>
+          q.id === questionId ? { ...q, answers: [...(q.answers || []), res.data.data] } : q
+        ));
+        setReplyInputs(prev => ({ ...prev, [questionId]: "" }));
+      }
+    } catch (err) { console.error("Failed to post answer", err); }
+  };
+
+  const toggleAnswers = (questionId: number) => {
+    setExpandedAnswers(prev =>
+      prev.includes(questionId) ? prev.filter(id => id !== questionId) : [...prev, questionId]
+    );
   };
 
   // ─── Keyboard Shortcuts ──────────────────────────────────────────
@@ -280,6 +319,17 @@ export default function LMSPlayerPage() {
     return () => window.removeEventListener("keydown", handleKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [togglePlay]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0B0F1A] flex items-center justify-center font-inter text-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-white/10 border-t-[#C9A227] rounded-full animate-spin"></div>
+          <p className="font-bold tracking-widest text-sm text-slate-400">LOADING PLAYER...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0B0F1A] flex flex-col font-inter">
@@ -330,19 +380,30 @@ export default function LMSPlayerPage() {
             onMouseMove={handleMouseMove}
             onMouseLeave={() => { if (isPlaying) setShowControls(false); }}
           >
-            <video
-              ref={videoRef}
-              src="https://www.w3schools.com/html/mov_bbb.mp4"
-              className="w-full h-full object-contain"
-              onTimeUpdate={handleTimeUpdate}
-              onLoadedMetadata={handleLoadedMetadata}
-              onEnded={handleNextLesson}
-              poster={course?.image}
-            />
+            {currentLesson?.videoUrl ? (
+              <video
+                ref={videoRef}
+                src={currentLesson.videoUrl}
+                className="w-full h-full object-contain"
+                onTimeUpdate={handleTimeUpdate}
+                onLoadedMetadata={handleLoadedMetadata}
+                onEnded={handleNextLesson}
+                poster={course?.thumbnail}
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center bg-[#0d1228] border border-white/5 rounded-xl">
+                <BookOpen size={48} className="text-[#C9A227] mb-4 opacity-50" />
+                <p className="text-white font-bold text-lg mb-2">Text or Audio Lesson</p>
+                <p className="text-slate-400 text-sm">Please see the lesson resources or notes below.</p>
+                <button onClick={handleNextLesson} className="mt-6 px-6 py-2.5 bg-[#C9A227] text-[#0d1635] font-bold rounded-lg text-sm hover:scale-105 transition-transform">
+                  Mark as Complete & Continue
+                </button>
+              </div>
+            )}
 
             {/* Play overlay (when paused) */}
             <AnimatePresence>
-              {!isPlaying && (
+              {!isPlaying && currentLesson?.videoUrl && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -441,11 +502,11 @@ export default function LMSPlayerPage() {
                   </div>
 
                   <div className="flex items-center gap-4 py-5 border-y border-white/10">
-                    <img src="https://i.pravatar.cc/150?u=ankit" alt="Instructor" className="w-12 h-12 rounded-full object-cover border-2 border-[#C9A227]/30" />
+                    <img src={course?.instructor?.avatar || "https://ui-avatars.com/api/?name=Instructor"} alt="Instructor" className="w-12 h-12 rounded-full object-cover border-2 border-[#C9A227]/30" />
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A227] mb-0.5">Instructor</p>
-                      <p className="text-sm font-bold text-white">{course?.instructor}</p>
-                      <p className="text-xs text-slate-500">Senior Software Engineer</p>
+                      <p className="text-sm font-bold text-white">{course?.instructor?.name || "Expert"}</p>
+                      <p className="text-xs text-slate-500">{course?.instructor?.title || "Senior Software Engineer"}</p>
                     </div>
                   </div>
 
@@ -482,39 +543,32 @@ export default function LMSPlayerPage() {
                         {currentTime}
                       </span>
                     </div>
-                    <button
-                      type="submit"
-                      className="px-4 py-3 bg-[#C9A227] text-[#0d1635] rounded-xl font-bold text-sm hover:bg-[#b08d20] transition-colors shrink-0"
-                    >
+                    <button type="submit" className="px-4 py-3 bg-[#C9A227] text-[#0d1635] rounded-xl font-bold text-sm hover:bg-[#b08d20] transition-colors shrink-0">
                       <StickyNote size={16} />
                     </button>
                   </form>
 
-                  {notes.length === 0 ? (
+                  {notesLoading ? (
+                    <div className="text-center py-10"><div className="w-6 h-6 border-2 border-white/10 border-t-[#C9A227] rounded-full animate-spin mx-auto" /></div>
+                  ) : notes.length === 0 ? (
                     <div className="text-center py-12">
                       <StickyNote size={32} className="text-slate-600 mx-auto mb-3" />
-                      <p className="text-sm text-slate-500 font-medium">No notes yet. Start taking notes while watching!</p>
+                      <p className="text-sm text-slate-500 font-medium">No notes yet. Add your first note above!</p>
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {notes.map((note) => (
-                        <motion.div
-                          key={note.id}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          className="flex items-start gap-3 bg-white/5 border border-white/5 rounded-xl p-4 group hover:border-[#C9A227]/20 transition-all"
-                        >
+                      {notes.map((note: any) => (
+                        <motion.div key={note.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                          className="flex items-start gap-3 bg-white/5 border border-white/5 rounded-xl p-4 group hover:border-[#C9A227]/20 transition-all">
                           <button className="text-[10px] font-bold text-[#C9A227] bg-[#C9A227]/10 px-2 py-1 rounded-md mt-0.5 shrink-0 hover:bg-[#C9A227]/20 transition-colors">
-                            {note.timestamp}
+                            {note.timestamp || "0:00"}
                           </button>
                           <div className="flex-1 min-w-0">
+                            <p className="text-xs text-[#C9A227]/70 font-semibold mb-0.5">{note.lessonTitle}</p>
                             <p className="text-sm text-slate-300 font-medium leading-relaxed">{note.text}</p>
                             <p className="text-[10px] text-slate-600 mt-1 font-semibold">{note.createdAt}</p>
                           </div>
-                          <button
-                            onClick={() => deleteNote(note.id)}
-                            className="text-slate-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 p-1"
-                          >
+                          <button onClick={() => deleteNote(note.id)} className="text-slate-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 p-1">
                             <Trash2 size={14} />
                           </button>
                         </motion.div>
@@ -527,30 +581,36 @@ export default function LMSPlayerPage() {
               {/* Resources Tab */}
               {activeTab === "resources" && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
-                  <h3 className="text-base font-bold text-white mb-4">Downloadable Resources</h3>
-                  {[
-                    { name: "Lesson Slides & Source Code.zip", size: "2.4 MB" },
-                    { name: "React Cheatsheet.pdf", size: "1.1 MB" },
-                    { name: "Practice Problems Set.pdf", size: "890 KB" },
-                  ].map((file, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 hover:border-[#C9A227]/20 transition-all cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#C9A227]/10 text-[#C9A227] rounded-lg flex items-center justify-center">
-                          <FileText size={18} />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-white group-hover:text-[#C9A227] transition-colors">{file.name}</p>
-                          <p className="text-xs text-slate-500">{file.size}</p>
-                        </div>
-                      </div>
-                      <button className="text-slate-500 group-hover:text-[#C9A227] transition-colors">
-                        <Download size={18} />
-                      </button>
+                  <h3 className="text-base font-bold text-white mb-4">Course Resources</h3>
+                  {resourcesLoading ? (
+                    <div className="text-center py-10"><div className="w-6 h-6 border-2 border-white/10 border-t-[#C9A227] rounded-full animate-spin mx-auto" /></div>
+                  ) : resources.length === 0 ? (
+                    <div className="text-center py-12">
+                      <FileText size={32} className="text-slate-600 mx-auto mb-3" />
+                      <p className="text-sm text-slate-500 font-medium">No resources have been added to this course yet.</p>
                     </div>
-                  ))}
+                  ) : (
+                    resources.map((file: any) => (
+                      <a
+                        key={file.id}
+                        href={file.url || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 hover:border-[#C9A227]/20 transition-all cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-[#C9A227]/10 text-[#C9A227] rounded-lg flex items-center justify-center">
+                            <FileText size={18} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-white group-hover:text-[#C9A227] transition-colors">{file.title}</p>
+                            <p className="text-xs text-slate-500">{file.fileType?.toUpperCase()} {file.fileSize ? `• ${file.fileSize}` : ""}</p>
+                          </div>
+                        </div>
+                        <Download size={18} className="text-slate-500 group-hover:text-[#C9A227] transition-colors" />
+                      </a>
+                    ))
+                  )}
                 </motion.div>
               )}
 
@@ -558,47 +618,85 @@ export default function LMSPlayerPage() {
               {activeTab === "discussion" && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                   <form onSubmit={postQuestion} className="flex gap-3">
-                    <img src="https://i.pravatar.cc/150?u=arjun" alt="You" className="w-9 h-9 rounded-full object-cover shrink-0 mt-1" />
+                    <div className="w-9 h-9 rounded-full bg-[#1B2A6B] flex items-center justify-center text-white font-bold text-xs shrink-0 mt-1">
+                      Me
+                    </div>
                     <div className="flex-1">
                       <textarea
                         value={qaInput}
                         onChange={(e) => setQaInput(e.target.value)}
-                        placeholder="Ask a question or share your thoughts..."
+                        placeholder="Ask a question about this course..."
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#C9A227]/50 focus:ring-1 focus:ring-[#C9A227]/30 resize-none min-h-[80px] transition-all"
                       />
                       <div className="flex justify-end mt-2">
-                        <button
-                          type="submit"
-                          className="px-4 py-2 bg-[#C9A227] text-[#0d1635] font-bold text-xs rounded-lg hover:bg-[#b08d20] transition-colors flex items-center gap-1.5"
-                        >
-                          <Send size={12} /> Post
+                        <button type="submit" className="px-4 py-2 bg-[#C9A227] text-[#0d1635] font-bold text-xs rounded-lg hover:bg-[#b08d20] transition-colors flex items-center gap-1.5">
+                          <Send size={12} /> Post Question
                         </button>
                       </div>
                     </div>
                   </form>
 
-                  <div className="space-y-4">
-                    {qaList.map((post) => (
-                      <div key={post.id} className="flex gap-3 bg-white/[0.03] border border-white/5 rounded-xl p-4">
-                        <img src={post.avatar} alt={post.user} className="w-9 h-9 rounded-full shrink-0" />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold text-white text-sm">{post.user}</span>
-                            <span className="text-[10px] text-slate-500 font-medium">{post.time}</span>
+                  {qaLoading ? (
+                    <div className="text-center py-10"><div className="w-6 h-6 border-2 border-white/10 border-t-[#C9A227] rounded-full animate-spin mx-auto" /></div>
+                  ) : qaList.length === 0 ? (
+                    <div className="text-center py-12">
+                      <MessageSquare size={32} className="text-slate-600 mx-auto mb-3" />
+                      <p className="text-sm text-slate-500 font-medium">No questions yet. Be the first to ask!</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {qaList.map((post: any) => (
+                        <div key={post.id} className="bg-white/[0.03] border border-white/5 rounded-xl p-4 space-y-3">
+                          {/* Question */}
+                          <div className="flex gap-3">
+                            <img src={post.avatar} alt={post.user} className="w-9 h-9 rounded-full shrink-0" />
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-bold text-white text-sm">{post.user}</span>
+                                {post.isPinned && <span className="text-[9px] font-bold text-[#C9A227] bg-[#C9A227]/10 px-1.5 py-0.5 rounded">PINNED</span>}
+                                <span className="text-[10px] text-slate-500 font-medium">{post.time}</span>
+                              </div>
+                              <p className="text-sm text-slate-300 leading-relaxed">{post.text}</p>
+                              <button onClick={() => toggleAnswers(post.id)} className="flex items-center gap-1 mt-2 text-xs text-slate-500 hover:text-[#C9A227] transition-colors font-semibold">
+                                <MessageSquare size={12} /> {(post.answers || []).length} {(post.answers || []).length === 1 ? "Answer" : "Answers"}
+                              </button>
+                            </div>
                           </div>
-                          <p className="text-sm text-slate-300 mb-2.5 leading-relaxed">{post.text}</p>
-                          <div className="flex items-center gap-4 text-slate-500 text-xs font-semibold">
-                            <button onClick={() => likePost(post.id)} className="flex items-center gap-1 hover:text-[#C9A227] transition-colors">
-                              <ThumbsUp size={13} /> {post.likes}
-                            </button>
-                            <button className="flex items-center gap-1 hover:text-[#C9A227] transition-colors">
-                              <MessageSquare size={13} /> {post.replies} Replies
-                            </button>
-                          </div>
+
+                          {/* Answers */}
+                          {expandedAnswers.includes(post.id) && (post.answers || []).map((ans: any) => (
+                            <div key={ans.id} className="flex gap-3 ml-6 pl-4 border-l border-white/5">
+                              <img src={ans.avatar} alt={ans.user} className="w-7 h-7 rounded-full shrink-0" />
+                              <div>
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  <span className="font-bold text-white text-xs">{ans.user}</span>
+                                  {ans.isAdmin && <span className="text-[9px] font-bold text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded">INSTRUCTOR</span>}
+                                  <span className="text-[10px] text-slate-500">{ans.time}</span>
+                                </div>
+                                <p className="text-xs text-slate-300 leading-relaxed">{ans.text}</p>
+                              </div>
+                            </div>
+                          ))}
+
+                          {/* Reply box */}
+                          {expandedAnswers.includes(post.id) && (
+                            <div className="flex gap-2 ml-6">
+                              <input
+                                type="text"
+                                value={replyInputs[post.id] || ""}
+                                onChange={e => setReplyInputs(prev => ({ ...prev, [post.id]: e.target.value }))}
+                                placeholder="Write a reply..."
+                                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#C9A227]/50"
+                              />
+                              <button onClick={() => postAnswer(post.id)} className="px-3 py-2 bg-[#C9A227]/20 text-[#C9A227] font-bold text-xs rounded-lg hover:bg-[#C9A227]/30 transition-colors">
+                                <Send size={11} />
+                              </button>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </motion.div>
               )}
             </div>
@@ -624,7 +722,7 @@ export default function LMSPlayerPage() {
                   </button>
                 </div>
                 <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 mb-2">
-                  <span>{completedLessons.length} / {totalLessons} Lessons</span>
+                  <span>{completedLessonIds.length} / {totalLessons} Lessons</span>
                   <span className="text-emerald-400">{completionPercent}% Complete</span>
                 </div>
                 <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
@@ -637,11 +735,10 @@ export default function LMSPlayerPage() {
                 </div>
               </div>
 
-              {/* Modules list */}
               <div className="flex-1 overflow-y-auto admin-scrollbar">
-                {FULL_CURRICULUM.map((module, mIdx) => {
-                  const moduleLessonsCompleted = module.lessons.filter((_, lIdx) =>
-                    completedLessons.includes(`${mIdx}-${lIdx}`)
+                {curriculum.map((module, mIdx) => {
+                  const moduleLessonsCompleted = module.lessons.filter((l: any) =>
+                    completedLessonIds.includes(l.id)
                   ).length;
 
                   return (
@@ -653,7 +750,7 @@ export default function LMSPlayerPage() {
                         <div className="flex-1 min-w-0">
                           <h3 className="text-xs font-bold text-white leading-tight mb-1 truncate">{module.module}</h3>
                           <p className="text-[10px] text-slate-500 font-semibold">
-                            {moduleLessonsCompleted} / {module.lessons.length} • {module.lessons.length * 15} min
+                            {moduleLessonsCompleted} / {module.lessons.length} • {module.lessons.reduce((acc: number, l: any) => acc + parseInt(l.duration), 0)} min
                           </p>
                         </div>
                         {expandedModules.includes(mIdx) ? (
@@ -672,10 +769,10 @@ export default function LMSPlayerPage() {
                             transition={{ duration: 0.2 }}
                             className="overflow-hidden"
                           >
-                            {module.lessons.map((lesson, lIdx) => {
+                            {module.lessons.map((lesson: any, lIdx: number) => {
                               const isCurrent = mIdx === activeModuleIdx && lIdx === activeLessonIdx;
-                              const isCompleted = completedLessons.includes(`${mIdx}-${lIdx}`);
-                              const isLocked = !lesson.isFree && mIdx > 1;
+                              const isCompleted = completedLessonIds.includes(lesson.id);
+                              const isLocked = !lesson.isFree && !course; // All unlocked since student is enrolled
 
                               return (
                                 <button

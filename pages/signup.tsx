@@ -80,7 +80,21 @@ export default function SignupPage() {
         // Update global auth state before redirecting
         login(mappedUser);
         
-        router.push("/student/dashboard");
+        // Redirect to appropriate dashboard based on role
+        const normalizedRole = userRole.toLowerCase();
+        if (normalizedRole === 'admin' || normalizedRole === 'super_admin') {
+          router.push("/admin/dashboard");
+        } else if (normalizedRole === 'expert' || normalizedRole === 'mentor') {
+          router.push("/expert/dashboard");
+        } else if (normalizedRole === 'company') {
+          router.push("/company/dashboard");
+        } else if (normalizedRole === 'intern') {
+          router.push("/intern/dashboard");
+        } else if (normalizedRole === 'job-seeker' || normalizedRole === 'jobseeker') {
+          router.push("/jobseeker/dashboard");
+        } else {
+          router.push("/student/dashboard");
+        }
       }
     } catch (err: any) {
       setError(err.response?.data?.message || "An error occurred during signup.");
@@ -120,7 +134,10 @@ export default function SignupPage() {
 
           <motion.div variants={container} initial="hidden" animate="show" className="mb-4">
             <motion.h2 variants={item} className="text-2xl font-black text-slate-800 mb-0.5 font-sora">Create an account</motion.h2>
-            <motion.p variants={item} className="text-xs text-slate-500 font-medium">Join BlueBoxx and start building your career.</motion.p>
+            <motion.p variants={item} className="text-xs text-slate-500 font-medium mb-2">Join BlueBoxx and start building your career.</motion.p>
+            <motion.p variants={item} className="text-sm font-medium text-slate-600 mt-2">
+              Already have an account? <Link href="/login" className="font-extrabold text-[#1B2A6B] hover:text-[#0d1635] underline decoration-2 underline-offset-2">Log in</Link>
+            </motion.p>
           </motion.div>
 
           {error && (
@@ -282,12 +299,10 @@ export default function SignupPage() {
             </motion.div>
 
             <motion.p variants={item} className="text-[10px] font-semibold text-slate-400 text-center pt-2">
-              By creating an account, you agree to our <a href="#" className="text-[#1B2A6B] hover:underline">Terms</a> and <a href="#" className="text-[#1B2A6B] hover:underline">Privacy</a>.
+              By creating an account, you agree to our <Link href="/terms" className="text-[#1B2A6B] hover:underline">Terms</Link> and <Link href="/privacy-policy" className="text-[#1B2A6B] hover:underline">Privacy</Link>.
             </motion.p>
 
-            <motion.p variants={item} className="text-center text-xs font-medium text-slate-600 mt-1">
-              Already have an account? <Link href="/login" className="font-bold text-[#1B2A6B] hover:underline">Log in</Link>
-            </motion.p>
+
 
           </motion.form>
         </div>

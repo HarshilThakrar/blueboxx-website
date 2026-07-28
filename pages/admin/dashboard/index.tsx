@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import Head from 'next/head';
 import { AdminDashboardLayout } from "../../../src/layout/AdminDashboardLayout";
-import { 
-  Users, GraduationCap, BookOpen, UserCheck, 
-  TrendingUp, TrendingDown, DollarSign, Activity, 
+import {
+  Users, GraduationCap, BookOpen, UserCheck,
+  TrendingUp, TrendingDown, DollarSign, Activity,
   Calendar, Plus, Download, ChevronRight,
   MoreHorizontal, Star, Briefcase, Award, ArrowUpRight, Zap,
   RefreshCw, BarChart2, LineChart, Filter, Bell, X, Eye,
@@ -135,12 +135,12 @@ export default function SuperAdminDashboard() {
   ] : [];
 
   const colorMap: Record<string, { text: string; light: string }> = {
-    blue:   { text: 'text-blue-600',   light: 'bg-blue-50'   },
-    emerald:{ text: 'text-emerald-600',light: 'bg-emerald-50'},
+    blue: { text: 'text-blue-600', light: 'bg-blue-50' },
+    emerald: { text: 'text-emerald-600', light: 'bg-emerald-50' },
     violet: { text: 'text-violet-600', light: 'bg-violet-50' },
-    amber:  { text: 'text-amber-600',  light: 'bg-amber-50'  },
-    sky:    { text: 'text-sky-600',    light: 'bg-sky-50'    },
-    rose:   { text: 'text-rose-600',   light: 'bg-rose-50'   },
+    amber: { text: 'text-amber-600', light: 'bg-amber-50' },
+    sky: { text: 'text-sky-600', light: 'bg-sky-50' },
+    rose: { text: 'text-rose-600', light: 'bg-rose-50' },
     indigo: { text: 'text-indigo-600', light: 'bg-indigo-50' },
     orange: { text: 'text-orange-600', light: 'bg-orange-50' },
   };
@@ -155,20 +155,20 @@ export default function SuperAdminDashboard() {
   // Convert chart data for plotting
   const maxRev = Math.max(...(chartsData?.revenue || []).map((r: any) => parseFloat(r.revenue)), 1);
   const formattedBarData = (chartsData?.revenue || []).map((r: any) => {
-    return (parseFloat(r.revenue) / maxRev) * 100; 
+    return (parseFloat(r.revenue) / maxRev) * 100;
   });
 
   // Pad array to 12 if less
-  while(formattedBarData.length < 12) formattedBarData.push(0);
+  while (formattedBarData.length < 12) formattedBarData.push(0);
 
   return (
     <AdminDashboardLayout>
       <Head><title>Dashboard | Blueboxx DA</title></Head>
 
       {showQuickAction && <QuickActionModal onClose={() => setShowQuickAction(false)} />}
-      
+
       <div className="max-w-full p-4 sm:p-5 space-y-4">
-        
+
         {/* Premium Welcome Banner */}
         <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-[#0d1635] via-[#1B2A6B] to-[#243580] px-6 py-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg">
           <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
@@ -189,176 +189,176 @@ export default function SuperAdminDashboard() {
         </div>
 
         {/* 8 KPI Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-3">
-              {stats.map((stat, idx) => {
-                const c = colorMap[stat.color];
-                const StatIcon = stat.icon;
-                return (
-                  <button key={idx} onClick={() => router.push(stat.href)} className="bg-white rounded-xl border border-slate-200 px-5 py-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group cursor-pointer relative overflow-hidden text-left w-full">
-                    <div className={`absolute -top-4 -right-4 w-20 h-20 rounded-full ${c.light} opacity-50 group-hover:scale-125 transition-transform duration-500`} />
-                    <div className="flex items-center justify-between mb-3.5 relative">
-                      <div className={`w-9 h-9 rounded-xl ${c.light} ${c.text} flex items-center justify-center`}>
-                        <StatIcon size={18} />
-                      </div>
-                      <span className={`flex items-center gap-0.5 text-[10px] font-black px-2 py-1 rounded-md ${stat.up ? 'text-emerald-600 bg-emerald-50' : 'text-red-500 bg-red-50'}`}>
-                        {stat.up ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-                        {stat.change}
-                      </span>
-                    </div>
-                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{stat.label}</p>
-                    <h3 className={`text-[28px] font-black mt-0.5 leading-none ${c.text}`}>{stat.value}</h3>
-                    <p className="text-[10px] text-slate-400 font-semibold mt-2 truncate">{stat.sub}</p>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Chart + Activity Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-              {/* Revenue Bar Chart */}
-              <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-[20px] font-black text-[#0d1635]">Revenue & Registrations</h2>
-                    <p className="text-[12px] text-slate-400 font-semibold mt-1">Real-time performance</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-3">
+          {stats.map((stat, idx) => {
+            const c = colorMap[stat.color];
+            const StatIcon = stat.icon;
+            return (
+              <button key={idx} onClick={() => router.push(stat.href)} className="bg-white rounded-xl border border-slate-200 px-5 py-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group cursor-pointer relative overflow-hidden text-left w-full">
+                <div className={`absolute -top-4 -right-4 w-20 h-20 rounded-full ${c.light} opacity-50 group-hover:scale-125 transition-transform duration-500`} />
+                <div className="flex items-center justify-between mb-3.5 relative">
+                  <div className={`w-9 h-9 rounded-xl ${c.light} ${c.text} flex items-center justify-center`}>
+                    <StatIcon size={18} />
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-3 text-[10px] font-bold text-slate-500">
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#1B2A6B] inline-block" />Revenue</span>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-400 inline-block" />Registrations</span>
-                    </div>
-                  </div>
+                  <span className={`flex items-center gap-0.5 text-[10px] font-black px-2 py-1 rounded-md ${stat.up ? 'text-emerald-600 bg-emerald-50' : 'text-red-500 bg-red-50'}`}>
+                    {stat.up ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                    {stat.change}
+                  </span>
                 </div>
-                <div className="px-6 pt-5 pb-8 relative" style={{ height: 320 }}>
-                  <div className="absolute left-0 top-5 bottom-8 w-12 flex flex-col justify-between items-end pr-3 text-[11px] font-bold text-slate-300">
-                    <span>{formatNumber(maxRev)}</span><span>{formatNumber(maxRev*0.75)}</span><span>{formatNumber(maxRev*0.5)}</span><span>{formatNumber(maxRev*0.25)}</span><span>0</span>
-                  </div>
-                  <div className="absolute left-10 right-0 top-3 bottom-6 flex flex-col justify-between pointer-events-none">
-                    {[0,1,2,3,4].map(i => <div key={i} className="w-full border-b border-slate-100 border-dashed last:border-slate-200" />)}
-                  </div>
-                  <div className="absolute left-10 right-2 top-3 bottom-6 flex items-end justify-between gap-0.5">
-                    {formattedBarData.slice(0, 12).map((h, i) => (
-                      <div key={i} className="flex items-end gap-0.5 group h-full flex-1">
-                        <div className="flex-1 flex items-end gap-px h-full">
-                          <div style={{ height: `${Math.max(h, 2)}%` }} className={`flex-1 rounded-t-[2px] transition-all cursor-pointer relative group bg-[#1B2A6B] hover:bg-[#243580]`}>
-                            <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#0d1635] text-white text-[8px] py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">{Math.round(h)}%</div>
-                          </div>
-                          {/* Simulated registrations bar relative to revenue for visual balance */}
-                          <div style={{ height: `${Math.max(h * 0.6, 2)}%` }} className={`flex-1 rounded-t-[2px] transition-all cursor-pointer bg-emerald-400 hover:bg-emerald-500`} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="absolute left-12 right-2 bottom-0 flex justify-between text-[11px] font-bold text-slate-400">
-                    {MONTHS.map(m => <span key={m} className="flex-1 text-center">{m}</span>)}
-                  </div>
-                </div>
+                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{stat.label}</p>
+                <h3 className={`text-[28px] font-black mt-0.5 leading-none ${c.text}`}>{stat.value}</h3>
+                <p className="text-[10px] text-slate-400 font-semibold mt-2 truncate">{stat.sub}</p>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Chart + Activity Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+          {/* Revenue Bar Chart */}
+          <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h2 className="text-[20px] font-black text-[#0d1635]">Revenue & Registrations</h2>
+                <p className="text-[12px] text-slate-400 font-semibold mt-1">Real-time performance</p>
               </div>
-
-              {/* Compact Activity Feed */}
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-                <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-                  <h2 className="text-[20px] font-black text-[#0d1635] flex items-center gap-2">
-                    <Activity size={20} className="text-[#C9A227]" /> Activity Feed
-                  </h2>
-                </div>
-                <div className="flex-1 overflow-y-auto divide-y divide-slate-50">
-                  {feedData.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-10 text-slate-400">
-                      <Activity size={24} className="mb-2 opacity-40" />
-                      <p className="text-xs font-bold">No activity found</p>
-                    </div>
-                  ) : feedData.map((act, i) => (
-                    <div key={i} className="flex items-start gap-4 px-6 py-4 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => toast.success(`Action: ${act.action}`)}>
-                      <div className={`mt-0.5 w-9 h-9 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center shrink-0 shadow-sm`}>
-                        <Activity size={16} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[14px] font-bold text-slate-700 leading-snug line-clamp-2">
-                          <span className="text-[#1B2A6B]">{act.admin?.first_name} {act.admin?.last_name}</span> {act.action} on {act.table_name}
-                        </p>
-                        <span className="text-[11px] font-bold text-slate-400 mt-1 block uppercase tracking-widest">{new Date(act.created_at).toLocaleString()}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="px-4 py-2.5 border-t border-slate-100">
-                  <Link href="/admin/logs" className="text-[11px] font-black text-[#1B2A6B] hover:text-[#C9A227] transition-colors flex items-center justify-center gap-1 mx-auto">
-                    View All Activity <ChevronRight size={12} />
-                  </Link>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 text-[10px] font-bold text-slate-500">
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#1B2A6B] inline-block" />Revenue</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-400 inline-block" />Registrations</span>
                 </div>
               </div>
             </div>
-
-            {/* Bottom Tables */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-              
-              {/* Top Courses */}
-              <div className="lg:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-                  <h2 className="text-[20px] font-black text-[#0d1635]">Top Performing Courses</h2>
-                  <Link href="/admin/courses" className="text-[13px] font-black text-[#1B2A6B] hover:text-[#C9A227] transition-colors flex items-center gap-0.5">
-                    View All <ArrowUpRight size={14} />
-                  </Link>
-                </div>
-                <div className="divide-y divide-slate-50">
-                  {topCourses.length === 0 ? (
-                    <div className="p-8 text-center text-sm text-gray-500">No courses available.</div>
-                  ) : topCourses.map((course, idx) => (
-                    <div key={course.id} onClick={() => router.push('/admin/courses')} className="flex items-center gap-5 px-6 py-4 hover:bg-slate-50/50 transition-colors group cursor-pointer">
-                      <span className="text-[13px] font-black text-slate-300 w-4 shrink-0">#{idx + 1}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[14px] font-bold text-slate-800 truncate group-hover:text-[#1B2A6B] transition-colors">{course.title}</p>
-                        <div className="flex items-center gap-3 mt-2">
-                          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-[#1B2A6B] to-blue-400 rounded-full transition-all" style={{ width: `${Math.min((course.enrollments_count || 0) * 10, 100)}%` }} />
-                          </div>
-                        </div>
+            <div className="px-6 pt-5 pb-8 relative" style={{ height: 320 }}>
+              <div className="absolute left-0 top-5 bottom-8 w-12 flex flex-col justify-between items-end pr-3 text-[11px] font-bold text-slate-300">
+                <span>{formatNumber(maxRev)}</span><span>{formatNumber(maxRev * 0.75)}</span><span>{formatNumber(maxRev * 0.5)}</span><span>{formatNumber(maxRev * 0.25)}</span><span>0</span>
+              </div>
+              <div className="absolute left-10 right-0 top-3 bottom-6 flex flex-col justify-between pointer-events-none">
+                {[0, 1, 2, 3, 4].map(i => <div key={i} className="w-full border-b border-slate-100 border-dashed last:border-slate-200" />)}
+              </div>
+              <div className="absolute left-10 right-2 top-3 bottom-6 flex items-end justify-between gap-0.5">
+                {formattedBarData.slice(0, 12).map((h, i) => (
+                  <div key={i} className="flex items-end gap-0.5 group h-full flex-1">
+                    <div className="flex-1 flex items-end gap-px h-full">
+                      <div style={{ height: `${Math.max(h, 2)}%` }} className={`flex-1 rounded-t-[2px] transition-all cursor-pointer relative group bg-[#1B2A6B] hover:bg-[#243580]`}>
+                        <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#0d1635] text-white text-[8px] py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">{Math.round(h)}%</div>
                       </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-[14px] font-black text-[#0d1635]">₹{formatNumber(course.price)}</p>
-                        <div className="flex items-center justify-end gap-2 mt-1">
-                          <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1"><Users size={12}/>{course.enrollments_count || 0}</span>
-                        </div>
+                      {/* Simulated registrations bar relative to revenue for visual balance */}
+                      <div style={{ height: `${Math.max(h * 0.6, 2)}%` }} className={`flex-1 rounded-t-[2px] transition-all cursor-pointer bg-emerald-400 hover:bg-emerald-500`} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="absolute left-12 right-2 bottom-0 flex justify-between text-[11px] font-bold text-slate-400">
+                {MONTHS.map(m => <span key={m} className="flex-1 text-center">{m}</span>)}
+              </div>
+            </div>
+          </div>
+
+          {/* Compact Activity Feed */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+              <h2 className="text-[20px] font-black text-[#0d1635] flex items-center gap-2">
+                <Activity size={20} className="text-[#C9A227]" /> Activity Feed
+              </h2>
+            </div>
+            <div className="flex-1 overflow-y-auto divide-y divide-slate-50">
+              {feedData.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+                  <Activity size={24} className="mb-2 opacity-40" />
+                  <p className="text-xs font-bold">No activity found</p>
+                </div>
+              ) : feedData.map((act, i) => (
+                <div key={i} className="flex items-start gap-4 px-6 py-4 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => toast.success(`Action: ${act.action}`)}>
+                  <div className={`mt-0.5 w-9 h-9 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center shrink-0 shadow-sm`}>
+                    <Activity size={16} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-bold text-slate-700 leading-snug line-clamp-2">
+                      <span className="text-[#1B2A6B]">{act.admin?.first_name} {act.admin?.last_name}</span> {act.action} on {act.table_name}
+                    </p>
+                    <span className="text-[11px] font-bold text-slate-400 mt-1 block uppercase tracking-widest">{new Date(act.created_at).toLocaleString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="px-4 py-2.5 border-t border-slate-100">
+              <Link href="/admin/logs" className="text-[11px] font-black text-[#1B2A6B] hover:text-[#C9A227] transition-colors flex items-center justify-center gap-1 mx-auto">
+                View All Activity <ChevronRight size={12} />
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Tables */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+
+          {/* Top Courses */}
+          <div className="lg:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+              <h2 className="text-[20px] font-black text-[#0d1635]">Top Performing Courses</h2>
+              <Link href="/admin/courses" className="text-[13px] font-black text-[#1B2A6B] hover:text-[#C9A227] transition-colors flex items-center gap-0.5">
+                View All <ArrowUpRight size={14} />
+              </Link>
+            </div>
+            <div className="divide-y divide-slate-50">
+              {topCourses.length === 0 ? (
+                <div className="p-8 text-center text-sm text-gray-500">No courses available.</div>
+              ) : topCourses.map((course, idx) => (
+                <div key={course.id} onClick={() => router.push('/admin/courses')} className="flex items-center gap-5 px-6 py-4 hover:bg-slate-50/50 transition-colors group cursor-pointer">
+                  <span className="text-[13px] font-black text-slate-300 w-4 shrink-0">#{idx + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-bold text-slate-800 truncate group-hover:text-[#1B2A6B] transition-colors">{course.title}</p>
+                    <div className="flex items-center gap-3 mt-2">
+                      <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-[#1B2A6B] to-blue-400 rounded-full transition-all" style={{ width: `${Math.min((course.enrollments_count || 0) * 10, 100)}%` }} />
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Recent Enrollments */}
-              <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-                  <h2 className="text-[20px] font-black text-[#0d1635]">Recent Enrollments</h2>
-                  <Link href="/admin/education/enrollments" className="text-[13px] font-black text-[#1B2A6B] hover:text-[#C9A227] transition-colors flex items-center gap-0.5">
-                    View All <ArrowUpRight size={14} />
-                  </Link>
-                </div>
-                <div className="divide-y divide-slate-50">
-                  {recentEnrolls.length === 0 ? (
-                    <div className="p-8 text-center text-sm text-gray-500">No enrollments yet.</div>
-                  ) : recentEnrolls.map((enroll, idx) => (
-                    <div key={enroll.id} onClick={() => router.push('/admin/education/enrollments')} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50/50 transition-colors cursor-pointer group">
-                      <div className={`w-10 h-10 rounded-full ${AVATARS_COLORS[idx % AVATARS_COLORS.length]} text-white flex items-center justify-center text-[13px] font-black shrink-0 shadow-sm uppercase`}>
-                        {enroll.user?.first_name?.[0]}{enroll.user?.last_name?.[0]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[14px] font-bold text-slate-800 truncate group-hover:text-[#1B2A6B] transition-colors">{enroll.user?.first_name} {enroll.user?.last_name}</p>
-                        <p className="text-[11px] font-semibold text-slate-400 truncate mt-0.5">
-                          {enroll.items?.map((i:any) => i.course?.title).join(', ') || 'Various items'}
-                        </p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${getStatusStyle(enroll.payment_status)}`}>
-                          {enroll.payment_status}
-                        </span>
-                        <p className="text-[10px] text-slate-400 font-bold mt-1.5">{new Date(enroll.created_at).toLocaleDateString()}</p>
-                      </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-[14px] font-black text-[#0d1635]">₹{formatNumber(course.price)}</p>
+                    <div className="flex items-center justify-end gap-2 mt-1">
+                      <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1"><Users size={12} />{course.enrollments_count || 0}</span>
                     </div>
-                  ))}
+                  </div>
                 </div>
-              </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Enrollments */}
+          <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+              <h2 className="text-[20px] font-black text-[#0d1635]">Recent Enrollments</h2>
+              <Link href="/admin/education/enrollments" className="text-[13px] font-black text-[#1B2A6B] hover:text-[#C9A227] transition-colors flex items-center gap-0.5">
+                View All <ArrowUpRight size={14} />
+              </Link>
+            </div>
+            <div className="divide-y divide-slate-50">
+              {recentEnrolls.length === 0 ? (
+                <div className="p-8 text-center text-sm text-gray-500">No enrollments yet.</div>
+              ) : recentEnrolls.map((enroll, idx) => (
+                <div key={enroll.id} onClick={() => router.push('/admin/education/enrollments')} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50/50 transition-colors cursor-pointer group">
+                  <div className={`w-10 h-10 rounded-full ${AVATARS_COLORS[idx % AVATARS_COLORS.length]} text-white flex items-center justify-center text-[13px] font-black shrink-0 shadow-sm uppercase`}>
+                    {enroll.user?.first_name?.[0]}{enroll.user?.last_name?.[0]}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-bold text-slate-800 truncate group-hover:text-[#1B2A6B] transition-colors">{enroll.user?.first_name} {enroll.user?.last_name}</p>
+                    <p className="text-[11px] font-semibold text-slate-400 truncate mt-0.5">
+                      {enroll.items?.map((i: any) => i.course?.title).join(', ') || 'Various items'}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${getStatusStyle(enroll.payment_status)}`}>
+                      {enroll.payment_status}
+                    </span>
+                    <p className="text-[10px] text-slate-400 font-bold mt-1.5">{new Date(enroll.created_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
         </div>
       </div>

@@ -1,4 +1,8 @@
 import { Star } from "lucide-react";
+import { useEffect, useState } from "react";
+// import useSWR from "swr";
+// import api from "../lib/axios";
+import { localTestimonials, LocalTestimonial } from "../data/testimonials";
 
 export interface TestimonialSectionProps {
   titlePrefix?: string;
@@ -7,6 +11,20 @@ export interface TestimonialSectionProps {
   type?: "default" | "internship" | "job";
 }
 
+// Keep the interface identical to what the API would return in the future
+interface TestimonialType {
+  id: number;
+  name: string;
+  designation: string | null;
+  company: string | null;
+  rating: number;
+  review: string;
+  image_url: string | null;
+  type?: string;
+}
+
+// const fetcher = (url: string) => api.get(url).then(res => res.data.data);
+
 export const TestimonialSection = ({
   titlePrefix = "Our ",
   titleHighlight = "Learners",
@@ -14,34 +32,28 @@ export const TestimonialSection = ({
   type = "default"
 }: TestimonialSectionProps) => {
 
-  const defaultTestimonials = [
-    { text: "Got an internship after two mocks with Aarav. Highly recommended!", author: "Ayushi Sharma", role: "Frontend Developer", initial: "A", color: "bg-pink-100 text-pink-600" },
-    { text: "Ishita helped me ship a full ML capstone. Amazing mentorship.", author: "Samar Verma", role: "Data Science Intern", initial: "S", color: "bg-blue-100 text-blue-600" },
-    { text: "Best 30 minutes on React. Web vitals improved significantly.", author: "Prakash Iyer", role: "SDE I @ Startup", initial: "P", color: "bg-emerald-100 text-emerald-600" },
-    { text: "Clear roadmap + resume fix = interview calls. Thank you!", author: "Ritika Singh", role: "Product Manager", initial: "R", color: "bg-purple-100 text-purple-600" },
-    { text: "Priya's product strategy session changed my approach completely.", author: "Rahul Das", role: "Senior PM", initial: "R", color: "bg-amber-100 text-amber-600" },
-    { text: "Vikram's DevOps guidance saved me weeks of trial and error.", author: "Karan Patel", role: "DevOps Engineer", initial: "K", color: "bg-cyan-100 text-cyan-600" }
-  ];
+  // --- API IMPLEMENTATION (Commented out for now) ---
+  // const { data: testimonialsData, error } = useSWR('/public/testimonials-cms', fetcher, { revalidateOnFocus: false });
+  
+  // --- LOCAL IMPLEMENTATION ---
+  const [testimonialsData, setTestimonialsData] = useState<TestimonialType[] | null>(null);
+  const [error, setError] = useState<any>(null);
 
-  const internshipTestimonials = [
-    { text: "The live project experience I gained here helped me secure a top-tier frontend internship!", author: "Ayushi Sharma", role: "Frontend Developer", initial: "A", color: "bg-pink-100 text-pink-600" },
-    { text: "Working with actual clients during my training gave me the exact portfolio I needed to land a Data Science intern role.", author: "Samar Verma", role: "Data Science Intern", initial: "S", color: "bg-blue-100 text-blue-600" },
-    { text: "Blueboxx's internship track is incredible. I learned more in 3 months here than a whole year in college.", author: "Prakash Iyer", role: "SDE Intern", initial: "P", color: "bg-emerald-100 text-emerald-600" },
-    { text: "From practical assignments to real client feedback, this internship bridged the gap between learning and doing.", author: "Ritika Singh", role: "Product Intern", initial: "R", color: "bg-purple-100 text-purple-600" },
-    { text: "I was able to build a complete ML capstone project under great mentorship, landing me a pre-placement offer.", author: "Rahul Das", role: "ML Intern", initial: "R", color: "bg-amber-100 text-amber-600" },
-    { text: "The DevOps internship gave me hands-on cloud experience that recruiters actively look for.", author: "Karan Patel", role: "DevOps Intern", initial: "K", color: "bg-cyan-100 text-cyan-600" }
-  ];
+  useEffect(() => {
+    // Simulate instant API response using local data
+    try {
+      const filteredData = localTestimonials.filter(t => t.type === type || type === "default");
+      setTestimonialsData(filteredData);
+    } catch (err) {
+      setError(err);
+    }
+  }, [type]);
 
-  const jobTestimonials = [
-    { text: "The placement support was outstanding. I transitioned from learning to a full-time Frontend Developer role smoothly.", author: "Ayushi Sharma", role: "Frontend Developer", initial: "A", color: "bg-pink-100 text-pink-600" },
-    { text: "Blueboxx's training and network directly connected me with a top tech firm for my current Data Scientist position.", author: "Samar Verma", role: "Data Scientist", initial: "S", color: "bg-blue-100 text-blue-600" },
-    { text: "The rigorous practical work and mock interviews prepared me perfectly for my SDE I role.", author: "Prakash Iyer", role: "SDE I", initial: "P", color: "bg-emerald-100 text-emerald-600" },
-    { text: "The product management roadmap they provided was crucial for me clearing all my PM interview rounds.", author: "Ritika Singh", role: "Product Manager", initial: "R", color: "bg-purple-100 text-purple-600" },
-    { text: "Great mentorship and industry-relevant curriculum helped me land a Senior PM role faster than I expected.", author: "Rahul Das", role: "Senior PM", initial: "R", color: "bg-amber-100 text-amber-600" },
-    { text: "I went from zero cloud knowledge to a full-time DevOps Engineer thanks to their structured placement program.", author: "Karan Patel", role: "DevOps Engineer", initial: "K", color: "bg-cyan-100 text-cyan-600" }
-  ];
+  const testimonials: TestimonialType[] = testimonialsData || [];
 
-  const testimonials = type === "internship" ? internshipTestimonials : type === "job" ? jobTestimonials : defaultTestimonials;
+  if (error) return <div className="py-20 text-center text-red-500">Error loading testimonials: {error.message}</div>;
+  if (!testimonialsData) return <div className="py-20 text-center text-slate-500">Loading testimonials...</div>;
+  if (!testimonials.length) return <div className="py-20 text-center text-slate-500">No active testimonials found in the database.</div>;
 
   return (
     <div className="bg-slate-50 py-20 relative overflow-hidden border-t border-slate-100">
@@ -68,22 +80,21 @@ export const TestimonialSection = ({
               <div className="absolute top-0 right-6 -mt-1 text-5xl text-[#C9A227]/20 font-serif group-hover:text-[#C9A227]/40 transition-colors pointer-events-none">"</div>
               
               <div className="flex gap-1 mb-4">
-                {[1, 2, 3, 4, 5].map((star) => (
+                {Array.from({ length: t.rating || 5 }).map((_, star) => (
                   <Star key={star} size={12} className="fill-[#C9A227] text-[#C9A227]" />
                 ))}
               </div>
 
-              <p className="text-slate-600 text-xs font-semibold leading-relaxed mb-6 italic relative z-10">"{t.text}"</p>
+              <p className="text-slate-600 text-xs font-semibold leading-relaxed mb-6 italic relative z-10">"{t.review}"</p>
               
               <div className="flex items-center gap-3 mt-auto">
                 <img 
-                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(t.author)}&background=random&color=fff&size=128&bold=true`}
-                  alt={t.author}
+                  src={t.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.name)}&background=random&color=fff&size=128&bold=true`}
+                  alt={t.name}
                   className="w-10 h-10 rounded-full shadow-sm object-cover border border-slate-100"
                 />
                 <div>
-                  <div className="text-xs font-black text-slate-900">{t.author}</div>
-                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t.role}</div>
+                  <div className="text-xs font-black text-slate-900">{t.name}</div>
                 </div>
               </div>
             </div>
